@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
 
 public class SettingMenu : MonoBehaviour
 {
     [Header("Audio Sources")]
-    //public AudioManger audioManager; // อ้างถึง AudioManger.cs
+    AudioManger AudioManger;
 
     [Header("Slider UI")]
     public Slider volume_Music_Slider;    // Slider UI musix
@@ -13,6 +15,11 @@ public class SettingMenu : MonoBehaviour
 
     [Header("Audio Settings")]
     public AudioMixer audioMixer;  // อ้างถึง AudioMixer ใน Inspector
+
+    private void Awake()
+    {
+       AudioManger =  GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManger>();
+    }
 
     private void Start()
     {
@@ -73,5 +80,15 @@ public class SettingMenu : MonoBehaviour
         float newValue = Mathf.Clamp(volume_SFX_Slider.value - 0.05f, 0.0001f, 1f);
         volume_SFX_Slider.value = newValue;
         SetSFXVolume(newValue);
+    }
+    
+    public async void Use_SFX_Click_Button() {
+        AudioManger.PlaySfx(AudioManger.buttonClick);
+        await Task.Delay(300);
+    }
+
+    public void QuitGame() {
+        Use_SFX_Click_Button();
+        SceneManager.LoadScene("MainMenu");
     }
 }
