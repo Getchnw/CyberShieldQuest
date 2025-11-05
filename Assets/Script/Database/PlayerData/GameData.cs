@@ -73,10 +73,10 @@ public class PlayerTutorialData
 [System.Serializable]
 public class PlayerCardInventoryItem
 {
-    public int card_id; // "Foreign Key" ไปหา ScriptableObject
+    public string card_id; // "Foreign Key" ไปหา ScriptableObject
     public int quantity;
 
-    public PlayerCardInventoryItem(int id, int qty)
+    public PlayerCardInventoryItem(string id, int qty)
     {
         card_id = id;
         quantity = qty;

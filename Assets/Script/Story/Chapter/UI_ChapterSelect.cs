@@ -46,18 +46,25 @@ public class UI_ChapterSelect : MonoBehaviour
             
             // 5. ค้นหาส่วนประกอบใน Prefab ที่เพิ่งสร้าง
             // (GetComponentInChildren จะค้นหา Text, Button ที่อยู่ข้างใน)
-            TextMeshProUGUI buttonText = newButton.GetComponentInChildren<TextMeshProUGUI>();
-            Button buttonComponent = newButton.GetComponent<Button>();
+            TextMeshProUGUI Name = newButton.GetComponentInChildren<TextMeshProUGUI>();
+            Button buttonComponent = newButton.GetComponentInChildren<Button>();
+            Transform comingSoonTransform = newButton.transform.Find("ComingSoon");
+
 
             // 6. ใส่ข้อมูล (สมมติ ChapterData มีตัวแปร 'chapterName')
-            if (buttonText != null)
+            if (Name != null)
             {
-                buttonText.text = chap.chapterName; 
+                Name.text = chap.chapterName; 
             }
 
+            if (comingSoonTransform != null)
+            {
+                comingSoonTransform.gameObject.SetActive(false); // สั่งซ่อน GameObject นี้
+            }
             // 7. ตั้งค่าปุ่ม
             if (buttonComponent != null)
             {
+                Debug.Log("interactable chapter button created.");
                 buttonComponent.interactable = true;
                 // สั่งให้ปุ่มนี้ เมื่อถูกกด ให้เรียก SelectChapter
                 buttonComponent.onClick.AddListener(() => SelectChapter(chap.chapter_id));

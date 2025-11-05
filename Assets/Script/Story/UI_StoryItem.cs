@@ -20,19 +20,13 @@ public class UI_StoryItem : MonoBehaviour
     /// <summary>
     /// นี่คือเมธอดหลักที่ UI_LoadStory จะเรียกใช้
     /// </summary>
-    /// <param name="data">ข้อมูล Story ที่ดึงมาจาก Database</param>
-    /// <param name="onSelectAction">ฟังก์ชันที่จะให้ปุ่มนี้เรียกใช้ (คือ SelectStory)</param>
     public void Setup(StoryData data, System.Action<string> onSelectAction)
     {
         // --- 1. ใส่ข้อมูลลง UI ---
-        
-        // (ผมสมมติว่า StoryData ของคุณมีตัวแปรชื่อ artworkSprite และ storyName)
         artworkImage.sprite = data.artwork; 
         nameText.text = data.storyName; // นี่จะใส่ "A01 Broken Access Control"
 
         // --- 2. ตรวจสอบสถานะของ Story ---
-        
-        // (ผมสมมติว่า StoryData ของคุณมีตัวแปร bool ชื่อ isComingSoon)
         if (data.storyStatus == StoryData.Status.Comingsoon)
         {
             // --- แบบ Coming Soon ---

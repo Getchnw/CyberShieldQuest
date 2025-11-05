@@ -196,7 +196,7 @@ public class GameContentDatabase : MonoBehaviour
         // โหลด chapterEventsDatabase
         if (chapterEventsDatabase == null || chapterEventsDatabase.Count == 0)
         {
-            var loadedEvents = Resources.LoadAll<ChapterEventsData>(""); 
+            var loadedEvents = Resources.LoadAll<ChapterEventsData>("GameContent/ChapterEvents"); 
             if (loadedEvents != null && loadedEvents.Length > 0)
             {
                 chapterEventsDatabase = new List<ChapterEventsData>(loadedEvents);
@@ -228,7 +228,7 @@ public class GameContentDatabase : MonoBehaviour
         // โหลด quizDatabase
         if (quizDatabase == null || quizDatabase.Count == 0)
         {
-            var loadedQuizzes = Resources.LoadAll<QuizData>("GameContent/Quizzes");
+            var loadedQuizzes = Resources.LoadAll<QuizData>("GameContent/Quiz");
             if (loadedQuizzes != null && loadedQuizzes.Length > 0)
             {
                 quizDatabase = new List<QuizData>(loadedQuizzes);
@@ -320,6 +320,35 @@ public class GameContentDatabase : MonoBehaviour
         }
 
         //stageDatabase
+        // if( stageDatabase == null || stageDatabase.Count == 0)
+        // {
+        //     var loadedStages = Resources.LoadAll<StageData>("GameContent/Stages");
+        //     if (loadedStages != null && loadedStages.Length > 0)
+        //     {
+        //         stageDatabase = new List<StageData>(loadedStages);
+        //     }
+        //     #if UNITY_EDITOR
+        //     try
+        //     {
+        //         string[] guids = UnityEditor.AssetDatabase.FindAssets("t:StageData", new[] { "Assets/Script/Database" });
+        //         if (guids != null && guids.Length > 0)
+        //         {
+        //             stageDatabase = new List<StageData>();
+        //             foreach (var g in guids)
+        //             {
+        //                 string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+        //                 var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<StageData>(path);
+        //                 if (asset != null) stageDatabase.Add(asset);
+        //             }
+        //             Debug.Log($"Editor auto-loaded {stageDatabase.Count} StageData from Assets/Script/Database.");
+        //         }
+        //     }
+        //     catch (System.Exception e)
+        //     {
+        //         Debug.LogWarning($"Auto-load StageData failed: {e.Message}");
+        //     }
+        //     #endif
+        // }
     }
 
     //ฟังก์ชันดึงข้อมูลตาม ID ต่างๆ
@@ -359,7 +388,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 if (ev.quizReference.quiz_id == quiz_id)
                 {
-                    return (ev.chapter_id != null) ? ev.chapter_id.chapter_id : -1;
+                    return (ev.chapter != null) ? ev.chapter.chapter_id : -1;
                 }
             }
         }
@@ -372,7 +401,7 @@ public class GameContentDatabase : MonoBehaviour
         return storyDatabase;
     }
 
-    // ค้นหา Chapter ทั้งหมดที่อยู่ใน Story ID ที่กำหนด
+    // ค้นหา Chapter ทั้งหมดที่อยู่ใน Story ID
     public List<ChapterData> GetChaptersByStoryID(string storyId)
     {
         if (chapterDatabase == null) 
@@ -383,5 +412,52 @@ public class GameContentDatabase : MonoBehaviour
             .Where(chap => chap.story != null && chap.story.story_id == storyId)
             .ToList();
     }
+
+    // ค้นหา ChapterEvents ทั้งหมดที่อยู่ใน Chapter ID
+    public List<ChapterEventsData> GetChapterEventsByChapterID(int chapterId)
+    {
+        if (chapterEventsDatabase == null) 
+            return new List<ChapterEventsData>(); // คืนค่าลิสต์ว่าง ถ้าเป็น null
+
+        // ค้นหา ChapterEvents ทั้งหมดที่ chapter.chapter_id ตรงกับ chapterId ที่ส่งมา
+        return chapterEventsDatabase
+            .Where(ev => ev.chapter != null && ev.chapter.chapter_id == chapterId)
+            .OrderBy(ev => ev.eventOrder) // เรียงลำดับตาม eventOrder
+            .ToList();
+    }
+
+    // ดึง "บทพูด" ทั้งหมดของ Scene (เรียงลำดับแล้ว) เอาidมาจากchapter events
+    public List<DialogueLinesData> GetDialogueLinesByScene(int sceneId)
+    {
+        if (dialogueLinesDatabase == null) return new List<DialogueLinesData>();
+
+        return dialogueLinesDatabase
+            .Where(line => line.scene != null && line.scene.scene_id == sceneId) //
+            .OrderBy(line => line.sequence_order) // เรียง 1, 2, 3...
+            .ToList();
+    }
+
+    //ดึงQuestion ทั้งหมดของ Quiz
+    public List<QuestionData> GetQuestionsByQuizID(int quizId)
+    {
+        if (questionDatabase == null) return new List<QuestionData>();
+
+        return questionDatabase
+            .Where(q => q.quiz != null && q.quiz.quiz_id == quizId)
+            .OrderBy(q => q.questionOrder)
+            .ToList();
+    }
+
+    //ดึง Reward ของ Quiz
+    public List<RewardData> GetRewardByQuizID(int quizId)
+    {
+       if (rewardDatabase == null) return new List<RewardData>();
+
+        return rewardDatabase
+            .Where(r => r.quiz != null && r.quiz.quiz_id == quizId) //
+            .OrderBy(r => r.starRequired) // เรียงรางวัล 1 ดาว, 2 ดาว, 3 ดาว
+            .ToList();
+    }
+
 }
 

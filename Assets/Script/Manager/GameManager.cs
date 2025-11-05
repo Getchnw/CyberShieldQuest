@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public GameData CurrentGameData { get; private set; }
     public event System.Action OnDataLoaded;
     public event System.Action<int> OnGoldChanged;
+    public event System.Action<int> OnExperienceChanged;
 
     // Awake() จะทำงานเป็นฟังก์ชันแรกสุดตอนที่ Object นี้ถูกสร้างขึ้น
     private void Awake()
@@ -87,7 +88,20 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    
+    // Add experience to player
+    public void AddExperience(int amount)
+    {
+        if (CurrentGameData == null) return;
+
+        CurrentGameData.profile.experience += amount;
+
+        // (Optional) สั่งเซฟอัตโนมัติ
+        SaveCurrentGame();
+
+        // (Optional) ส่ง Event บอก UI ให้อัปเดต
+        OnExperienceChanged?.Invoke(CurrentGameData.profile.experience);
+    }
+
     /// เพิ่ม/ลด ทอง (ใช้ค่าติดลบเพื่อลด)
     public void AddGold(int amount)
     {
@@ -116,7 +130,7 @@ public class GameManager : MonoBehaviour
     }
     
     /// เพิ่มการ์ดเข้าคลัง
-    public void AddCardToInventory(int cardID, int quantity = 1)
+    public void AddCardToInventory(string cardID, int quantity = 1)
     {
         if (CurrentGameData == null) return;
 
@@ -146,6 +160,7 @@ public class GameManager : MonoBehaviour
         if (CurrentGameData == null) return;
 
         CurrentGameData.selectedStory.lastSelectedStoryId = storyId;
+         Debug.Log($"Selected Story ID {storyId} saved to player profile.");
         SaveCurrentGame();
         Debug.Log($"Selected Story ID {storyId} saved to player profile.");
     }
@@ -157,6 +172,24 @@ public class GameManager : MonoBehaviour
         CurrentGameData.selectedStory.lastSelectedchapterId = chapterId;
         SaveCurrentGame();
         Debug.Log($"Selected Chapter ID {chapterId} saved to player profile.");
+    }
+
+    /// (ใหม่) เช็คว่าเคยรับรางวัลนี้หรือยัง
+    public bool HasClaimedReward(int rewardId)
+    {
+        if (CurrentGameData == null) return false;
+        return CurrentGameData.claimedQuizRewardRuleIDs.Contains(rewardId); //เช็คใน GameData ที่ claimedQuizRewardRuleIDs ว่ามีรางวัลนี้หรือยัง
+    }
+
+    /// (ใหม่) บันทึกว่ารับรางวัลนี้ไปแล้ว (กันรับซ้ำ)
+    public void ClaimReward(int rewardId)
+    {
+        if (CurrentGameData == null) return;
+        if (!CurrentGameData.claimedQuizRewardRuleIDs.Contains(rewardId))
+        {
+            CurrentGameData.claimedQuizRewardRuleIDs.Add(rewardId);
+            SaveCurrentGame();
+        }
     }
 
     //บันทึกความคืบหน้าของQuiz

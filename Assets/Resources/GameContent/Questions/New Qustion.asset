@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2c36b311bc71df4b85d4f7cd2662554, type: 3}
+  m_Name: New Qustion
+  m_EditorClassIdentifier: 
+  question_id: 1
+  questionText: jjjjjjj
+  quiz: {fileID: 11400000, guid: a023592fe75c4834e861d9e5a95cd5aa, type: 2}
+  questionOrder: 0
+  answerOptions:
+  - ans1
+  - ans2
+  - ans3
+  - ans4
+  correctAnswerIndex: 1

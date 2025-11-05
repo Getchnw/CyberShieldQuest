@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 public class UI_LoadStory : MonoBehaviour
 {
 // (ใหม่!) ลาก GameObject "Story1" ถึง "Story10" (ที่มี Script UI_StoryItem)
-    // มาใส่ใน List นี้ให้ครบจากหน้า Inspector
     [SerializeField] private List<UI_StoryItem> storyItemSlots;
     
     private List<StoryData> allStoryData;
@@ -69,7 +68,7 @@ public class UI_LoadStory : MonoBehaviour
         GameManager.Instance.SaveSelectedStory(storyId); 
         
         // (โค้ดไปหน้าเลือก Chapter ต่อไป...)
-        LoadScene("UI_ChapterSelect"); // (แก้ชื่อเมธอดจาก LoadSence)
+        LoadScene("Template_select_chapter_story");
     }
 
     // (แก้ชื่อเมธอดจาก LoadSence และเพิ่ม .SceneManagement)

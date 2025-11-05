@@ -14,7 +14,7 @@ public class ChapterEventsData : ScriptableObject
    public int event_id;
    public int eventOrder;
    public EventType type;
-   public ChapterData chapter_id;
+   public ChapterData chapter;
 
    [Header("References")]
    // Assign the appropriate reference depending on the EventType

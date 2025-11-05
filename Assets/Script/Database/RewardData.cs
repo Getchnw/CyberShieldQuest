@@ -22,6 +22,8 @@ public class RewardData : ScriptableObject
 
   // Optional string id for external references
   public string reference_id;
+
+  public int experiencePoints = 0;
 }
 
 public enum AnswersRequired

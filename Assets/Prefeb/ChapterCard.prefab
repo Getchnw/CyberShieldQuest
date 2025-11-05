@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6926092022537373702}
   - component: {fileID: 4773997160465732192}
   - component: {fileID: 4547040804254317464}
-  - component: {fileID: 7775406772513443789}
   m_Layer: 5
   m_Name: ChapterCard
   m_TagString: Untagged
@@ -32,8 +31,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5807418193523068714}
-  - {fileID: 2299195785296851033}
   - {fileID: 2262167569930915511}
+  - {fileID: 2299195785296851033}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -79,22 +78,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &7775406772513443789
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4529539690690882030}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d7ac53408ca5ae4b9e2427144b1fe25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  artworkImage: {fileID: 4547040804254317464}
-  nameText: {fileID: 3244027366689270546}
-  storyButton: {fileID: 3296105388175463618}
-  comingSoonOverlay: {fileID: 8863598916247499080}
 --- !u!1 &7930650169340618285
 GameObject:
   m_ObjectHideFlags: 0

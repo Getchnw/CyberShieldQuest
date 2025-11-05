@@ -6,8 +6,9 @@ public class QuestionData : ScriptableObject
 {
     public int question_id;
     public string questionText;
-    public QuizData quiz_id;
-    public string[] answerOptions;
+    public QuizData quiz;
+    public int questionOrder;
+    public string[] answerOptions; // ตัวเลือกคำตอบ
     public int correctAnswerIndex;
 
 }
