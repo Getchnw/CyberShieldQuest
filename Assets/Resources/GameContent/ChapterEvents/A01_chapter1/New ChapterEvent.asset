@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2224c56c03e692428d9a49f08d2f613, type: 3}
+  m_Name: New ChapterEvent
+  m_EditorClassIdentifier: 
+  event_id: 2
+  eventOrder: 2
+  type: 0
+  chapter: {fileID: 11400000, guid: e6cfcb6e1aa2d73478781559ae93c400, type: 2}
+  dialogueReference: {fileID: 11400000, guid: 0fd47c533a37fc340b83ee1cff957728, type: 2}
+  quizReference: {fileID: 0}
