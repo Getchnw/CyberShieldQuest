@@ -228,6 +228,10 @@ MonoBehaviour:
   rewardListContainer: {fileID: 1253953805}
   rewardRowPrefab: {fileID: 5319525733505098271}
   nextEventButton: {fileID: 1475336166}
+  GoldText: {fileID: 787377637}
+  ExperienceText: {fileID: 113205763}
+  Star_amount: {fileID: 1079481105}
+  StarText: {fileID: 856929627}
 --- !u!1 &50761052
 GameObject:
   m_ObjectHideFlags: 0

@@ -8,4 +8,5 @@ public class ChapterData : ScriptableObject
    public int chapter_id;
    public string chapterName;
    public StoryData story;
+   public Sprite chapterImage;
 }

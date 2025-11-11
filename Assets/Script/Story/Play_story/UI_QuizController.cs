@@ -16,8 +16,14 @@ public class UI_QuizController : MonoBehaviour
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TextMeshProUGUI resultScoreText;
     [SerializeField] private Transform rewardListContainer; // (ที่ใส่แถวของรางวัล)
-    [SerializeField] private GameObject rewardRowPrefab; // (Prefab ของแถวรางวัล)
+    [SerializeField] private GameObject CardPrefab; // (Prefab ของแถวรางวัล)
     [SerializeField] private Button nextEventButton;
+    [SerializeField] private TextMeshProUGUI GoldText;
+    [SerializeField] private TextMeshProUGUI ExperienceText;
+    [SerializeField] private TextMeshProUGUI Star_amount;
+    [SerializeField] private TextMeshProUGUI StarText;
+
+
 
     // "โทรโข่ง" 📢 บอก StoryEventController ว่า "Quiz จบแล้ว"
     public event System.Action OnQuizCompleted;
@@ -47,12 +53,12 @@ public class UI_QuizController : MonoBehaviour
     {
         currentQuiz = quizData;
         gameObject.SetActive(true);
-        Debug.Log("now ittttt");
+        // Debug.Log("now ittttt");
         questionPanel.SetActive(true);
         resultPanel.SetActive(false); 
 
         allQuestions = GameContentDatabase.Instance.GetQuestionsByQuizID(currentQuiz.quiz_id); //
-        Debug.Log(allQuestions);
+        // Debug.Log(allQuestions);
         currentQuestionIndex = 0;
         correctAnswersCount = 0;
         experienceAll = 0;
@@ -73,9 +79,9 @@ public class UI_QuizController : MonoBehaviour
         }
 
         QuestionData q = allQuestions[currentQuestionIndex]; //ดึงคำถามปัจจุบัน
-        Debug.Log(q);
+        // Debug.Log(q);
         questionText.text = q.questionText; //ใส่โจทย์
-        Debug.Log(q.questionText);
+        // Debug.Log(q.questionText);
 
         for (int i = 0; i < answerButtons.Count && i < answerButtonTexts.Count; i++)
         {
@@ -156,7 +162,9 @@ public class UI_QuizController : MonoBehaviour
         else if (correctAnswersCount == 4) stars = 2;
         else if (correctAnswersCount == 3) stars = 1;
         
-        resultScoreText.text = $"You got {correctAnswersCount} / {allQuestions.Count} correct!\nStars: {stars}";
+        Star_amount.text = $"{stars}";
+        StarText.text = $"Star earned : {stars}";
+        resultScoreText.text = $"Score : {correctAnswersCount} / {allQuestions.Count}";
 
         // 2. บันทึกผลลัพธ์ลง GameManager
         GameManager.Instance.UpdateQuizProgress(currentQuiz.quiz_id, correctAnswersCount, true);
@@ -185,12 +193,18 @@ public class UI_QuizController : MonoBehaviour
                 if (GameManager.Instance.HasClaimedReward(reward.reward_id))
                 {
                     // เคยรับแล้ว
-                    GameObject row = Instantiate(rewardRowPrefab, rewardListContainer);
-                    TextMeshProUGUI rowText = row.GetComponentInChildren<TextMeshProUGUI>();
-                    string rewardDesc = $"Star {reward.starRequired}: "; //
-                    if (reward.rewardType == RewardType.Gold) rewardDesc += $"{reward.rewardValue} Gold"; //
-                    else if (reward.rewardType == RewardType.Card) rewardDesc += $"Card: {reward.cardReference.cardName}"; //
-                    rowText.text = $"<color=grey>{rewardDesc} (Claimed)</color>";
+                    // GameObject row = Instantiate(rewardRowPrefab, rewardListContainer);
+                    // TextMeshProUGUI rowText = row.GetComponentInChildren<TextMeshProUGUI>();
+                    TextMeshProUGUI card_Name = CardPrefab.GetComponentInChildren<TextMeshProUGUI>();
+                    if (reward.rewardType == RewardType.Gold)
+                    {
+                        GoldAll += reward.rewardValue;
+                        GoldText.text = $"{reward.rewardValue} Gold";
+                    }  
+                    else if (reward.rewardType == RewardType.Card) 
+                    {
+                        card_Name.text = $"<color=grey>{reward.cardReference.cardName} (Claimed)</color>";
+                    }
                 }
                 else
                 {
@@ -206,12 +220,18 @@ public class UI_QuizController : MonoBehaviour
                     }
                     experienceAll += reward.experiencePoints;
 
-                    GameObject row = Instantiate(rewardRowPrefab, rewardListContainer);
-                    TextMeshProUGUI rowText = row.GetComponentInChildren<TextMeshProUGUI>();
-                    string rewardDesc = $"Star {reward.starRequired}: "; //
-                    if (reward.rewardType == RewardType.Gold) rewardDesc += $"{reward.rewardValue} Gold"; //
-                    else if (reward.rewardType == RewardType.Card) rewardDesc += $"Card: {reward.cardReference.cardName}"; //
-                    rowText.text = $"<color=yellow>{rewardDesc} (Received!)</color>";
+                    // GameObject row = Instantiate(rewardRowPrefab, rewardListContainer);
+                    //TextMeshProUGUI rowText = row.GetComponentInChildren<TextMeshProUGUI>();
+                    TextMeshProUGUI card_Name = CardPrefab.GetComponentInChildren<TextMeshProUGUI>();
+                    if (reward.rewardType == RewardType.Gold)
+                    {
+                        GoldAll += reward.rewardValue;
+                        GoldText.text = $"{reward.rewardValue} Gold";
+                    }  
+                    else if (reward.rewardType == RewardType.Card) 
+                    {
+                        card_Name.text = $"<color=yellow>{reward.cardReference.cardName} x1</color>";
+                    }
                 }
             }
             else {
@@ -219,17 +239,19 @@ public class UI_QuizController : MonoBehaviour
                 if (reward.rewardType == RewardType.Gold) 
                 {
                    GoldAll += reward.rewardValue;
+                   GoldText.text = $"{reward.rewardValue} Gold";
                 }
                 experienceAll += reward.experiencePoints;
+                ExperienceText.text = $"{reward.experiencePoints}";
             }
         }
         // เพิ่ม Gold กับ Exp ให้ผู้เล่น
         GameManager.Instance.AddExperience(experienceAll);
         GameManager.Instance.AddGold(GoldAll);
-        // show UI All
-        GameObject rowAll = Instantiate(rewardRowPrefab, rewardListContainer);
-        TextMeshProUGUI rowTextAll = rowAll.GetComponentInChildren<TextMeshProUGUI>();
-        rowTextAll.text = $"<color=green> Total Received: {GoldAll} Gold , {experienceAll} Exp </color>";
+        // // show UI All
+        // GameObject rowAll = Instantiate(rewardRowPrefab, rewardListContainer);
+        // TextMeshProUGUI rowTextAll = rowAll.GetComponentInChildren<TextMeshProUGUI>();
+        // rowTextAll.text = $"<color=green> Total Received: {GoldAll} Gold , {experienceAll} Exp </color>";
 
     }
 
