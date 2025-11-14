@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98882a639cd46a947b88bc0a8399a7f3, type: 3}
   m_Name: A02_Chapter2
   m_EditorClassIdentifier: 
-  chapter_id: 6
+  chapter_id: 5
   chapterName: The Open Diary
   story: {fileID: 11400000, guid: c36db4412ad8b414a9cd10c85db056cf, type: 2}
+  chapterImage: {fileID: 21300000, guid: ecd41c4a95499ee449f15218bde705a0, type: 3}

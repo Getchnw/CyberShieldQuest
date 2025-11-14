@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98882a639cd46a947b88bc0a8399a7f3, type: 3}
   m_Name: A03_Chapter4
   m_EditorClassIdentifier: 
-  chapter_id: 11
-  chapterName: The Gatekeeper's Deception
+  chapter_id: 12
+  chapterName: The Malicious Requisition
   story: {fileID: 11400000, guid: 5fb40f0e106c7344b8967058307f4a4d, type: 2}
+  chapterImage: {fileID: 21300000, guid: 1bf167c193dc87c4da56d7b262c09d49, type: 3}

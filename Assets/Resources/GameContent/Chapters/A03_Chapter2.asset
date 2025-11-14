@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98882a639cd46a947b88bc0a8399a7f3, type: 3}
   m_Name: A03_Chapter2
   m_EditorClassIdentifier: 
-  chapter_id: 9
-  chapterName: The Haunted Script
+  chapter_id: 10
+  chapterName: 'The Poisoned Message Board '
   story: {fileID: 11400000, guid: 5fb40f0e106c7344b8967058307f4a4d, type: 2}
+  chapterImage: {fileID: 21300000, guid: b33980e4280a3514884cc7c00816ab6a, type: 3}

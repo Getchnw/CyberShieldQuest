@@ -17,34 +17,35 @@ public class UI_StoryItem : MonoBehaviour
     // ลาก "GameObject" ที่เป็น Text/Panel "Coming Soon" มาใส่
     [SerializeField] private GameObject comingSoonOverlay; 
 
-    /// <summary>
+    [SerializeField] private Image LockImage;
+    
     /// นี่คือเมธอดหลักที่ UI_LoadStory จะเรียกใช้
-    /// </summary>
-    public void Setup(StoryData data, System.Action<string> onSelectAction)
+    public void Setup(StoryData data, bool  isProgressUnlocked, System.Action<string> onSelectAction)
     {
         // --- 1. ใส่ข้อมูลลง UI ---
         artworkImage.sprite = data.artwork; 
-        nameText.text = data.storyName; // นี่จะใส่ "A01 Broken Access Control"
+        nameText.text = data.storyName;
+        bool finalIsUnlocked = isProgressUnlocked && (data.storyStatus != StoryData.Status.Comingsoon);
 
-        // --- 2. ตรวจสอบสถานะของ Story ---
-        if (data.storyStatus == StoryData.Status.Comingsoon)
-        {
-            // --- แบบ Coming Soon ---
-            comingSoonOverlay.SetActive(true); // เปิดป้าย "Coming Soon"
-            storyButton.interactable = false;  // ปิดปุ่ม
-        }
-        else
+        if (finalIsUnlocked)
         {
             // --- แบบ Ongoing (เล่นได้) ---
-            comingSoonOverlay.SetActive(false); // ปิดป้าย "Coming Soon"
-            storyButton.interactable = true;   // เปิดปุ่ม
+            comingSoonOverlay.SetActive(false); //
+            storyButton.interactable = true;   //
+            LockImage.gameObject.SetActive(false);
 
             // --- 3. ตั้งค่าปุ่ม ---
-            storyButton.onClick.RemoveAllListeners(); // ล้างของเก่ากันพลาด
+            storyButton.onClick.RemoveAllListeners(); //
             
             // เมื่อกดปุ่ม ให้เรียกฟังก์ชัน onSelectAction (ก็คือ SelectStory)
             // และส่ง story_id (string) กลับไป
-            storyButton.onClick.AddListener(() => onSelectAction(data.story_id));
+            storyButton.onClick.AddListener(() => onSelectAction(data.story_id)); //
+        }
+        else
+        {
+            // --- แบบ Coming Soon หรือ ยังไม่ปลดล็อก ---
+            comingSoonOverlay.SetActive(true); //
+            storyButton.interactable = false;  //
         }
     }
 }

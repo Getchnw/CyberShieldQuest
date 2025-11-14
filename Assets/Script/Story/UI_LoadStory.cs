@@ -5,14 +5,13 @@ using UnityEngine.SceneManagement;
 
 public class UI_LoadStory : MonoBehaviour
 {
-// (ใหม่!) ลาก GameObject "Story1" ถึง "Story10" (ที่มี Script UI_StoryItem)
+    //ลาก GameObject "Story1" ถึง "Story10"
     [SerializeField] private List<UI_StoryItem> storyItemSlots;
     
     private List<StoryData> allStoryData;
 
     void Start()
     {
-        // Load Data
         if (GameContentDatabase.Instance == null)
         {
             Debug.LogError("GameContentDatabase not found!");
@@ -32,27 +31,59 @@ public class UI_LoadStory : MonoBehaviour
             Debug.LogWarning("No Story data loaded.");
             return;
         }
-
+        //ดึงProgress
+        var allChapterProgress = GameManager.Instance.CurrentGameData.chapterProgress ?? new List<PlayerChapterProgress>();
         // วนลูปตามจำนวน "ช่อง UI" ที่เรามี
         for (int i = 0; i < storyItemSlots.Count; i++)
         {
             // เช็คว่ามี "ข้อมูล" พอสำหรับ "ช่อง" นี้หรือไม่
             if (i < allStoryData.Count)
             {
-                // ถ้ามี:
-                // 1. ดึง "ช่อง UI" (Story1, Story2, ...)
+                // 1. ดึง "ช่อง UI"
                 UI_StoryItem uiSlot = storyItemSlots[i];
                 
-                // 2. ดึง "ข้อมูล" ที่ตรงกัน
+                // 2. ดึง "ข้อมูล"
                 StoryData data = allStoryData[i];
-
+                
+                //ฟังก์ชัน เช็คstatus lock/unlock
+                bool isProgressUnlocked = false;
+                if (i == 0)
+                {
+                    // Story แรก ปลดล็อกเสมอ
+                    isProgressUnlocked = true;
+                }
+                else
+                {
+                    // 1. หา Story ก่อนหน้า
+                    StoryData previousStory = allStoryData[i - 1];
+                    
+                    // 2. หา Chapter ทั้งหมดของ Story ก่อนหน้า
+                    List<ChapterData> previousStoryChapters = GameContentDatabase.Instance.GetChaptersByStoryID(previousStory.story_id);
+                    
+                    if (previousStoryChapters != null && previousStoryChapters.Count > 0)
+                    {
+                        // 3. หา Chapter "สุดท้าย" ของ Story ก่อนหน้า
+                        ChapterData lastChapterOfPreviousStory = previousStoryChapters[previousStoryChapters.Count - 1];
+                        
+                        // 4. ตรวจสอบ Progress ของ Chapter สุดท้ายนั้น
+                        PlayerChapterProgress previousProgress = allChapterProgress.Find(
+                            p => p.chapter_id == lastChapterOfPreviousStory.chapter_id);
+                        
+                        // 5. ถ้า Chapter สุดท้ายนั้น "is_completed" = ปลดล็อก
+                        if (previousProgress != null && previousProgress.is_completed)
+                        {
+                            isProgressUnlocked = true;
+                        }
+                        // ยังเรียนไม่เสร็จก็เป็นfalse
+                    }
+                }
                 // 3. สั่งให้ "ช่อง UI" อัปเดตตัวเอง โดยส่ง "ข้อมูล" และ "ฟังก์ชัน" ไปให้
                 uiSlot.gameObject.SetActive(true); // เปิดช่องนี้
-                uiSlot.Setup(data, SelectStory); // << นี่คือจุดที่เชื่อมทุกอย่างเข้าด้วยกัน
+                uiSlot.Setup(data, isProgressUnlocked, SelectStory);                
             }
             else
             {
-                // ถ้าไม่มีข้อมูลสำหรับช่องนี้ (เช่น มี 10 ช่อง แต่มีข้อมูลแค่ 8)
+                // ถ้าไม่มีข้อมูลสำหรับช่องนี้
                 // ให้ปิดช่อง UI ที่เหลือทิ้งไป
                 storyItemSlots[i].gameObject.SetActive(false);
             }

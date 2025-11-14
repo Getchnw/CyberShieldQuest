@@ -16,4 +16,4 @@ MonoBehaviour:
   storyName: Cryptographic Failures
   description: 
   storyStatus: 0
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 3b1926ec88c69b0498cb518150c3dc75, type: 3}

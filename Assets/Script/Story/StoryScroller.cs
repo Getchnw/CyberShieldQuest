@@ -48,6 +48,8 @@ public class StoryScroller : MonoBehaviour
         }
     }
 
+
+
     // ฟังก์ชันนี้จะถูกเรียกโดยปุ่ม 'ขวา'
     public void ScrollRight()
     {
@@ -83,6 +85,11 @@ public class StoryScroller : MonoBehaviour
     // เปิด/ปิด ปุ่มซ้ายขวา ตามความเหมาะสม
     private void UpdateArrowButtons()
     {
+        if (totalStoryItems <= 1)
+        {
+            if(rightButton != null) rightButton.gameObject.SetActive(false);
+            if(leftButton != null) leftButton.gameObject.SetActive(false);
+        }
         if (leftButton != null)
         {
             // ถ้าอยู่ซ้ายสุด (index 0) ให้ปิดปุ่มซ้าย

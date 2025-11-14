@@ -16,4 +16,4 @@ MonoBehaviour:
   storyName: Software and Data Integrity Failures
   description: 
   storyStatus: 1
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: feb67950767010b47ae84387ea777d02, type: 3}

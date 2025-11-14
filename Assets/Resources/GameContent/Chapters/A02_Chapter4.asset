@@ -10,8 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 98882a639cd46a947b88bc0a8399a7f3, type: 3}
-  m_Name: A01_Chapter4
+  m_Name: A02_Chapter4
   m_EditorClassIdentifier: 
-  chapter_id: 4
-  chapterName: The Whispered Command
-  story: {fileID: 11400000, guid: 748416f206e75214386b95ed503b6070, type: 2}
+  chapter_id: 7
+  chapterName: The Rainbow Dictionary
+  story: {fileID: 11400000, guid: c36db4412ad8b414a9cd10c85db056cf, type: 2}
+  chapterImage: {fileID: 21300000, guid: 1cc4774ebffadf24dbd47c1f296b70e0, type: 3}

@@ -16,4 +16,4 @@ MonoBehaviour:
   storyName: Server-Side Request Forgery
   description: 
   storyStatus: 1
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: a1d5aad7d5a9f4e48a79985d0fc85a6d, type: 3}

@@ -15,4 +15,4 @@ MonoBehaviour:
   chapter_id: 2
   chapterName: The Forbidden Climb
   story: {fileID: 11400000, guid: 748416f206e75214386b95ed503b6070, type: 2}
-  chapterImage: {fileID: 0}
+  chapterImage: {fileID: 21300000, guid: ed9f1fcb0d6d50f4ebf37e33bda80e99, type: 3}

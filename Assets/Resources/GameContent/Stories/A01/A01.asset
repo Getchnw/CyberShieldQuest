@@ -16,4 +16,4 @@ MonoBehaviour:
   storyName: Broken Access Control
   description: 
   storyStatus: 0
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: ea9a5a72b5da3034386b50790be59292, type: 3}

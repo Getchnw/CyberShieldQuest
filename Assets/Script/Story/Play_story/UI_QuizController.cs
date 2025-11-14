@@ -53,12 +53,10 @@ public class UI_QuizController : MonoBehaviour
     {
         currentQuiz = quizData;
         gameObject.SetActive(true);
-        // Debug.Log("now ittttt");
         questionPanel.SetActive(true);
         resultPanel.SetActive(false); 
 
         allQuestions = GameContentDatabase.Instance.GetQuestionsByQuizID(currentQuiz.quiz_id); //
-        // Debug.Log(allQuestions);
         currentQuestionIndex = 0;
         correctAnswersCount = 0;
         experienceAll = 0;
@@ -71,7 +69,6 @@ public class UI_QuizController : MonoBehaviour
     {
         ResetColors();
         // เช็คว่าคำถามหมดหรือยัง
-        Debug.Log(allQuestions.Count);
         if (currentQuestionIndex >= allQuestions.Count)
         {
             ShowQuizResults();
@@ -79,9 +76,7 @@ public class UI_QuizController : MonoBehaviour
         }
 
         QuestionData q = allQuestions[currentQuestionIndex]; //ดึงคำถามปัจจุบัน
-        // Debug.Log(q);
-        questionText.text = q.questionText; //ใส่โจทย์
-        // Debug.Log(q.questionText);
+        questionText.text = q.questionText; //ใส่โจทย
 
         for (int i = 0; i < answerButtons.Count && i < answerButtonTexts.Count; i++)
         {

@@ -85,6 +85,8 @@ public class GameManager : MonoBehaviour
         {
             SaveSystem.SaveGameData(CurrentGameData);
             Debug.Log("Game progress saved!");
+            // Notify UI listeners that data has been saved/updated
+            OnDataLoaded?.Invoke();
         }
     }
 
@@ -229,7 +231,14 @@ public class GameManager : MonoBehaviour
                 is_completed = isCompleted,
                 stars_earned = stars_earned
             });
+            // หา chapter id จาก quiz id โดยใช้ฐานข้อมูล ChapterEventsData
+            int chapterId = GameContentDatabase.Instance.GetChapterIdByQuizId(quizID);
+            if (chapterId >= 0)
+            {
+                AdvanceChapterProgress(chapterId, stars_earned, highestScore);
+            }
         }
+        SaveCurrentGame();
     }
 
 
@@ -266,6 +275,7 @@ public class GameManager : MonoBehaviour
                 high_score = score
              });
          }
+         SaveCurrentGame();
     }
 
 

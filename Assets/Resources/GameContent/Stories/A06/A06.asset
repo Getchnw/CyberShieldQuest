@@ -16,4 +16,4 @@ MonoBehaviour:
   storyName: Vulnerable and Outdated
   description: 
   storyStatus: 1
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 6fa1df5e84b69a24ca943a2d61e2e23a, type: 3}

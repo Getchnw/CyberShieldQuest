@@ -16,4 +16,4 @@ MonoBehaviour:
   storyName: Insecure Design
   description: 
   storyStatus: 1
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 58343cf091d9bcc43b19234772b1b903, type: 3}

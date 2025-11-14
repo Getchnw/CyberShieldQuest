@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: A01_Chapter1
   m_EditorClassIdentifier: 
   chapter_id: 1
-  chapterName: The Archive Chamber
+  chapterName: The Labyrinth of Secrets
   story: {fileID: 11400000, guid: 748416f206e75214386b95ed503b6070, type: 2}
+  chapterImage: {fileID: 21300000, guid: 3528db8cb3e6f4c4f8b00051645dabdc, type: 3}

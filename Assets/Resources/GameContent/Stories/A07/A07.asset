@@ -16,4 +16,4 @@ MonoBehaviour:
   storyName: Identification and Authentication Failures
   description: 
   storyStatus: 1
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: ce1435fefac2f044d91f8825cda2b0fb, type: 3}

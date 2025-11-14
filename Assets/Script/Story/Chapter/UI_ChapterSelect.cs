@@ -21,6 +21,95 @@ public class UI_ChapterSelect : MonoBehaviour
     // เอาไว้เก็บPageที่สร้าง
     private List<GameObject> instantiatedPages = new List<GameObject>();
     private int currentPageIndex = 0;
+
+    // private void OnEnable()
+    // {
+    //     // Subscribe to data changes so we refresh chapter locks when returning from quiz
+    //     if (GameManager.Instance != null)
+    //     {
+    //         GameManager.Instance.OnDataLoaded += RefreshChapterLocks;
+    //         Debug.Log("Subscribed to OnDataLoaded");
+    //     }
+    //     else
+    //     {
+    //         Debug.LogWarning("GameManager.Instance is null in OnEnable");
+    //     }
+    // }
+
+    // private void OnDisable()
+    // {
+    //     // Clean up subscription
+    //     if (GameManager.Instance != null)
+    //     {
+    //         GameManager.Instance.OnDataLoaded -= RefreshChapterLocks;
+    //         Debug.Log("Unsubscribed from OnDataLoaded");
+    //     }
+    // }
+
+    /// <summary>
+    /// Refreshes the lock/unlock status of all chapter buttons based on current progress
+    /// This is called when returning from a quiz so locks update immediately
+    /// </summary>
+    // private void RefreshChapterLocks()
+    // {
+        
+    //     if (GameManager.Instance == null || GameManager.Instance.CurrentGameData == null) 
+    //     {
+    //         return;
+    //     }
+    //     var chapterProgress = GameManager.Instance.CurrentGameData.chapterProgress ?? new List<PlayerChapterProgress>();
+    //     var chapters = GameContentDatabase.Instance.GetChaptersByStoryID(
+    //         GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId);
+
+    //     if (chapters == null || chapters.Count == 0) 
+    //     {
+    //         Debug.LogWarning("⚠️ No chapters found");
+    //         return;
+    //     }
+
+    //     Debug.Log($"✅ Updating lock status for {chapters.Count} chapters");
+
+    //     // Update each chapter button's lock status based on previous chapter completion
+    //     int buttonCount = 0;
+    //     foreach (GameObject page in instantiatedPages)
+    //     {
+    //         Button[] buttonsInPage = page.GetComponentsInChildren<Button>();
+    //         foreach (Button btn in buttonsInPage)
+    //         {
+    //             if (buttonCount >= chapters.Count) break;
+
+    //             bool isUnlocked = false;
+    //             Transform lockTransform = btn.transform.Find("Lock");
+    //             Image LockImage = null;
+    //             if (lockTransform != null) LockImage = lockTransform.GetComponent<Image>();
+    //             if (buttonCount == 0)
+    //             {
+    //                 isUnlocked = true;
+    //                 LockImage.gameObject.SetActive(!isUnlocked);
+    //             }
+    //             else
+    //             {
+    //                 ChapterData previousChapter = chapters[buttonCount - 1];
+    //                 PlayerChapterProgress previousProgress = chapterProgress.Find(
+    //                     p => p.chapter_id == previousChapter.chapter_id);
+    //                 if (previousProgress != null && previousProgress.is_completed)
+    //                 {
+    //                     isUnlocked = true;
+    //                     LockImage.gameObject.SetActive(!isUnlocked);
+    //                 }
+    //             }
+
+    //             btn.interactable = isUnlocked;
+    //             // Transform comingSoon = btn.transform.Find("ComingSoon");
+    //             // if (comingSoon != null)
+    //             //     comingSoon.gameObject.SetActive(!isUnlocked);
+
+    //             Debug.Log($"  Chapter {buttonCount}: isUnlocked={isUnlocked}");
+    //             buttonCount++;
+    //         }
+    //     }
+    // }
+
     IEnumerator Start()
     {
         // 1. ล้างปุ่มเก่า
@@ -48,7 +137,7 @@ public class UI_ChapterSelect : MonoBehaviour
         // 1. "ถาม" GameManager ว่าเราเลือก Story ไหนมา
         string selectedStoryId = GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId;
         // 2. "ถาม" Database ว่า Story ID นี้ มี Chapter อะไรบ้าง
-        List<ChapterData> chapters = GameContentDatabase.Instance.GetChaptersByStoryID(selectedStoryId);
+        List<ChapterData> chapters = GameContentDatabase.Instance.GetChaptersByStoryID(selectedStoryId);        
         var chapterProgress = GameManager.Instance.CurrentGameData.chapterProgress ?? new List<PlayerChapterProgress>();
         if (chapters == null || chapters.Count == 0)
         {
@@ -77,14 +166,16 @@ public class UI_ChapterSelect : MonoBehaviour
             TextMeshProUGUI Name = newButton.GetComponentInChildren<TextMeshProUGUI>();
             Button buttonComponent = newButton.GetComponent<Button>(); 
             Image cardImage = newButton.GetComponent<Image>();
-            Transform comingSoonTransform = newButton.transform.Find("ComingSoon");
+            Transform lockTransform = newButton.transform.Find("Lock");
+            Image LockImage = null;
+            if (lockTransform != null) LockImage = lockTransform.GetComponent<Image>();
+            // Transform comingSoonTransform = newButton.transform.Find("ComingSoon");
 
 
             // 6. ใส่ข้อมูล (สมมติ ChapterData มีตัวแปร 'chapterName')
             if (Name != null)
             {
                 Name.text = chap.chapterName;
-                Debug.Log($"Name chap {chap.chapterName}"); 
             }
             if (cardImage != null && chap.chapterImage != null)
             {
@@ -115,12 +206,13 @@ public class UI_ChapterSelect : MonoBehaviour
                     buttonComponent.interactable = true;
                     int capturedId = chap.chapter_id; // capture loop variable
                     buttonComponent.onClick.AddListener(() => SelectChapter(capturedId));
-                    if (comingSoonTransform != null) comingSoonTransform.gameObject.SetActive(false);
+                    //if (comingSoonTransform != null) comingSoonTransform.gameObject.SetActive(false);
+                    if (LockImage != null) LockImage.gameObject.SetActive(false);
                 }
                 else
                 {
                     buttonComponent.interactable = false;
-                    if (comingSoonTransform != null) comingSoonTransform.gameObject.SetActive(false);
+                    //if (comingSoonTransform != null) comingSoonTransform.gameObject.SetActive(false);
                 }
             }
 
@@ -156,7 +248,9 @@ public class UI_ChapterSelect : MonoBehaviour
         {
             // ถ้าอยู่หน้าแรกให้ซ่อน/disable
             buttonPrev.interactable = (currentPageIndex > 0);
-            buttonPrev.gameObject.SetActive(currentPageIndex > 0);
+            bool hasPrev = (currentPageIndex > 0);
+            buttonPrev.interactable = hasPrev;
+            //buttonPrev.gameObject.SetActive(currentPageIndex > 0);
         }
         if (buttonNext != null)
         {
