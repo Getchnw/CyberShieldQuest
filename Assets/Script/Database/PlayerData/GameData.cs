@@ -5,7 +5,7 @@ public class GameData
 {
     // 1. PlayerProfile
     public PlayerProfile profile;
-    
+
     // 2. PlayerCardInventory
     // เราไม่เก็บ string[] cards แล้ว แต่จะเก็บ List ที่ซับซ้อนกว่า
     public List<PlayerCardInventoryItem> cardInventory;
@@ -29,6 +29,11 @@ public class GameData
 
     public PlayerSelectedStory selectedStory; // ข้อมูลการเลือก Story ล่าสุด
 
+    public PlayerPreTest statusPreTest;
+    public PlayerPostTest statusPostTest;
+
+    public List<PlayerPostTestScore> postTestResults;
+    public List<PlayerPreTestScore> preTestResults;
     // เก็บข้อมูลผู้เล่น
     public GameData()
     {
@@ -37,6 +42,10 @@ public class GameData
         selectedStory = new PlayerSelectedStory();
         cardInventory = new List<PlayerCardInventoryItem>();
         decks = new List<DeckData>();
+        statusPostTest = new PlayerPostTest();
+        statusPreTest = new PlayerPreTest();
+        preTestResults = new List<PlayerPreTestScore>();
+        postTestResults = new List<PlayerPostTestScore>();
         stageProgress = new List<PlayerStageProgress>();
         chapterProgress = new List<PlayerChapterProgress>();
         quizProgress = new List<PlayerQuizProgress>();
@@ -54,6 +63,7 @@ public class PlayerProfile
     //public bool hasSeenTutorial = false;
 }
 
+[System.Serializable]
 public class PlayerSelectedStory
 {
     public string lastSelectedStoryId = "";
@@ -68,6 +78,22 @@ public class PlayerTutorialData
     public bool hasSeenTutorial_Stage = false;
     public bool hasSeenTutorial_Story = false;
     public bool hasSeenTutorial_Shop = false;
+}
+
+[System.Serializable]
+public class PlayerPreTest
+{
+    public bool hasSucessPre_A01 = false;
+    public bool hasSucessPre_A02 = false;
+    public bool hasSucessPre_A03 = false;
+}
+
+[System.Serializable]
+public class PlayerPostTest
+{
+    public bool hasSucessPost_A01 = false;
+    public bool hasSucessPost_A02 = false;
+    public bool hasSucessPost_A03 = false;
 }
 
 [System.Serializable]
@@ -122,4 +148,20 @@ public class PlayerQuizProgress
     public int highest_score;
     public bool is_completed;
     public int stars_earned;
+}
+
+[System.Serializable]
+public class PlayerPreTestScore
+{
+    public string story_id;
+    public int score;
+    public int Maxscore;
+}
+
+[System.Serializable]
+public class PlayerPostTestScore
+{
+    public string story_id;
+    public int score;
+    public int Maxscore;
 }

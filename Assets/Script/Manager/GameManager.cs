@@ -108,12 +108,12 @@ public class GameManager : MonoBehaviour
     public void AddGold(int amount)
     {
         if (CurrentGameData == null) return;
-        
+
         CurrentGameData.profile.gold += amount;
-        
+
         // (Optional) สั่งเซฟอัตโนมัติ
-        SaveCurrentGame(); 
-        
+        SaveCurrentGame();
+
         // (Optional) ส่ง Event บอก UI ให้อัปเดต
         OnGoldChanged?.Invoke(CurrentGameData.profile.gold);
     }
@@ -121,16 +121,16 @@ public class GameManager : MonoBehaviour
     public void DecreaseGold(int amount)
     {
         if (CurrentGameData == null) return;
-        
+
         CurrentGameData.profile.gold -= amount;
-        
+
         // (Optional) สั่งเซฟอัตโนมัติ
-        SaveCurrentGame(); 
-        
+        SaveCurrentGame();
+
         // (Optional) ส่ง Event บอก UI ให้อัปเดต
         OnGoldChanged?.Invoke(CurrentGameData.profile.gold);
     }
-    
+
     /// เพิ่มการ์ดเข้าคลัง
     public void AddCardToInventory(string cardID, int quantity = 1)
     {
@@ -162,7 +162,7 @@ public class GameManager : MonoBehaviour
         if (CurrentGameData == null) return;
 
         CurrentGameData.selectedStory.lastSelectedStoryId = storyId;
-         Debug.Log($"Selected Story ID {storyId} saved to player profile.");
+        Debug.Log($"Selected Story ID {storyId} saved to player profile.");
         SaveCurrentGame();
         Debug.Log($"Selected Story ID {storyId} saved to player profile.");
     }
@@ -195,17 +195,17 @@ public class GameManager : MonoBehaviour
     }
 
     //บันทึกความคืบหน้าของQuiz
-    public void UpdateQuizProgress(int quizID, int highestScore, bool isCompleted )
+    public void UpdateQuizProgress(int quizID, int highestScore, bool isCompleted)
     {
         if (CurrentGameData == null) return;
 
         var progressList = CurrentGameData.quizProgress;
         PlayerQuizProgress quizProgress = progressList.FirstOrDefault(q => q.quiz_id == quizID);
         var stars_earned = highestScore == 5 ? 3 : highestScore == 4 ? 2 : highestScore == 3 ? 1 : 0;
-       
+
         if (quizProgress != null)
         {
-            
+
             // 1. ถ้าเคยเล่นแล้ว: อัปเดตคะแนนสูงสุดและสถานะการผ่าน
             if (highestScore > quizProgress.highest_score)
             {
@@ -243,41 +243,128 @@ public class GameManager : MonoBehaviour
 
 
     /// บันทึกความคืบหน้าของ Story Chapter
-    public void AdvanceChapterProgress(int chapterID , int stars_earned ,int score)
+    public void AdvanceChapterProgress(int chapterID, int stars_earned, int score)
     {
-         if (CurrentGameData == null) return;
-         
-         var chapter = CurrentGameData.chapterProgress;
-         PlayerChapterProgress chapterProgress = chapter.FirstOrDefault(c => c.chapter_id == chapterID);
-         
+        if (CurrentGameData == null) return;
+
+        var chapter = CurrentGameData.chapterProgress;
+        PlayerChapterProgress chapterProgress = chapter.FirstOrDefault(c => c.chapter_id == chapterID);
+
         // 1. ถ้าเคยเล่นแล้ว: อัปเดตความคืบหน้า
-         if (chapterProgress != null)
-         {
+        if (chapterProgress != null)
+        {
             chapterProgress.is_completed = true;
-             // อัปเดต Event ล่าสุดที่ผ่าน
-             if(stars_earned > chapterProgress.stars_earned)
-             {
-                 chapterProgress.stars_earned = stars_earned;
-             }
-            if(score > chapterProgress.high_score)
+            // อัปเดต Event ล่าสุดที่ผ่าน
+            if (stars_earned > chapterProgress.stars_earned)
+            {
+                chapterProgress.stars_earned = stars_earned;
+            }
+            if (score > chapterProgress.high_score)
             {
                 chapterProgress.high_score = score;
             }
-         }
-         else
-         {
-             // เริ่ม Chapter นี้เป็นครั้งแรก
-             CurrentGameData.chapterProgress.Add(new PlayerChapterProgress
-             {
+        }
+        else
+        {
+            // เริ่ม Chapter นี้เป็นครั้งแรก
+            CurrentGameData.chapterProgress.Add(new PlayerChapterProgress
+            {
                 chapter_id = chapterID,
                 is_completed = true,
                 stars_earned = stars_earned,
                 high_score = score
-             });
-         }
-         SaveCurrentGame();
+            });
+        }
+        SaveCurrentGame();
     }
 
+    public void SaveStatusPreTest_PostTest(bool isPreOrPost, string story_id)
+    {
+        if (CurrentGameData == null) return;
+        var statusPreTest = CurrentGameData.statusPreTest;
+        var statusPostTest = CurrentGameData.statusPostTest;
+        if (isPreOrPost)
+        {
+            switch (story_id)
+            {
+                case "A01":
+                    {
+                        statusPreTest.hasSucessPre_A01 = true;
+                        break;
+                    }
+                case "A02":
+                    {
+                        statusPreTest.hasSucessPre_A02 = true;
+                        break;
+                    }
+                case "A03":
+                    {
+                        statusPreTest.hasSucessPre_A03 = true;
+                        break;
+                    }
+                default:
+                    {
+                        Debug.Log("Not found in All case ");
+                        break;
+                    }
+            }
+        }
+        // ของPostTest
+        else
+        {
+            switch (story_id)
+            {
+                case "A01":
+                    {
+                        statusPostTest.hasSucessPost_A01 = true;
+                        break;
+                    }
+                case "A02":
+                    {
+                        statusPostTest.hasSucessPost_A02 = true;
+                        break;
+                    }
+                case "A03":
+                    {
+                        statusPostTest.hasSucessPost_A03 = true;
+                        break;
+                    }
+                default:
+                    {
+                        Debug.Log("Not found in All case ");
+                        break;
+                    }
+            }
+        }
+        SaveCurrentGame();
+    }
+
+    public void SavePreTest_PostTest(bool isPreOrPost, string story_id, int score, int Maxscore)
+    {
+        //คะแนนของPretest
+        if (isPreOrPost)
+        {
+            CurrentGameData.preTestResults.Add(new PlayerPreTestScore
+            {
+                story_id = story_id,
+                score = score,
+                Maxscore = Maxscore
+            });
+            SaveStatusPreTest_PostTest(isPreOrPost, story_id);
+        }
+        // ของPostTest
+        else
+        {
+            CurrentGameData.postTestResults.Add(new PlayerPostTestScore
+            {
+                story_id = story_id,
+                score = score,
+                Maxscore = Maxscore
+            });
+            SaveStatusPreTest_PostTest(isPreOrPost, story_id);
+        }
+        SaveCurrentGame();
+    }
 
     /// บันทึกว่าผ่านด่าน Stage แล้ว
     public void CompleteStage(int stageID, int starsEarned)
@@ -299,7 +386,7 @@ public class GameManager : MonoBehaviour
         else
         {
             // 2. ถ้าเล่นครั้งแรก: สร้างข้อมูลใหม่
-            progressList.Add(new PlayerStageProgress 
+            progressList.Add(new PlayerStageProgress
             {
                 stage_id = stageID,
                 is_completed = true,

@@ -9,17 +9,17 @@ public class MainMenu : MonoBehaviour
 
     private void Start()
     {
-        //
         bool hasSaveFile = SaveSystem.SaveFileExists();
         GameObject.Find("ContinuousButton").GetComponent<Button>().interactable = hasSaveFile;
     }
 
     private void Awake()
     {
-       AudioManger =  GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManger>();
+        AudioManger = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManger>();
     }
 
-    public async void Use_SFX_Click_Button() {
+    public async void Use_SFX_Click_Button()
+    {
         AudioManger.PlaySfx(AudioManger.buttonClick);
         await Task.Delay(300);
     }
@@ -35,7 +35,7 @@ public class MainMenu : MonoBehaviour
     }
 
     // แก้ชื่อให้ถูกต้องเป็น ContinuousGame จะดีกว่าครับ
-    public void ContinuousGame() 
+    public void ContinuousGame()
     {
         Use_SFX_Click_Button();
 
@@ -53,7 +53,7 @@ public class MainMenu : MonoBehaviour
             // อาจจะทำ UI แจ้งเตือนผู้เล่นตรงนี้ก็ได้
         }
     }
-    public void QuitGame ()
+    public void QuitGame()
     {
         Use_SFX_Click_Button();
         Debug.Log("Quit GAme");

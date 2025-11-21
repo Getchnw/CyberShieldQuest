@@ -815,6 +815,9 @@ MonoBehaviour:
   quizDatabase: []
   questionDatabase: []
   rewardDatabase: []
+  matchingQuestionsDatabase: []
+  fillInBlankQuestionsDatabase: []
+  trueFalseQuestionsDatabase: []
 --- !u!4 &547108706
 Transform:
   m_ObjectHideFlags: 0
@@ -2135,7 +2138,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1241568296}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf31dbf5a49c74f46a3b189c905e8991, type: 3}
+  m_Script: {fileID: 11500000, guid: ed68246f36d60b64499213c4b5081e17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   tutorialPanel: {fileID: 1390479339}
@@ -2144,7 +2147,7 @@ MonoBehaviour:
   descriptionText: {fileID: 2117916865}
   nextButton: {fileID: 1091146880}
   tutorialTargets:
-  - {fileID: 1273281403}
+  - {fileID: 865701150}
   - {fileID: 733320829}
   - {fileID: 121487233}
   - {fileID: 986274048}
@@ -2221,7 +2224,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1273281402}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c5daf6e8fb15324a96e1d51b77c5dc1, type: 3}
+  m_Script: {fileID: 11500000, guid: 50ab7c59df90e05439e8c8627844cfce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1278935476
@@ -4034,9 +4037,41 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 1273281402}
+    - target: {fileID: 1935656196504130662, guid: a4bb35590fc8adb458dde62207cdad76, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4421259444956749025, guid: a4bb35590fc8adb458dde62207cdad76, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4815346366398060809, guid: a4bb35590fc8adb458dde62207cdad76, type: 3}
       propertyPath: m_Name
       value: SettinsMenu
+      objectReference: {fileID: 0}
+    - target: {fileID: 4815346366398060809, guid: a4bb35590fc8adb458dde62207cdad76, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5062761635429933000, guid: a4bb35590fc8adb458dde62207cdad76, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5062761635429933000, guid: a4bb35590fc8adb458dde62207cdad76, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5062761635429933000, guid: a4bb35590fc8adb458dde62207cdad76, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7040516550398136652, guid: a4bb35590fc8adb458dde62207cdad76, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7040516550398136652, guid: a4bb35590fc8adb458dde62207cdad76, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

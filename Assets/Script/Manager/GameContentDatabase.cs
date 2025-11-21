@@ -23,6 +23,11 @@ public class GameContentDatabase : MonoBehaviour
     [SerializeField] private List<RewardData> rewardDatabase = new List<RewardData>();
     // ข้อมูลด่าน
     //[SerializeField] private List<StageData> stageDatabase = new List<StageData>();
+    // ข้อมูล Quiz Pretest&PostTest
+    [SerializeField] private List<MatchingQuestion> matchingQuestionsDatabase = new List<MatchingQuestion>();
+    [SerializeField] private List<FillInBlankQuestion> fillInBlankQuestionsDatabase = new List<FillInBlankQuestion>();
+    [SerializeField] private List<TrueFalseQuestion> trueFalseQuestionsDatabase = new List<TrueFalseQuestion>();
+
 
     void Awake()
     {
@@ -51,7 +56,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 cardDatabase = new List<CardData>(loadedCards);
             }
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             try
             {
                 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:CardData", new[] { "Assets/Script/Database" });
@@ -71,7 +76,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 Debug.LogWarning($"Auto-load CardData failed: {e.Message}");
             }
-            #endif
+#endif
         }
         // โหลด storyDatabase
         if (storyDatabase == null || storyDatabase.Count == 0)
@@ -81,7 +86,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 storyDatabase = new List<StoryData>(loadedStories);
             }
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             try
             {
                 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:StoryData", new[] { "Assets/Script/Database" });
@@ -101,7 +106,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 Debug.LogWarning($"Auto-load StoryData failed: {e.Message}");
             }
-            #endif
+#endif
         }
         // โหลด chapterDatabase
         if (chapterDatabase == null || chapterDatabase.Count == 0)
@@ -111,7 +116,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 chapterDatabase = new List<ChapterData>(loadedChapters);
             }
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             try
             {
                 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:ChapterData", new[] { "Assets/Script/Database" });
@@ -131,7 +136,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 Debug.LogWarning($"Auto-load ChapterData failed: {e.Message}");
             }
-            #endif
+#endif
         }
         // โหลด dialogsceneDatabase
         if (dialogsceneDatabase == null || dialogsceneDatabase.Count == 0)
@@ -141,7 +146,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 dialogsceneDatabase = new List<DialogsceneData>(loadedDialogscenes);
             }
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             try
             {
                 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:DialogsceneData", new[] { "Assets/Script/Database" });
@@ -161,7 +166,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 Debug.LogWarning($"Auto-load DialogsceneData failed: {e.Message}");
             }
-            #endif
+#endif
         }
         // โหลด dialogueLinesDatabase
         if (dialogueLinesDatabase == null || dialogueLinesDatabase.Count == 0)
@@ -171,7 +176,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 dialogueLinesDatabase = new List<DialogueLinesData>(loadedDialogueLines);
             }
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             try
             {
                 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:DialogueLinesData", new[] { "Assets/Script/Database" });
@@ -191,18 +196,18 @@ public class GameContentDatabase : MonoBehaviour
             {
                 Debug.LogWarning($"Auto-load DialogueLinesData failed: {e.Message}");
             }
-            #endif
+#endif
         }
         // โหลด chapterEventsDatabase
         if (chapterEventsDatabase == null || chapterEventsDatabase.Count == 0)
         {
-            var loadedEvents = Resources.LoadAll<ChapterEventsData>("GameContent/ChapterEvents"); 
+            var loadedEvents = Resources.LoadAll<ChapterEventsData>("GameContent/ChapterEvents");
             if (loadedEvents != null && loadedEvents.Length > 0)
             {
                 chapterEventsDatabase = new List<ChapterEventsData>(loadedEvents);
             }
             // (ใส่ #if UNITY_EDITOR... เหมือนเดิม)
-             #if UNITY_EDITOR
+#if UNITY_EDITOR
             try
             {
                 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:ChapterEventsData", new[] { "Assets/Script/Database" });
@@ -222,9 +227,9 @@ public class GameContentDatabase : MonoBehaviour
             {
                 Debug.LogWarning($"Auto-load ChapterEventsData failed: {e.Message}");
             }
-            #endif
+#endif
         }
-        
+
         // โหลด quizDatabase
         if (quizDatabase == null || quizDatabase.Count == 0)
         {
@@ -233,7 +238,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 quizDatabase = new List<QuizData>(loadedQuizzes);
             }
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             try
             {
                 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:QuizData", new[] { "Assets/Script/Database" });
@@ -253,7 +258,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 Debug.LogWarning($"Auto-load QuizData failed: {e.Message}");
             }
-            #endif
+#endif
         }
 
         // โหลด questionDatabase
@@ -264,7 +269,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 questionDatabase = new List<QuestionData>(loadedQuestions);
             }
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             try
             {
                 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:QuestionData", new[] { "Assets/Script/Database" });
@@ -284,7 +289,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 Debug.LogWarning($"Auto-load QuestionData failed: {e.Message}");
             }
-            #endif
+#endif
         }
 
         // โหลด rewardDatabase
@@ -296,7 +301,7 @@ public class GameContentDatabase : MonoBehaviour
                 rewardDatabase = new List<RewardData>(loadedRewards);
             }
 
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             try
             {
                 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:RewardData", new[] { "Assets/Script/Database" });
@@ -316,7 +321,7 @@ public class GameContentDatabase : MonoBehaviour
             {
                 Debug.LogWarning($"Auto-load RewardData failed: {e.Message}");
             }
-            #endif
+#endif
         }
 
         //stageDatabase
@@ -349,6 +354,103 @@ public class GameContentDatabase : MonoBehaviour
         //     }
         //     #endif
         // }
+
+        // ดึงMatchingData
+        if (matchingQuestionsDatabase == null || matchingQuestionsDatabase.Count == 0)
+        {
+            var loadMatchingQuestion = Resources.LoadAll<MatchingQuestion>("GameContent/QuizMatching");
+            if (loadMatchingQuestion != null && loadMatchingQuestion.Length > 0)
+            {
+                matchingQuestionsDatabase = new List<MatchingQuestion>(loadMatchingQuestion);
+            }
+
+#if UNITY_EDITOR
+            try
+            {
+                string[] guids = UnityEditor.AssetDatabase.FindAssets("t:MatchingQuestion", new[] { "Assets/Script/Database" });
+                if (guids != null && guids.Length > 0)
+                {
+                    matchingQuestionsDatabase = new List<MatchingQuestion>();
+                    foreach (var g in guids)
+                    {
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+                        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<MatchingQuestion>(path);
+                        if (asset != null) matchingQuestionsDatabase.Add(asset);
+                    }
+                    Debug.Log($"Editor auto-loaded {matchingQuestionsDatabase.Count} MatchingQuestion from Assets/Script/Database.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Auto-load MatchingQuestion failed: {e.Message}");
+            }
+#endif
+        }
+
+        // ดึงFill Blank data
+        if (fillInBlankQuestionsDatabase == null || fillInBlankQuestionsDatabase.Count == 0)
+        {
+            var loadFillInBlankQuestion = Resources.LoadAll<FillInBlankQuestion>("GameContent/QuizFillInBlank");
+            if (loadFillInBlankQuestion != null && loadFillInBlankQuestion.Length > 0)
+            {
+                fillInBlankQuestionsDatabase = new List<FillInBlankQuestion>(loadFillInBlankQuestion);
+            }
+
+#if UNITY_EDITOR
+            try
+            {
+                string[] guids = UnityEditor.AssetDatabase.FindAssets("t:FillInBlankQuestion", new[] { "Assets/Script/Database" });
+                if (guids != null && guids.Length > 0)
+                {
+                    fillInBlankQuestionsDatabase = new List<FillInBlankQuestion>();
+                    foreach (var g in guids)
+                    {
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+                        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<FillInBlankQuestion>(path);
+                        if (asset != null) fillInBlankQuestionsDatabase.Add(asset);
+                    }
+                    Debug.Log($"Editor auto-loaded {fillInBlankQuestionsDatabase.Count} FillInBlankQuestion from Assets/Script/Database.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Auto-load FillInBlankQuestion failed: {e.Message}");
+            }
+#endif
+        }
+
+        // ดึงTrue/False Question
+        if (trueFalseQuestionsDatabase == null || trueFalseQuestionsDatabase.Count == 0)
+        {
+            var loadTrueFalseQuestion = Resources.LoadAll<TrueFalseQuestion>("GameContent/QuizTrueFalse");
+            if (loadTrueFalseQuestion != null && loadTrueFalseQuestion.Length > 0)
+            {
+                trueFalseQuestionsDatabase = new List<TrueFalseQuestion>(loadTrueFalseQuestion);
+            }
+
+#if UNITY_EDITOR
+            try
+            {
+                string[] guids = UnityEditor.AssetDatabase.FindAssets("t:TrueFalseQuestion", new[] { "Assets/Script/Database" });
+                if (guids != null && guids.Length > 0)
+                {
+                    trueFalseQuestionsDatabase = new List<TrueFalseQuestion>();
+                    foreach (var g in guids)
+                    {
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+                        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<TrueFalseQuestion>(path);
+                        if (asset != null) trueFalseQuestionsDatabase.Add(asset);
+                    }
+                    Debug.Log($"Editor auto-loaded {trueFalseQuestionsDatabase.Count} TrueFalseQuestion from Assets/Script/Database.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Auto-load TrueFalseQuestion failed: {e.Message}");
+            }
+#endif
+        }
+
     }
 
     //ฟังก์ชันดึงข้อมูลตาม ID ต่างๆ
@@ -369,7 +471,7 @@ public class GameContentDatabase : MonoBehaviour
         if (storyDatabase == null) return null;
         return storyDatabase.FirstOrDefault(story => story.story_id == story_id);
     }
-    
+
     // public StageData GetStageByID(int id)
     // {
     //     if (stageDatabase == null) return null;หห
@@ -404,7 +506,7 @@ public class GameContentDatabase : MonoBehaviour
     // ค้นหา Chapter ทั้งหมดที่อยู่ใน Story ID
     public List<ChapterData> GetChaptersByStoryID(string storyId)
     {
-        if (chapterDatabase == null) 
+        if (chapterDatabase == null)
             return new List<ChapterData>(); // คืนค่าลิสต์ว่าง (กัน Error)
 
         // ค้นหา Chapter ทั้งหมดที่ parentStory.story_id ตรงกับ storyId ที่ส่งมา
@@ -416,7 +518,7 @@ public class GameContentDatabase : MonoBehaviour
     // ค้นหา ChapterEvents ทั้งหมดที่อยู่ใน Chapter ID
     public List<ChapterEventsData> GetChapterEventsByChapterID(int chapterId)
     {
-        if (chapterEventsDatabase == null) 
+        if (chapterEventsDatabase == null)
             return new List<ChapterEventsData>(); // คืนค่าลิสต์ว่าง ถ้าเป็น null
 
         // ค้นหา ChapterEvents ทั้งหมดที่ chapter.chapter_id ตรงกับ chapterId ที่ส่งมา
@@ -451,11 +553,38 @@ public class GameContentDatabase : MonoBehaviour
     //ดึง Reward ของ Quiz
     public List<RewardData> GetRewardByQuizID(int quizId)
     {
-       if (rewardDatabase == null) return new List<RewardData>();
+        if (rewardDatabase == null) return new List<RewardData>();
 
         return rewardDatabase
             .Where(r => r.quiz != null && r.quiz.quiz_id == quizId) //
             .OrderBy(r => r.starRequired) // เรียงรางวัล 1 ดาว, 2 ดาว, 3 ดาว
+            .ToList();
+    }
+
+    public List<MatchingQuestion> GetMatchingQuestionsByStoryId(string storyId)
+    {
+        if (matchingQuestionsDatabase == null) return new List<MatchingQuestion>();
+
+        return matchingQuestionsDatabase
+            .Where(m => m.story != null && m.story.story_id == storyId)
+            .ToList();
+    }
+
+    public List<FillInBlankQuestion> GetFillInBlankQuestionsByStoryId(string storyId)
+    {
+        if (fillInBlankQuestionsDatabase == null) return new List<FillInBlankQuestion>();
+
+        return fillInBlankQuestionsDatabase
+            .Where(f => f.story != null && f.story.story_id == storyId)
+            .ToList();
+    }
+
+    public List<TrueFalseQuestion> GetTrueFalseQuestionsByStoryId(string storyId)
+    {
+        if (trueFalseQuestionsDatabase == null) return new List<TrueFalseQuestion>();
+
+        return trueFalseQuestionsDatabase
+            .Where(tf => tf.story != null && tf.story.story_id == storyId)
             .ToList();
     }
 

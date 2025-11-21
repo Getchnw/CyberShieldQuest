@@ -226,7 +226,7 @@ MonoBehaviour:
   resultPanel: {fileID: 2093742098}
   resultScoreText: {fileID: 1960512097}
   rewardListContainer: {fileID: 1253953805}
-  rewardRowPrefab: {fileID: 5319525733505098271}
+  CardPrefab: {fileID: 0}
   nextEventButton: {fileID: 1475336166}
   GoldText: {fileID: 787377637}
   ExperienceText: {fileID: 113205763}
@@ -868,7 +868,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 58.0719, y: 29.03585, z: 49.137543, w: 35.736496}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 1
@@ -5500,7 +5500,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: test dialog
+  m_text: "\u0E44\u0E2D\u0E19\u0E49\u0E34\u0E2D\u0E07\u0E40\u0E1B\u0E47\u0E19\u0E44\u0E07\u0E1A\u0E49\u0E32\u0E07\u0E19\u0E34\u0E41\u0E02\u0E47\u0E07\u0E41\u0E23\u0E07\u0E14\u0E35\u0E44\u0E2B\u0E21\u0E40\u0E2B\u0E19\u0E37\u0E48\u0E2D\u0E22"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 67f0843a8a8dffc4d8bf6271ac3fd99b, type: 2}
   m_sharedMaterial: {fileID: 2678599976255894656, guid: 67f0843a8a8dffc4d8bf6271ac3fd99b, type: 2}
@@ -7526,11 +7526,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9ef4934387ce8504093de8c9333ccdce, type: 3}
---- !u!1 &5319525733505098271 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 341542318883851128, guid: 9ef4934387ce8504093de8c9333ccdce, type: 3}
-  m_PrefabInstance: {fileID: 5319525733505098270}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1153,7 +1153,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4815346366398060809}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c894fd26c00a4a4baadea8166e2d18d, type: 3}
+  m_Script: {fileID: 11500000, guid: e86e28a562e20654283a883ced469b8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   volume_Music_Slider: {fileID: 1750223436706245870}

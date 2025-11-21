@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.phengine.thaitextcare": "https://github.com/phanphantz/ThaiTextCare-for-Unity.git",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.feature.development": "1.0.1",
     "com.unity.textmeshpro": "3.0.9",

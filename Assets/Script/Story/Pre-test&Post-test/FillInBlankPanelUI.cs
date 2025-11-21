@@ -1,0 +1,149 @@
+using UnityEngine;
+using UnityEngine.UI; // ต้องมี
+using TMPro; // ต้องมี
+using System.Collections.Generic; // ต้องมี
+using System.Linq;
+
+public class FillInBlankPanelUI : MonoBehaviour
+{
+    [Header("Containers (ลากมาใส่)")]
+    [SerializeField] private Transform wordBankContainer; //
+    [SerializeField] private Transform sentenceContainer;
+
+    [Header("Prefabs (ลากมาใส่)")]
+    [SerializeField] private GameObject draggableWordPrefab; // Draggable_Word (Prefab)
+    [SerializeField] private GameObject sentenceRowPrefab;   // Sentence_Row (Prefab)
+
+    // (ใหม่) เก็บ DropZones เพื่อใช้ตรวจคำตอบ
+    private List<DropZone> spawnedDropZones = new List<DropZone>();
+    private FillInBlankQuestion questionData;
+    public event System.Action OnAnswerUpdated;
+
+    void OnEnable()
+    {
+        // เริ่มฟัง
+        DropZone.OnDropZoneChanged += NotifyAnswerUpdated;
+        DraggableItem.OnItemBeginDrag += NotifyAnswerUpdated;
+    }
+
+    void OnDisable()
+    {
+        // หยุดฟัง
+        DropZone.OnDropZoneChanged -= NotifyAnswerUpdated;
+        DraggableItem.OnItemBeginDrag -= NotifyAnswerUpdated;
+    }
+
+    // TestController จะเรียกใช้ฟังก์ชันนี้
+    public void Setup(FillInBlankQuestion data)
+    {
+        questionData = data;
+        spawnedDropZones.Clear();
+
+        // 1. ล้างของเก่า (ถ้ามี)
+        foreach (Transform child in wordBankContainer) Destroy(child.gameObject);
+        foreach (Transform child in sentenceContainer) Destroy(child.gameObject);
+
+        // 2. สร้าง "คลังคำ"
+        foreach (string word in data.wordBank)
+        {
+            // สร้าง Prefab "คำ"
+            GameObject wordObj = Instantiate(draggableWordPrefab, wordBankContainer);
+
+            // ใส่ข้อความ
+            wordObj.GetComponentInChildren<TextMeshProUGUI>().text = word;
+
+            // (สำคัญ) ตั้งค่า ID คำตอบ ให้ตรงกับข้อความ
+            wordObj.GetComponent<DraggableItem>().answerID = word;
+        }
+
+        // 3. สร้าง "แถวประโยค"
+        foreach (SentenceBlank sentence in data.sentences)
+        {
+            // สร้าง Prefab "แถวประโยค"
+            GameObject sentenceObj = Instantiate(sentenceRowPrefab, sentenceContainer);
+
+            GameObject beforeTextObj = sentenceObj.transform.Find("Before area text").gameObject;
+            GameObject afterTextObj = sentenceObj.transform.Find("After area text").gameObject;
+
+            // ใส่ข้อความ ส่วนที่ 1 และ 2
+            if (string.IsNullOrEmpty(sentence.sentencePart1))
+            {
+                // ถ้า Text ว่าง: ให้ "ซ่อน" GameObject นี้
+                beforeTextObj.SetActive(false);
+            }
+            else
+            {
+                // ถ้า Text ไม่ว่าง: "แสดง" GameObject นี้ และ "ใส่ข้อความ"
+                beforeTextObj.SetActive(true);
+                beforeTextObj.GetComponent<TextMeshProUGUI>().text = sentence.sentencePart1;
+            }
+
+            // 3. ตรวจสอบ "โจทย์ส่วนที่ 2" (After)
+            if (string.IsNullOrEmpty(sentence.sentencePart2))
+            {
+                // ถ้า Text ว่าง: ให้ "ซ่อน" GameObject นี้
+                afterTextObj.SetActive(false);
+            }
+            else
+            {
+                // ถ้า Text ไม่ว่าง: "แสดง" GameObject นี้ และ "ใส่ข้อความ"
+                afterTextObj.SetActive(true);
+                afterTextObj.GetComponent<TextMeshProUGUI>().text = sentence.sentencePart2;
+            }
+
+            // (สำคัญ) เก็บ DropZone ไว้อ้างอิง
+            DropZone dropZone = sentenceObj.transform.Find("AreaDrop").GetComponent<DropZone>();
+            spawnedDropZones.Add(dropZone);
+        }
+    }
+
+    // (ฟังก์ชันนี้ TestController จะเรียกใช้ตอนกด "ส่งคำตอบ")
+    public int CheckAnswers()
+    {
+        int correctCount = 0;
+        for (int i = 0; i < spawnedDropZones.Count; i++)
+        {
+            // ดึง DropZone และ คำถามที่ตรงกัน
+            DropZone zone = spawnedDropZones[i];
+            string correctAnswer = questionData.sentences[i].correctAnswer;
+
+            // ตรวจสอบ
+            if (zone.currentDroppedAnswerID == correctAnswer)
+            {
+                correctCount++;
+                // (Optional: ทำให้ช่องเป็นสีเขียว)
+            }
+            // else
+            // {
+            //     // (Optional: ทำให้ช่องเป็นสีแดง)
+            // }
+        }
+        return correctCount;
+    }
+
+    public bool IsAnswerCorrect()
+    {
+        // ถือว่า "ถูก" ก็ต่อเมื่อ "จำนวนข้อที่ถูก (correctCount)" เท่ากับ "จำนวนข้อทั้งหมด"
+        return CheckAnswers() == questionData.sentences.Count;
+    }
+
+    // private void SubscribeToDropZones()
+    // {
+    //     // สมมติว่าคุณแก้ DropZone ให้มี Event ชื่อ OnAnyDrop แล้ว
+    //     // หรือใช้วิธีง่ายๆ: ให้ DropZone เรียก FillInBlankPanelUI.NotifyUpdate()
+    // }
+
+    // ฟังก์ชันที่ DropZone จะเรียกเมื่อมีการวางของ
+    public void NotifyAnswerUpdated()
+    {
+        OnAnswerUpdated?.Invoke();
+    }
+
+    // เช็คว่าเติมครบทุกช่องหรือยัง
+    public bool IsAnswered()
+    {
+        if (spawnedDropZones.Count == 0) return false;
+        // เช็คว่ามีช่องไหนว่างไหม
+        return !spawnedDropZones.Any(z => string.IsNullOrEmpty(z.currentDroppedAnswerID));
+    }
+}

@@ -2769,7 +2769,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1611506608}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c894fd26c00a4a4baadea8166e2d18d, type: 3}
+  m_Script: {fileID: 11500000, guid: e86e28a562e20654283a883ced469b8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   volume_Music_Slider: {fileID: 580626542}
@@ -3396,7 +3396,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1851972087}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14df5a0e60a7d1a4084acfc7400bedf6, type: 3}
+  m_Script: {fileID: 11500000, guid: e06c97d1364da634d99fae1a096798fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1903127982
@@ -3639,7 +3639,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0.000061035156}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1964930152
