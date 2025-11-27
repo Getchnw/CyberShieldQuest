@@ -20,9 +20,9 @@ public class CardData : ScriptableObject
     public StoryData StroryId;
     [Tooltip("Sprite artwork (use Sprite, not UI.Image)")]
     public Sprite artwork;
-
+    public string info;
     [Header("Card Stats")]
     [Min(0)] public int cost;
     [Min(0)] public int atk;
-    [Min(0)] public int def;
+    
 }
