@@ -29,71 +29,144 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "New Card", menuName = "Game Content/Card")]
-public class CardData : ScriptableObject
-{
-    // 1. Basic Info (ข้อมูลพื้นฐาน)
-    [Header("Basic Info")]
-    [Tooltip("Unique ID เช่น card_idor_001")]
-    public string cardId; 
-    public string cardName;
-    public Sprite artwork;
+// =========================================================================
+// 1. Enums: กำหนดประเภทและหมวดหมู่ (อ้างอิงตามเอกสารทั้งหมด)
+// =========================================================================
 
-    // 2. Card Type & Category (ประเภทและหมวดหมู่)
-    [Header("Classification")]
-    public CardType type; // Monster, Spell, Equip
-    
-    // [สำคัญ] เพิ่มตรงนี้เพื่อรองรับ [A01: IDOR] หรือหมวดหมู่อื่นๆ ในอนาคต
-    [Tooltip("เช่น IDOR, SQLi, XSS หรือปล่อยว่างถ้าไม่มี")]
-    public CardCategory category; 
-
-    // 3. Stats (ค่าพลัง)
-    [Header("Stats")]
-    [Min(0)] public int cost;
-    
-    // ใช้ ShowIf ใน Editor Script หรือปล่อยไว้แบบนี้ก็ได้ แต่ Monster เท่านั้นที่ควรมีค่านี้
-    [Tooltip("ใส่ค่าเฉพาะ Monster ถ้าเป็นการ์ดเวทย์ให้ใส่ 0")]
-    [Min(0)] public int atk; 
-    [Min(0)] public int hp;  // เพิ่ม HP เข้ามาเพราะเห็น Effect "โจมตี HP"
-
-    // 4. Texts (ข้อความ)
-    [Header("Texts")]
-    [Tooltip("ข้อความ Effect ที่แสดงบนการ์ด (ส่วนล่าง)")]
-    [TextArea(3, 5)] 
-    public string effectText; 
-
-    [Tooltip("ข้อความบรรยายเนื้อเรื่อง (แถบสีเทาเข้ม)")]
-    [TextArea(2, 4)] 
-    public string flavorText; 
-
-    // 5. Logic & Keywords (ตรรกะและคีย์เวิร์ด)
-    [Header("Logic Configuration")]
-    [Tooltip("เช่น Strike-Hit, Continuous, OnPlay")]
-    public EffectTrigger triggerType;
-    
-    // (Optional) ถ้าคุณจะทำระบบ Effect แบบ Advance ในอนาคต
-    // public List<CardEffect> effects; 
-}
-
-// Enums ควรแยกออกมาเพื่อง่ายต่อการเรียกใช้
 public enum CardType {
     Monster,
     Spell,
-    EquipSpell
+    EquipSpell,
+    Token // สำหรับ Rogue Token
 }
 
-public enum CardCategory {
+public enum MainCategory {
     None,
-    IDOR,
-    Injection,
-    BrokenAccess
-    // เพิ่มตามช่องโหว่ Security อื่นๆ
+    [InspectorName("A01: Broken Access Control")] A01,
+    [InspectorName("A02: Cryptographic Failures")] A02,
+    [InspectorName("A03: Injection")] A03,
+    General
 }
+
+public enum SubCategory {
+    None,
+    // A01
+    IDOR, PathTraversal, MFLAC,
+    // A02
+    InsecureTransit, InsecureRest, WeakHash, NoSalt, BadKey,
+    // A03
+    SQLi, XSS, OSCommand, XXE
+}
+
+// =========================================================================
+// 2. Logic Structs: โครงสร้าง Effect
+// =========================================================================
 
 public enum EffectTrigger {
     None,
-    deploy,         // เกิดผลทันทีเมื่อลง (Spell ปกติ)
-    Continuous,     // [Cont.] เกิดผลค้างไว้ (Equip / Field)
-    StrikeHit,      // [Strike-Hit] เกิดผลเมื่อโจมตีโดน
-    OnDestroyed     // เกิดผลเมื่อถูกทำลาย
+    OnDeploy,       // [Deploy] ทำงานเมื่อลงสนาม (ทั้งแบบปกติและแบบทับ)
+    OnStrike,       // [Strike] เมื่อประกาศโจมตี
+    OnStrikeHit,    // [Strike-Hit] เมื่อตีเข้า HP สำเร็จ
+    Continuous,     // [Cont.] ผลต่อเนื่อง
+    OnIntercept,    // เมื่อใช้ Intercept
+    OnDestroyed
+}
+
+public enum TargetType {
+    Self,
+    EnemyPlayer,
+    EnemyMonster,
+    EnemyEquip,
+    EnemyHand,
+    EnemyDeck,
+    AllGlobal
+}
+
+public enum ActionType {
+    None,
+    Destroy,        // ทำลายการ์ด
+    DisableAttack,  // ห้ามโจมตี
+    DisableAbility, // ห้ามใช้ Ability
+    RevealHand,     // ดูมือ
+    DiscardDeck,    // ทิ้งการ์ดจาก Deck
+    SummonToken,    // เรียก Token
+    ModifyStat,     // ปรับ Cost/Atk
+    ControlEquip,   // ยึด Equip
+    HealHP,         // ฮีล
+    ForceIntercept, // บังคับรับดาเมจ
+    BypassIntercept // ทะลุการป้องกัน
+}
+
+[System.Serializable]
+public struct CardEffect {
+    [Tooltip("จังหวะที่ Effect ทำงาน")]
+    public EffectTrigger trigger;
+    
+    [Tooltip("เป้าหมาย")]
+    public TargetType targetType;
+    
+    [Tooltip("ผลลัพธ์")]
+    public ActionType action;
+
+    [Header("Conditions & Values")]
+    public MainCategory targetMainCat; // เงื่อนไขเป้าหมาย (Main)
+    public SubCategory targetSubCat;   // เงื่อนไขเป้าหมาย (Sub)
+    public int value;                  // ค่าตัวเลข (Damage, Cost condition ฯลฯ)
+}
+
+// =========================================================================
+// 3. CardData: ตัวข้อมูลการ์ด (ตัด Def และ SacrificeCount ออก)
+// =========================================================================
+
+[CreateAssetMenu(fileName = "New Card", menuName = "Game Content/Card")]
+public class CardData : ScriptableObject {
+    
+    // --- Identity ---
+    [Header("Identity")]
+    public string card_id;
+    public string cardName;    // 
+    public Sprite artwork;
+    public Sprite frame;
+
+    // --- Classification ---
+    [Header("Classification")]
+    public CardType type;
+    public MainCategory mainCategory; // 
+    public SubCategory subCategory;   // 
+
+    // --- Stats & Costs ---
+    [Header("Stats")]
+    [Tooltip("Cost เต็มของการ์ด (ถ้าลงทับตัวเดิม โปรแกรมจะคำนวณส่วนต่างให้เอง)")]
+    [Min(0)] public int cost; // 
+
+    [Min(0)] public int atk; // 
+    
+
+    // --- Text Info ---
+    [Header("Texts")]
+    [TextArea(3, 6)] public string abilityText; // 
+    [TextArea(2, 4)] public string flavorText;  // 
+
+    // --- Game Logic ---
+    [Header("Game Logic")]
+    public List<CardEffect> effects;
+
+    // =====================================================================
+    // Helper Function: ตัวอย่างคำนวณ Cost (สำหรับเรียกใช้ใน GameManager)
+    // =====================================================================
+    /// <summary>
+    /// คำนวณ Cost ที่ต้องจ่ายจริง
+    /// </summary>
+    /// <param name="targetOverlayCard">การ์ดใบเก่าในสนามที่จะลงทับ (ถ้าไม่มีให้ใส่ null)</param>
+    /// <returns>Final Cost (PP)</returns>
+    public int GetPlayCost(CardData targetOverlayCard = null) {
+        if (targetOverlayCard == null) {
+            // ลงแบบปกติ จ่ายเต็ม
+            return cost;
+        } else {
+            // ลงแบบทับ (System Sacrifice) จ่ายส่วนต่าง
+            int diff = cost - targetOverlayCard.cost;
+            return Mathf.Max(0, diff); // ห้ามติดลบ อย่างน้อย 0
+        }
+    }
 }
