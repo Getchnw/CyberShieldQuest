@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class GameManager : MonoBehaviour
 {
     // สร้าง "ตัวแปรกลาง" ให้ทุกคนในเกมเรียกใช้ได้ง่ายๆ
-    // เราเรียกเทคนิคนี้ว่า Singleton Pattern
     public static GameManager Instance { get; private set; }
 
     // ตัวแปรสำหรับเก็บข้อมูลผู้เล่นคนปัจจุบัน
@@ -13,8 +12,12 @@ public class GameManager : MonoBehaviour
     public event System.Action OnDataLoaded;
     public event System.Action<int> OnGoldChanged;
     public event System.Action<int> OnExperienceChanged;
+    public event System.Action<int> OnLevelChanged;
+    [Header("Leveling System")]
+    [Tooltip("กราฟกำหนดค่า EXP ที่ต้องใช้ในแต่ละเลเวล (แกน X=Level, แกน Y=Exp Required)")]
+    public AnimationCurve experienceCurve;
+    public int maxLevel = 99;
 
-    // Awake() จะทำงานเป็นฟังก์ชันแรกสุดตอนที่ Object นี้ถูกสร้างขึ้น
     private void Awake()
     {
         // --- โค้ดส่วน Singleton ---
@@ -23,8 +26,6 @@ public class GameManager : MonoBehaviour
         {
             // ถ้ายังไม่มี... ให้ตัวเรานี่แหละเป็น GameManager หลัก!
             Instance = this;
-
-            // *** คำสั่งที่สำคัญที่สุด ***
             // สั่งให้ Unity "อย่าทำลาย" GameObject นี้ทิ้งเมื่อเปลี่ยนฉาก
             DontDestroyOnLoad(gameObject);
         }
@@ -52,6 +53,9 @@ public class GameManager : MonoBehaviour
     {
         // สร้างข้อมูลผู้เล่นชุดใหม่ขึ้นมา (จาก Constructor ใน GameData.cs)
         CurrentGameData = new GameData();
+        CurrentGameData.profile.level = 1;
+        CurrentGameData.profile.experience = 0;
+
         // สั่งให้ SaveSystem บันทึกข้อมูลใหม่นี้ลงไฟล์ทันที
         SaveSystem.SaveGameData(CurrentGameData);
         Debug.Log("New game data created and saved.");
@@ -67,6 +71,11 @@ public class GameManager : MonoBehaviour
         // ถ้าโหลดสำเร็จ (ข้อมูลที่ได้มาไม่เป็น null) ให้ส่งค่า true กลับไป
         if (CurrentGameData != null)
         {
+            if (CurrentGameData.profile.level <= 0)
+            {
+                CurrentGameData.profile.level = 1;
+            }
+
             Debug.Log("Game data loaded successfully.");
             OnDataLoaded?.Invoke();
             return true;
@@ -90,18 +99,51 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// ฟังก์ชันคำนวณหา Max Exp ของเลเวลนั้นๆ จาก AnimationCurve
+    public int GetMaxExpForLevel(int level)
+    {
+        if (experienceCurve == null || experienceCurve.length == 0) return 100; // กัน Error
+        return Mathf.RoundToInt(experienceCurve.Evaluate(level));
+    }
+
     // Add experience to player
     public void AddExperience(int amount)
     {
         if (CurrentGameData == null) return;
 
+        // 1. เพิ่ม EXP
         CurrentGameData.profile.experience += amount;
 
-        // (Optional) สั่งเซฟอัตโนมัติ
+        // 2. ดึงข้อมูลเลเวลปัจจุบัน
+        int currentLevel = CurrentGameData.profile.level;
+        int maxExp = GetMaxExpForLevel(currentLevel);
+
+        // 3. วนลูปเช็คการอัปเลเวล (เผื่อได้ Exp เยอะจนอัปหลายเวลรวดเดียว)
+        bool hasLeveledUp = false;
+        while (CurrentGameData.profile.experience >= maxExp && currentLevel < maxLevel)
+        {
+            CurrentGameData.profile.experience -= maxExp; // หัก Exp ออก
+            currentLevel++;                               // เพิ่มเลเวล
+            CurrentGameData.profile.level = currentLevel; // บันทึกลง Data
+
+            // คำนวณ Max Exp ของเลเวลใหม่ เพื่อใช้เช็คในรอบถัดไป (ถ้า exp ยังเหลือ)
+            maxExp = GetMaxExpForLevel(currentLevel);
+
+            hasLeveledUp = true;
+            Debug.Log($"<color=green>Level Up! Now Level {currentLevel}</color>");
+        }
+
+        // 4. บันทึกและส่ง Event
         SaveCurrentGame();
 
-        // (Optional) ส่ง Event บอก UI ให้อัปเดต
+        // ส่ง Event บอก UI ให้อัปเดตหลอด Exp
         OnExperienceChanged?.Invoke(CurrentGameData.profile.experience);
+
+        // ถ้ามีการอัปเลเวล ให้ส่ง Event บอก UI ให้เปลี่ยนตัวเลขเลเวล
+        if (hasLeveledUp)
+        {
+            OnLevelChanged?.Invoke(currentLevel);
+        }
     }
 
     /// เพิ่ม/ลด ทอง (ใช้ค่าติดลบเพื่อลด)
