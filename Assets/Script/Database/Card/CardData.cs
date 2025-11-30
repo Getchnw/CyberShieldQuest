@@ -49,7 +49,7 @@ public enum MainCategory {
 }
 
 public enum SubCategory {
-    None,
+    General,
     // A01
     IDOR, PathTraversal, MFLAC,
     // A02

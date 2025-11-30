@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 357db4db710376840ad4fb22e4e0f04d, type: 3}
+  m_Name: Emergency Key Rotation
+  m_EditorClassIdentifier: 
+  card_id: S_A02_02
+  cardName: Emergency Key Rotation
+  artwork: {fileID: 0}
+  frame: {fileID: 0}
+  type: 1
+  mainCategory: 2
+  subCategory: 8
+  cost: 2
+  atk: 0
+  abilityText: "\u0E40\u0E25\u0E37\u0E2D\u0E01 Equip Spell 1 \u0E43\u0E1A\u0E43\u0E19\u0E2A\u0E38\u0E2A\u0E32\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13
+    \u0E19\u0E33\u0E01\u0E25\u0E31\u0E1A\u0E02\u0E36\u0E49\u0E19\u0E21\u0E37\u0E2D"
+  flavorText: "[A02: Bad Key] \u0E40\u0E21\u0E37\u0E48\u0E2D\u0E01\u0E38\u0E0D\u0E41\u0E08\u0E40\u0E01\u0E48\u0E32\u0E16\u0E39\u0E01\u0E1A\u0E38\u0E01\u0E23\u0E38\u0E01
+    \u0E01\u0E47\u0E16\u0E36\u0E07\u0E40\u0E27\u0E25\u0E32 '\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E01\u0E38\u0E0D\u0E41\u0E08'
+    \u0E43\u0E2B\u0E21\u0E48\u0E17\u0E31\u0E19\u0E17\u0E35"
+  effects:
+  - trigger: 1
+    targetType: 0
+    action: 7
+    targetMainCat: 0
+    targetSubCat: 0
+    value: 0

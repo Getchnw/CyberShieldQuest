@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 357db4db710376840ad4fb22e4e0f04d, type: 3}
+  m_Name: Profile Defacer
+  m_EditorClassIdentifier: 
+  card_id: M_A01_02
+  cardName: Profile Defacer
+  artwork: {fileID: 0}
+  frame: {fileID: 0}
+  type: 0
+  mainCategory: 1
+  subCategory: 1
+  cost: 3
+  atk: 3
+  abilityText: "[Strike-Hit] \u0E40\u0E21\u0E37\u0E48\u0E2D\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E43\u0E1A\u0E19\u0E35\u0E49\u0E42\u0E08\u0E21\u0E15\u0E35
+    HP \u0E02\u0E2D\u0E07\u0E1D\u0E48\u0E32\u0E22\u0E15\u0E23\u0E07\u0E02\u0E49\u0E32\u0E21\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08:
+    \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E17\u0E33\u0E25\u0E32\u0E22 Equip Spell 1 \u0E43\u0E1A\u0E02\u0E2D\u0E07\u0E1D\u0E48\u0E32\u0E22\u0E15\u0E23\u0E07\u0E02\u0E49\u0E32\u0E21"
+  flavorText: "[A01: IDOR] (Write) \u0E21\u0E31\u0E19\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19
+    ID \u0E17\u0E35\u0E48\u0E0B\u0E48\u0E2D\u0E19\u0E43\u0E19\u0E1F\u0E2D\u0E23\u0E4C\u0E21\u0E40\u0E1E\u0E37\u0E48\u0E2D
+    '\u0E41\u0E01\u0E49\u0E44\u0E02' \u0E2B\u0E23\u0E37\u0E2D '\u0E25\u0E1A' \u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E02\u0E2D\u0E07\u0E04\u0E19\u0E2D\u0E37\u0E48\u0E19"
+  effects:
+  - trigger: 3
+    targetType: 3
+    action: 1
+    targetMainCat: 0
+    targetSubCat: 0
+    value: 1

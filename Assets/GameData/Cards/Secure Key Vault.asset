@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 357db4db710376840ad4fb22e4e0f04d, type: 3}
+  m_Name: Secure Key Vault
+  m_EditorClassIdentifier: 
+  card_id: E_A02_07
+  cardName: Secure Key Vault
+  artwork: {fileID: 0}
+  frame: {fileID: 0}
+  type: 2
+  mainCategory: 2
+  subCategory: 8
+  cost: 3
+  atk: 0
+  abilityText: "[Cont.] Equip Spell \u0E43\u0E1A\u0E2D\u0E37\u0E48\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13
+    \u0E44\u0E21\u0E48\u0E2A\u0E32\u0E21\u0E32\u0E23\u0E16\u0E16\u0E39\u0E01\u0E17\u0E33\u0E25\u0E32\u0E22\u0E42\u0E14\u0E22
+    Ability \u0E44\u0E14\u0E49"
+  flavorText: "[A02: Bad Key] \u0E01\u0E32\u0E23\u0E1B\u0E49\u0E2D\u0E07\u0E01\u0E31\u0E19\u0E02\u0E31\u0E49\u0E19\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14
+    (KMS, Vault) \u0E41\u0E22\u0E01 '\u0E01\u0E38\u0E0D\u0E41\u0E08' \u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01
+    '\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25'"
+  effects:
+  - trigger: 4
+    targetType: 0
+    action: 3
+    targetMainCat: 0
+    targetSubCat: 0
+    value: 0
