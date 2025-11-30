@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A02_11
   cardName: Config File Raider
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 6b0e2051200f59443b4c47459b2ee3d8, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 2

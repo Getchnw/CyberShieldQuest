@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A01_09
   cardName: Absolute Path Invoker
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: a778886e8a5b0c14a8e83c9fe528fb28, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 1

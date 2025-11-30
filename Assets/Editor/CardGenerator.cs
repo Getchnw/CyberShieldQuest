@@ -493,7 +493,7 @@ public class CardGenerator
         // 🔥 เพิ่มส่วนนี้: ค้นหารูปภาพตามชื่อการ์ด
         // -------------------------------------------------------------
         // สมมติว่ารูปเก็บอยู่ที่ Assets/Resources/GameContent/Art
-        string imagePath = $"Assets/cardpic/{name}.png"; 
+        string imagePath = $"Assets/Resources/GameContent/cardpic/{name}.png"; 
         // หรือถ้าเป็น jpg ให้แก้เป็น .jpg
         
         Sprite foundSprite = AssetDatabase.LoadAssetAtPath<Sprite>(imagePath);
@@ -502,7 +502,7 @@ public class CardGenerator
             card.artwork = foundSprite;
         } else {
             // ลองหาแบบ jpg เผื่อไว้
-            imagePath = $"Assets/Resources/GameContent/Art/{name}.jpg";
+            imagePath = $"Assets/Resources/GameContent/cardpic/{name}.jpg";
             card.artwork = AssetDatabase.LoadAssetAtPath<Sprite>(imagePath);
         }
         // -------------------------------------------------------------

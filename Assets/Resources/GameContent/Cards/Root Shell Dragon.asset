@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A03_06
   cardName: Root Shell Dragon
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 9b556cab4c4be504b8135faa011a61b9, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 3

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: S_A03_01
   cardName: Payload Obfuscator
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 8f86c9071bc5ad742a456fd736df3b3b, type: 3}
   frame: {fileID: 0}
   type: 1
   mainCategory: 3

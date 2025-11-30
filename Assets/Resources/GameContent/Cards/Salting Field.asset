@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: E_A02_05
   cardName: Salting Field
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 97648d50eff986f4a9d2b7b23262f30f, type: 3}
   frame: {fileID: 0}
   type: 2
   mainCategory: 2

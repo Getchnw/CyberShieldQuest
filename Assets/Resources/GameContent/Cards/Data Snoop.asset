@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A01_01
   cardName: Data Snoop
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 5ad35ef1ae29223439b0818741e3afbf, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 1

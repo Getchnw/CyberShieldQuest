@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A03_04
   cardName: Stored Script Worm
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 2d7e5f4e9229179478bd35d11065c10e, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 3

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A02_01
   cardName: HTTP Sniffer
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 0d4c0f0456669454b89316c49a375022, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 2

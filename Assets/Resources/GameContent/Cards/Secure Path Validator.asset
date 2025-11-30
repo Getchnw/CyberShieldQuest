@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: E_A01_05
   cardName: Secure Path Validator
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 61d44c1a4a2908d489a935d6a13a0792, type: 3}
   frame: {fileID: 0}
   type: 2
   mainCategory: 1

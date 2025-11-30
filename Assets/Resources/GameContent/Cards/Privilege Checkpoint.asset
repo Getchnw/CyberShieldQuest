@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: E_A01_08
   cardName: Privilege Checkpoint
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 794d43b3b166d464b9e0e22f0a69aeeb, type: 3}
   frame: {fileID: 0}
   type: 2
   mainCategory: 1

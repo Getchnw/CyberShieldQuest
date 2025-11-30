@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A02_02
   cardName: SSL Stripper
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: daddc6adb6d73ba428c52f431a5c9858, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 2

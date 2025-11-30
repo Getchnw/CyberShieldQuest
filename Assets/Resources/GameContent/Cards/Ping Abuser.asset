@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A03_05
   cardName: Ping Abuser
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 55c18dbaf754015438a18a51eae3a1b2, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 3

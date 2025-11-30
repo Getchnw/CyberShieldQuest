@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A02_10
   cardName: Hardcode Hunter
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 117a4d7480e2aad45b8ec81d8bdbd03a, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 2

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A02_09
   cardName: ECB Mode Cyclops
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 333a026d27d20b344a5906c17fd1d8d6, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 2

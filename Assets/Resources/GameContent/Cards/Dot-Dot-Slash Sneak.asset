@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A01_06
   cardName: Dot-Dot-Slash Sneak
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 086d59e34e6a27548b98e631b7447e94, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 1

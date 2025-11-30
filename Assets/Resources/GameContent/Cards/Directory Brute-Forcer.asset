@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A01_11
   cardName: Directory Brute-Forcer
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: e1ebcc987f0153e449f24420f726f44c, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 1

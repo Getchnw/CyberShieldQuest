@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A03_02
   cardName: Database Devourer
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: bcf8cccc323d0f64ebb276851e106800, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 3

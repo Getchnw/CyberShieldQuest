@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: E_A02_07
   cardName: Secure Key Vault
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: a69f8f58a9f386144968422e6a14f268, type: 3}
   frame: {fileID: 0}
   type: 2
   mainCategory: 2

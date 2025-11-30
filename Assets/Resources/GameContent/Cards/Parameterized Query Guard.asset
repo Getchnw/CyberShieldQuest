@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: E_A03_01
   cardName: Parameterized Query Guard
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 0c148b00ebc200b41bceb90e12c9cd27, type: 3}
   frame: {fileID: 0}
   type: 2
   mainCategory: 3

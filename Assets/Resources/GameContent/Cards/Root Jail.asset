@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: E_A01_03
   cardName: Root Jail
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 35b6083188753e64995bcef0afe18051, type: 3}
   frame: {fileID: 0}
   type: 2
   mainCategory: 1

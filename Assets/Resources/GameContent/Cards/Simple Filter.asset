@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: S_A01_03
   cardName: Simple Filter
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 9d6673f4af849bc44b102ece9a67e5f9, type: 3}
   frame: {fileID: 0}
   type: 1
   mainCategory: 1

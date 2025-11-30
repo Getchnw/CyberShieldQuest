@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: E_A02_06
   cardName: AES-GCM Guardian
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: f2736904586636f479587c0ec55d81ac, type: 3}
   frame: {fileID: 0}
   type: 2
   mainCategory: 2

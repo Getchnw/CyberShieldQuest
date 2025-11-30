@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A01_04
   cardName: Unauthorized Creator
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 65d28bda76b8bae45860e66beb1fd2ef, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 1

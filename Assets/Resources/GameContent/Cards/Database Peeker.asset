@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: M_A02_04
   cardName: Database Peeker
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 665a4d7eedb452141b9851c00b6c6ed1, type: 3}
   frame: {fileID: 0}
   type: 0
   mainCategory: 2
