@@ -18,6 +18,6 @@ MonoBehaviour:
   rewardType: 0
   rewardValue: 0
   cardReference:
-  - card: {fileID: 11400000, guid: 759ed1dee7e0f5f43b33fc8d255099fa, type: 2}
+  - card: {fileID: 11400000, guid: 5209c7e95541cd7408268ac1063cb46d, type: 2}
     amount: 1
   experiencePoints: 0
