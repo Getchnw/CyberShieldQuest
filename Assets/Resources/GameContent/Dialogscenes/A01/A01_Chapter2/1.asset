@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scene_id: 5
   sceneName: "\u0E2A\u0E31\u0E0D\u0E0D\u0E32\u0E13\u0E40\u0E15\u0E37\u0E2D\u0E19\u0E08\u0E32\u0E01\u0E41\u0E01\u0E19\u0E01\u0E25\u0E32\u0E07"
-  backgroundScene: {fileID: 21300000, guid: 781c6bcf47ad2f74aa6d1c23646d8a43, type: 3}
+  backgroundScene: {fileID: 21300000, guid: b2f7b2f34f82f724aab9749b64c3b4cb, type: 3}
