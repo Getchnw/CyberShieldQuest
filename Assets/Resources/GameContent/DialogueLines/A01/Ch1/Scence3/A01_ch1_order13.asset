@@ -10,11 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 68f6255e56871bb4da7a4973c628bd6b, type: 3}
-  m_Name: A01_ch1_order9
+  m_Name: A01_ch1_order13
   m_EditorClassIdentifier: 
-  line_id: 9
-  Dialog_Text:
-  - 
-  sequence_order: 9
-  scene: {fileID: 11400000, guid: 0469b44423eabb24e8163b1adeb1f547, type: 2}
+  line_id: 13
+  Dialog_Text: []
+  sequence_order: 13
+  scene: {fileID: 11400000, guid: 0fd47c533a37fc340b83ee1cff957728, type: 2}
   character: {fileID: 11400000, guid: 004502be3d4f75c42a76eefdbe7aaf7d, type: 2}
