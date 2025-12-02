@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2224c56c03e692428d9a49f08d2f613, type: 3}
-  m_Name: Quizzz1
+  m_Name: Dialog1
   m_EditorClassIdentifier: 
-  event_id: 5
-  eventOrder: 5
-  type: 1
-  chapter: {fileID: 11400000, guid: e6cfcb6e1aa2d73478781559ae93c400, type: 2}
-  dialogueReference: {fileID: 0}
-  quizReference: {fileID: 11400000, guid: a023592fe75c4834e861d9e5a95cd5aa, type: 2}
+  event_id: 11
+  eventOrder: 11
+  type: 0
+  chapter: {fileID: 11400000, guid: 569525176ee325f4eb9d59e2b8a35b77, type: 2}
+  dialogueReference: {fileID: 11400000, guid: 5234621268cada846a15477178c2aadb, type: 2}
+  quizReference: {fileID: 0}

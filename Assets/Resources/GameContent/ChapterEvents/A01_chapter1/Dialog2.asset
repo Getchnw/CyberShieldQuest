@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2224c56c03e692428d9a49f08d2f613, type: 3}
-  m_Name: New ChapterEvent
+  m_Name: Dialog2
   m_EditorClassIdentifier: 
   event_id: 2
   eventOrder: 2
