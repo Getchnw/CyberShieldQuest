@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2c36b311bc71df4b85d4f7cd2662554, type: 3}
+  m_Name: A02_chap2_N0.5
+  m_EditorClassIdentifier: 
+  question_id: 25
+  questionText: "\u0E20\u0E31\u0E22\u0E04\u0E38\u0E01\u0E04\u0E32\u0E21\u0E43\u0E14\u0E17\u0E35\u0E48
+    Oracle \u0E1A\u0E2D\u0E01\u0E27\u0E48\u0E32\u0E17\u0E33\u0E2B\u0E19\u0E49\u0E32\u0E17\u0E35\u0E48\u0E40\u0E1B\u0E47\u0E19
+    \"\u0E2A\u0E32\u0E22\u0E25\u0E31\u0E1A\" \u0E04\u0E2D\u0E22\u0E2D\u0E48\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25
+    Plain Text \u0E43\u0E19\u0E10\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25?"
+  quiz: {fileID: 11400000, guid: 26941ced63d255b4bb5b865202470c3a, type: 2}
+  questionOrder: 2
+  answerOptions:
+  - (A) HTTP Sniffer
+  - '(B) Database Peeker '
+  - (C) SSL Stripper
+  - (D) Legacy Cracker
+  correctAnswerIndex: 1

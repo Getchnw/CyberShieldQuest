@@ -242,7 +242,10 @@ public class UI_QuizController : MonoBehaviour
                     }
                     else if (reward.rewardType == RewardType.Card)
                     {
-                        card_Name.text = $"<color=grey>{reward.cardReference.cardName} (Claimed)</color>";
+                        foreach (var cardItem in reward.cardReference)
+                        {
+                            card_Name.text = $"<color=grey>{cardItem.card.cardName} x{cardItem.amount} (Claimed)</color>";
+                        }
                     }
                 }
                 else
@@ -255,7 +258,10 @@ public class UI_QuizController : MonoBehaviour
                     }
                     else if (reward.rewardType == RewardType.Card)
                     {
-                        GameManager.Instance.AddCardToInventory(reward.cardReference.card_id, 1);
+                        foreach (var cardItem in reward.cardReference)
+                        {
+                            GameManager.Instance.AddCardToInventory(cardItem.card.card_id, cardItem.amount);
+                        }
                     }
                     experienceAll += reward.experiencePoints;
 
@@ -269,7 +275,10 @@ public class UI_QuizController : MonoBehaviour
                     }
                     else if (reward.rewardType == RewardType.Card)
                     {
-                        card_Name.text = $"<color=yellow>{reward.cardReference.cardName} x1</color>";
+                        foreach (var cardItem in reward.cardReference)
+                        {
+                            card_Name.text = $"<color=yellow>{cardItem.card.cardName} x{cardItem.amount}</color>";
+                        }
                     }
                 }
             }

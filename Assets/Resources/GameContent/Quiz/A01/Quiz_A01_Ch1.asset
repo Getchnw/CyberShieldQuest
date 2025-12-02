@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   quiz_id: 1
   backgroundQuiz: {fileID: 0}
-  totalQuestions: 0
+  totalQuestions: 5

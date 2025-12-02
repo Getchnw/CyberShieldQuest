@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52c94746d2f95dc4ab0424aa6ac35668, type: 3}
+  m_Name: Reward_chap1_star2_card
+  m_EditorClassIdentifier: 
+  reward_id: 46
+  quiz: {fileID: 11400000, guid: 2fda85d077ac4a4498db54056c866b1c, type: 2}
+  starRequired: 2
+  rewardType: 0
+  rewardValue: 0
+  cardReference:
+  - card: {fileID: 11400000, guid: 611357c24a3e2e7489ca87d6a573608e, type: 2}
+    amount: 1
+  - card: {fileID: 11400000, guid: f8dc4e9a7d70d9b469fb3c89d2b018af, type: 2}
+    amount: 1
+  experiencePoints: 0
