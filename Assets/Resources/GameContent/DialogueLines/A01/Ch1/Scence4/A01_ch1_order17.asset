@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   line_id: 17
   Dialog_Text:
-  - 
+  - "\u0E15\u0E2D\u0E19\u0E19\u0E35\u0E49\u0E40\u0E18\u0E2D\u0E40\u0E02\u0E49\u0E32\u0E43\u0E08\u0E41\u0E19\u0E27\u0E04\u0E34\u0E14\u0E2B\u0E25\u0E31\u0E01\u0E02\u0E2D\u0E07
+    IDOR \u0E41\u0E25\u0E30\u0E27\u0E34\u0E18\u0E35\u0E1B\u0E49\u0E2D\u0E07\u0E01\u0E31\u0E19\u0E41\u0E25\u0E49\u0E27"
   sequence_order: 17
-  scene: {fileID: 11400000, guid: 0469b44423eabb24e8163b1adeb1f547, type: 2}
+  scene: {fileID: 11400000, guid: 43aba87c52376d5409c2cb8e9191e55b, type: 2}
   character: {fileID: 11400000, guid: 004502be3d4f75c42a76eefdbe7aaf7d, type: 2}
