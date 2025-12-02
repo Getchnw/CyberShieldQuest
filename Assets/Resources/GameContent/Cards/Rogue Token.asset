@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: T_001
   cardName: Rogue Token
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: b268461f16459bd4a899ab6949011143, type: 3}
   frame: {fileID: 0}
   type: 3
   mainCategory: 1

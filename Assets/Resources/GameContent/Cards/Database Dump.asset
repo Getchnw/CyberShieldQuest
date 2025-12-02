@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: S_A02_01
   cardName: Database Dump
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: a4bbf587df7697b48a0f45a97be63ae5, type: 3}
   frame: {fileID: 0}
   type: 1
   mainCategory: 2

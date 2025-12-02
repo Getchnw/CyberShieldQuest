@@ -312,7 +312,18 @@ public class CardGenerator
             new List<CardEffect> { 
                 new CardEffect { trigger = EffectTrigger.Continuous, targetType = TargetType.EnemyMonster, targetSubCat = SubCategory.NoSalt, action = ActionType.DisableAbility } 
             });
-
+        
+        CreateCard("E_A02_08", "The Pepper Vault", CardType.EquipSpell, MainCategory.A02, SubCategory.NoSalt, 4, 0,
+            "[Cont.] หากนำการ์ดใบนี้ไปรับการโจมตีของ Monster [A02: No Salt] ฟื้นฟู HP เท่ากับพลังโจมตีของมอนสเตอร์ที่โจมตี",
+            "[A02: No Salt] 'Pepper' คือความลับ (Secret Key) ที่จะถูกเพิ่มเข้าไปก่อนการ Hashing และเก็บไว้ในที่ปลอดภัยแยกต่างหาก",
+            new List<CardEffect> { 
+                new CardEffect { 
+                    trigger = EffectTrigger.OnIntercept,    // ทำงานเมื่อใช้ Intercept (รับการโจมตี)
+                    targetType = TargetType.Self,           // เป้าหมายคือเรา (เพื่อฮีล)
+                    targetSubCat = SubCategory.NoSalt,      // เงื่อนไข: คนตีต้องเป็น No Salt
+                    action = ActionType.HealHP              // ผลลัพธ์: ฮีล HP (ระบบเกมจะคำนวณตาม Atk ผู้ตีให้เอง)
+                } 
+            });
         // --- 2.5 Bad Key Mgmt --- [cite: 575-613]
         CreateCard("M_A02_09", "ECB Mode Cyclops", CardType.Monster, MainCategory.A02, SubCategory.BadKey, 5, 2,
             "[Strike] บังคับ Equip Spell 1 ใบของฝ่ายตรงข้ามให้ Intercept การโจมตีนี้",
@@ -363,7 +374,7 @@ public class CardGenerator
                 new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyMonster, targetMainCat = MainCategory.A02, action = ActionType.Destroy } 
             });
 
-
+        
         // =================================================================================
         // 💉 A03: Injection
         // =================================================================================
@@ -504,7 +515,9 @@ public class CardGenerator
             // ลองหาแบบ jpg เผื่อไว้
             imagePath = $"Assets/Resources/GameContent/cardpic/{name}.jpg";
             card.artwork = AssetDatabase.LoadAssetAtPath<Sprite>(imagePath);
+            Debug.LogWarning($" หารูปไม่เจอสำหรับการ์ด: '{name}' (ลองเช็คชื่อไฟล์ในโฟลเดอร์ cardpic ดูครับ)");
         }
+        
         // -------------------------------------------------------------
 
         string assetPath = $"{path}/{name}.asset";

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: E_A03_03
   cardName: Input Sanitizer
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 763ce9bae0701e84289ec8eb215919bf, type: 3}
   frame: {fileID: 0}
   type: 2
   mainCategory: 3

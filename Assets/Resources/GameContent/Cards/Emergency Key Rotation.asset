@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card_id: S_A02_02
   cardName: Emergency Key Rotation
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: bf0c62e29014f504588fe1bfac5ed7e0, type: 3}
   frame: {fileID: 0}
   type: 1
   mainCategory: 2
