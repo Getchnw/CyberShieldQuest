@@ -120,7 +120,6 @@ public class StoryEventController : MonoBehaviour
     {
         // 1. ดึงข้อความปัจจุบัน
         string currentText = string.Join("\n", currentDialogueLines[currentLineIndex].Dialog_Text);
-        Debug.Log(currentText);
         // dialogueText.text = currentText;
 
         // 2. ตั้งค่ารูปภาพและชื่อ
@@ -214,8 +213,6 @@ public class StoryEventController : MonoBehaviour
         else
         {
             currentLineIndex++;
-            Debug.Log(currentDialogueLines.Count);
-            Debug.Log(currentDialogueLines[currentLineIndex].Dialog_Text);
             if (currentLineIndex < currentDialogueLines.Count)
             {
                 UpdateDialogueUI();

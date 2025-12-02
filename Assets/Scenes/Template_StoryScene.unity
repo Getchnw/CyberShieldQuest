@@ -228,7 +228,7 @@ MonoBehaviour:
   resultPanel: {fileID: 2093742098}
   resultScoreText: {fileID: 1960512097}
   rewardListContainer: {fileID: 1253953805}
-  CardPrefab: {fileID: 0}
+  CardPrefab: {fileID: 341542318883851128, guid: 9ef4934387ce8504093de8c9333ccdce, type: 3}
   nextEventButton: {fileID: 1475336166}
   GoldText: {fileID: 787377637}
   ExperienceText: {fileID: 113205763}
