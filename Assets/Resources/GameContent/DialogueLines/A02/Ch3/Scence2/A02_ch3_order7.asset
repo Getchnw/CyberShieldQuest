@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68f6255e56871bb4da7a4973c628bd6b, type: 3}
+  m_Name: A02_ch3_order7
+  m_EditorClassIdentifier: 
+  line_id: 94
+  Dialog_Text:
+  - "\u0E14\u0E35\u0E02\u0E36\u0E49\u0E19... \u0E41\u0E15\u0E48 SHA1 \u0E01\u0E47
+    '\u0E15\u0E01\u0E23\u0E38\u0E48\u0E19' \u0E41\u0E25\u0E49\u0E27 \u0E21\u0E31\u0E19\u0E16\u0E39\u0E01\u0E42\u0E08\u0E21\u0E15\u0E35\u0E44\u0E14\u0E49
+    2 \u0E41\u0E1A\u0E1A... \u0E41\u0E1A\u0E1A\u0E41\u0E23\u0E01\u0E04\u0E37\u0E2D
+    Legacy Cracker (\u0E1C\u0E39\u0E49\u0E40\u0E0A\u0E35\u0E48\u0E22\u0E27\u0E0A\u0E32\u0E0D\u0E01\u0E38\u0E0D\u0E41\u0E08\u0E2A\u0E19\u0E34\u0E21)
+    \u0E21\u0E31\u0E19\u0E22\u0E31\u0E07\u0E04\u0E07\u0E2A\u0E32\u0E21\u0E32\u0E23\u0E16\u0E16\u0E39\u0E01
+    'Brute-force' \u0E44\u0E14\u0E49\u0E2D\u0E22\u0E39\u0E48\u0E14\u0E35"
+  sequence_order: 7
+  scene: {fileID: 11400000, guid: 98b7f78338e43c14783014df0000d4ed, type: 2}
+  character: {fileID: 11400000, guid: 004502be3d4f75c42a76eefdbe7aaf7d, type: 2}
