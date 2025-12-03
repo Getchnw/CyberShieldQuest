@@ -4,17 +4,16 @@ using UnityEngine.Events;
 
 public class CardUISlot : MonoBehaviour
 {
-    public Image cardImage; // รูปการ์ด
+    public Image cardImage; // ช่องเอารูปมาใส่
     public Button btn;      // ปุ่มกด
 
     private CardData _data;
 
-    // ฟังก์ชันนี้จะถูกเรียกตอนสร้างการ์ด
     public void Setup(CardData data, UnityAction<CardData> onClick)
     {
         _data = data;
-        
-        // เอารูปจาก CardData มาใส่ (ถ้ามี)
+
+        // ถ้ามีรูป ให้โชว์รูป
         if (data.artwork != null)
         {
             cardImage.sprite = data.artwork;
@@ -22,7 +21,7 @@ public class CardUISlot : MonoBehaviour
         }
         else
         {
-            cardImage.color = Color.gray; // ไม่มีรูปให้เป็นสีเทา
+            cardImage.color = Color.red; // ไม่มีรูปให้เป็นสีแดง
         }
 
         // ตั้งค่าปุ่มกด
