@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2224c56c03e692428d9a49f08d2f613, type: 3}
+  m_Name: Quizzz1
+  m_EditorClassIdentifier: 
+  event_id: 35
+  eventOrder: 35
+  type: 1
+  chapter: {fileID: 11400000, guid: fcad6d7fd41e6c44793b6311494faafa, type: 2}
+  dialogueReference: {fileID: 0}
+  quizReference: {fileID: 11400000, guid: ebd4152ce654009429bd373ab60bc086, type: 2}
