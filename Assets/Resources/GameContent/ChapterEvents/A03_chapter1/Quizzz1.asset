@@ -15,6 +15,6 @@ MonoBehaviour:
   event_id: 45
   eventOrder: 45
   type: 1
-  chapter: {fileID: 11400000, guid: 71d680627bbeae247bdc8aec0bf899f5, type: 2}
+  chapter: {fileID: 11400000, guid: b0187fa4eb1d3d34a8d7afd14a84b278, type: 2}
   dialogueReference: {fileID: 0}
-  quizReference: {fileID: 11400000, guid: 75846fcdb9ee89c4795b7d26d79e591c, type: 2}
+  quizReference: {fileID: 11400000, guid: ebd1bc35dbb99184ebc2560ccbf7ca9c, type: 2}
