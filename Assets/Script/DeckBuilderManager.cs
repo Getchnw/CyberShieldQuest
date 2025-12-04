@@ -7,15 +7,19 @@ using UnityEngine.UI;
 public class DeckBuilderManager : MonoBehaviour
 {
     [Header("UI References")]
-    public Transform leftContent;  // ช่องการ์ดรวม
-    public Transform rightContent; // ช่องเด็คปัจจุบัน
+    public Transform leftContent;
+    public Transform rightContent;
     public TextMeshProUGUI countText; 
-    public TMP_Dropdown deckDropdown; // ที่เลือกเด็ค
-    public TMP_InputField newDeckInput; // ช่องตั้งชื่อเด็ค
+    public TMP_Dropdown deckDropdown;
+    public TMP_InputField newDeckInput;
 
-    [Header("Search & Filter")] // 🔥 ของใหม่
+    [Header("Search & Filter")]
     public TMP_InputField searchInput; 
     public TMP_Dropdown filterDropdown;
+
+    [Header("Statistics UI")] // 🔥 ของใหม่: ส่วนโชว์สถิติ
+    public TextMeshProUGUI typeStatText;
+    public TextMeshProUGUI costStatText;
 
     [Header("Prefab")]
     public GameObject cardPrefab;
@@ -39,12 +43,8 @@ public class DeckBuilderManager : MonoBehaviour
 
     void Start()
     {
-        // 1. ผูกปุ่ม Search และ Filter ให้ทำงานอัตโนมัติ
-        if (searchInput != null) 
-            searchInput.onValueChanged.AddListener(delegate { RefreshLeftPanel(); });
-        
-        if (filterDropdown != null) 
-            filterDropdown.onValueChanged.AddListener(delegate { RefreshLeftPanel(); });
+        if (searchInput != null) searchInput.onValueChanged.AddListener(delegate { RefreshLeftPanel(); });
+        if (filterDropdown != null) filterDropdown.onValueChanged.AddListener(delegate { RefreshLeftPanel(); });
 
         LoadCardLibrary(); 
         LoadSavedDecks();  
@@ -59,15 +59,11 @@ public class DeckBuilderManager : MonoBehaviour
     {
         CardData[] loaded = Resources.LoadAll<CardData>("GameContent/Cards");
         allCardsLibrary = loaded.OrderBy(x => x.cost).ThenBy(x => x.card_id).ToList();
-        
-        // โหลดเสร็จ วาดหน้าจอฝั่งซ้ายครั้งแรก
         RefreshLeftPanel();
     }
 
-    // 🔥 ฟังก์ชันใหม่: วาดการ์ดฝั่งซ้าย (พร้อมระบบกรอง)
     void RefreshLeftPanel()
     {
-        // ล้างของเก่า
         foreach (Transform child in leftContent) Destroy(child.gameObject);
 
         string searchText = "";
@@ -76,22 +72,17 @@ public class DeckBuilderManager : MonoBehaviour
         int categoryIndex = 0;
         if (filterDropdown != null) categoryIndex = filterDropdown.value;
 
-        // วนลูปการ์ดทั้งหมด แล้วเช็คเงื่อนไข
         foreach (var card in allCardsLibrary)
         {
-            // 1. เช็คชื่อ (Search)
             bool matchName = string.IsNullOrEmpty(searchText) || 
                              card.cardName.ToLower().Contains(searchText) ||
                              card.abilityText.ToLower().Contains(searchText);
 
-            // 2. เช็คหมวดหมู่ (Dropdown)
-            // 0=All, 1=A01, 2=A02, 3=A03 (ต้องเรียงตาม Dropdown ใน Unity นะครับ)
             bool matchCategory = true;
             if (categoryIndex == 1 && card.mainCategory != MainCategory.A01) matchCategory = false;
             if (categoryIndex == 2 && card.mainCategory != MainCategory.A02) matchCategory = false;
             if (categoryIndex == 3 && card.mainCategory != MainCategory.A03) matchCategory = false;
 
-            // ถ้าผ่านทั้งคู่ ให้สร้างการ์ด
             if (matchName && matchCategory)
             {
                 GameObject obj = Instantiate(cardPrefab, leftContent);
@@ -100,7 +91,6 @@ public class DeckBuilderManager : MonoBehaviour
         }
     }
 
-    // ... (ส่วนจัดการ Deck เหมือนเดิม) ...
     public void CreateNewDeckButton() {
         string name = newDeckInput.text;
         if (string.IsNullOrEmpty(name)) name = "New Deck " + (allDecks.Count + 1);
@@ -159,8 +149,9 @@ public class DeckBuilderManager : MonoBehaviour
         deckDropdown.value = currentDeckIndex;
     }
 
-    void RefreshUI() { // Refresh ฝั่งขวา (Deck)
+    void RefreshUI() {
         foreach (Transform child in rightContent) Destroy(child.gameObject);
+        
         if (allDecks.Count == 0) return;
 
         DeckData current = allDecks[currentDeckIndex];
@@ -179,6 +170,41 @@ public class DeckBuilderManager : MonoBehaviour
         }
 
         if (countText != null) countText.text = $"Deck: {current.cardIds.Count} / 30";
+
+        // 🔥 เรียกฟังก์ชันคำนวณสถิติ
+        UpdateDeckStats(cardsInDeck);
+    }
+
+    // 🔥 ฟังก์ชันใหม่: คำนวณและแสดงผลสถิติ
+    void UpdateDeckStats(List<CardData> deck)
+    {
+        if (typeStatText != null)
+        {
+            int monsterCount = deck.Count(x => x.type == CardType.Monster);
+            int spellCount = deck.Count(x => x.type == CardType.Spell);
+            int equipCount = deck.Count(x => x.type == CardType.EquipSpell);
+
+            typeStatText.text = $"Monster: {monsterCount}  Spell: {spellCount}  Equip: {equipCount}";
+        }
+
+        if (costStatText != null)
+        {
+            // นับว่าแต่ละ Cost มีกี่ใบ (เช่น Cost 1 มี 5 ใบ)
+            string costString = "<b>Cost:</b> ";
+            
+            // หา Cost สูงสุดที่มีในเด็ค
+            int maxCost = deck.Count > 0 ? deck.Max(x => x.cost) : 0;
+
+            for (int i = 0; i <= maxCost; i++)
+            {
+                int count = deck.Count(x => x.cost == i);
+                if (count > 0)
+                {
+                    costString += $"[{i}]: {count}  ";
+                }
+            }
+            costStatText.text = costString;
+        }
     }
 
     void SaveGame() {

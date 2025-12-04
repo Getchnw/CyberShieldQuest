@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5094822000194689663}
   - component: {fileID: 5214189744827470782}
   - component: {fileID: 1022527979207781532}
-  - component: {fileID: 2435492788821761197}
+  - component: {fileID: 2781184318775702001}
   m_Layer: 5
   m_Name: CardSlot
   m_TagString: Untagged
@@ -37,7 +37,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -556.6005, y: 122.16519}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 200, y: 290}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5094822000194689663
 CanvasRenderer:
@@ -121,7 +121,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &2435492788821761197
+--- !u!114 &2781184318775702001
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
