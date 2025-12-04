@@ -31,7 +31,7 @@ public class DropZone : MonoBehaviour, IDropHandler
         if (resizeOnDrop)
         {
             dropZoneLayout = GetComponent<LayoutElement>();
-            if (dropZoneLayout == null)
+            if (dropZoneLayout != null)
             {
                 defaultWidth = dropZoneLayout.preferredWidth;
             }
@@ -47,6 +47,8 @@ public class DropZone : MonoBehaviour, IDropHandler
         if (resizeOnDrop && dropZoneLayout != null)
         {
             dropZoneLayout.preferredWidth = defaultWidth;
+            //สั่งให้จัด UI ใหม่ทันทีเมื่อเอาของออก
+            ForceUpdateLayout();
         }
 
         OnDropZoneChanged?.Invoke(); // แจ้งเตือน!
@@ -98,20 +100,41 @@ public class DropZone : MonoBehaviour, IDropHandler
 
         // 4. ปรับขนาด DropZone ให้พอดีกับ "คำ"
         // 4a. ดึง LayoutElement ของ "คำ" ที่เพิ่งลากมา
+        // if (resizeOnDrop && dropZoneLayout != null)
+        // {
+        //     LayoutElement wordLayout = draggableItem.GetComponent<LayoutElement>();
+        //     RectTransform wordRect = draggableItem.GetComponent<RectTransform>();
+        //     if (wordLayout != null && dropZoneLayout != null)
+        //     {
+        //         // 4b. สั่งให้ "ช่อง" นี้มี "ขนาดที่ต้องการ" (Preferred Width)
+        //         dropZoneLayout.preferredWidth = wordLayout.preferredWidth;
+        //     }
+        //     else
+        //     {
+        //         // (กรณีสำรอง ถ้า "คำ" ไม่มี Layout Element ให้ใช้ขนาดจาก RectTransform)
+        //         dropZoneLayout.preferredWidth = wordRect.rect.width;
+        //     }
+        //     ForceUpdateLayout();
+        // }
+
         if (resizeOnDrop && dropZoneLayout != null)
         {
-            LayoutElement wordLayout = draggableItem.GetComponent<LayoutElement>();
-            if (wordLayout != null && dropZoneLayout != null)
-            {
-                // 4b. สั่งให้ "ช่อง" นี้มี "ขนาดที่ต้องการ" (Preferred Width)
-                dropZoneLayout.preferredWidth = wordLayout.preferredWidth;
-            }
-            else
-            {
-                // (กรณีสำรอง ถ้า "คำ" ไม่มี Layout Element ให้ใช้ขนาดจาก RectTransform)
-                RectTransform wordRect = draggableItem.GetComponent<RectTransform>();
-                dropZoneLayout.preferredWidth = wordRect.rect.width;
-            }
+            RectTransform wordRect = draggableItem.GetComponent<RectTransform>();
+
+            // 1. บังคับให้ตัวคำตอบ คำนวณขนาดตัวเองเดี๋ยวนี้!
+            LayoutRebuilder.ForceRebuildLayoutImmediate(wordRect);
+
+            // 2. ใช้ LayoutUtility ดึงค่าความกว้างที่แท้จริง (รวม Padding แล้ว)
+            float realWidth = LayoutUtility.GetPreferredWidth(wordRect);
+
+            // 3. เอาความกว้างนั้นมาใส่ให้ DropZone
+            // (เผื่อไว้นิดนึง +10 กันเบียด)
+            // dropZoneLayout.preferredWidth = realWidth + 10f;
+
+            dropZoneLayout.preferredWidth = realWidth;
+
+            // 4. สั่งให้ DropZone และ ประโยคแม่ จัดหน้าใหม่
+            ForceUpdateLayout();
         }
 
         // 5. บันทึกคำตอบ
@@ -120,5 +143,18 @@ public class DropZone : MonoBehaviour, IDropHandler
 
         //แจ้งเตือนว่า "มีคนมาวางแล้วนะ!"
         OnDropZoneChanged?.Invoke();
+
+
+    }
+    public void ForceUpdateLayout()
+    {
+        // 1. จัดตัวเองก่อน
+        LayoutRebuilder.ForceRebuildLayoutImmediate(GetComponent<RectTransform>());
+
+        // 2. ถ้ามีแม่ (Sentence Row) ให้แม่จัดลูกๆ ใหม่ เพื่อดัน Text ข้างหลังออกไป
+        if (transform.parent != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(transform.parent.GetComponent<RectTransform>());
+        }
     }
 }

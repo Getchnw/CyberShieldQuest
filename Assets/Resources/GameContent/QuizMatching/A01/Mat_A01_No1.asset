@@ -34,5 +34,5 @@ MonoBehaviour:
   - IDOR (Write Data)
   - IDOR (Perform Action)
   - IDOR (Unauthorized Creation)
-  correctAnswers_OptionIndex: 01000000030000000000000002000000
+  correctAnswers_OptionIndex: 02000000000000000300000001000000
   story: {fileID: 11400000, guid: 748416f206e75214386b95ed503b6070, type: 2}

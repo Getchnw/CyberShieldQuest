@@ -14,11 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   questionContext: 
   prompts:
-  - 'Path Traversal (Basic) '
-  - Path Traversal (Encoded)
-  - 'Path Traversal (Nested) '
-  - 'Path Traversal (Absolute) '
-  options:
   - "\u0E41\u0E2E\u0E47\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E43\u0E0A\u0E49 Absolute
     Path (\u0E40\u0E0A\u0E48\u0E19 /etc/passwd) \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E0A\u0E35\u0E49\u0E40\u0E1B\u0E49\u0E32\u0E44\u0E1F\u0E25\u0E4C\u0E42\u0E14\u0E22\u0E15\u0E23\u0E07"
   - "\u0E41\u0E2E\u0E47\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E43\u0E0A\u0E49 ../
@@ -30,5 +25,10 @@ MonoBehaviour:
   - "\u0E41\u0E2E\u0E47\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C \"\u0E1B\u0E25\u0E2D\u0E21\u0E15\u0E31\u0E27\u0E0B\u0E49\u0E2D\u0E19
     2 \u0E0A\u0E31\u0E49\u0E19\" (%252f) \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E2B\u0E25\u0E2D\u0E01\u0E1F\u0E34\u0E25\u0E40\u0E15\u0E2D\u0E23\u0E4C\u0E17\u0E35\u0E48\u0E16\u0E2D\u0E14\u0E23\u0E2B\u0E31\u0E2A\u0E41\u0E04\u0E48\u0E04\u0E23\u0E31\u0E49\u0E07 
     \u0E40\u0E14\u0E35\u0E22\u0E27"
-  correctAnswers_OptionIndex: 01000000020000000300000000000000
+  options:
+  - 'Path Traversal (Basic) '
+  - Path Traversal (Encoded)
+  - 'Path Traversal (Nested) '
+  - 'Path Traversal (Absolute) '
+  correctAnswers_OptionIndex: 03000000000000000100000002000000
   story: {fileID: 11400000, guid: 748416f206e75214386b95ed503b6070, type: 2}

@@ -227,6 +227,7 @@ public class UI_QuizController : MonoBehaviour
 
         foreach (RewardData reward in rewards)
         {
+
             //ผ่านเกณฑ์ดาวหรือไม่ เช่น ทำได้สามดาว ก็จะได้รางวัลของทั้งหมดตัตั้งแต่ 0-3ดาว
             if (reward.starRequired <= starsAchieved && reward.starRequired > 0)
             {
@@ -266,7 +267,8 @@ public class UI_QuizController : MonoBehaviour
                     experienceAll += reward.experiencePoints;
 
                     // GameObject row = Instantiate(rewardRowPrefab, rewardListContainer);
-                    //TextMeshProUGUI rowText = row.GetComponentInChildren<TextMeshProUGUI>();
+                    // TextMeshProUGUI rowText = row.GetComponentInChildren<TextMeshProUGUI>();
+
                     TextMeshProUGUI card_Name = CardPrefab.GetComponentInChildren<TextMeshProUGUI>();
                     if (reward.rewardType == RewardType.Gold)
                     {

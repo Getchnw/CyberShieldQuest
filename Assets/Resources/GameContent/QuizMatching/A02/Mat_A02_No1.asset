@@ -14,11 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   questionContext: 
   prompts:
-  - Insecure Data in Transit
-  - Downgrade Attack
-  - Insecure Data at Rest
-  - Hashing
-  options:
   - "\u0E01\u0E32\u0E23 \"\u0E1A\u0E14\" \u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19\u0E43\u0E2B\u0E49\u0E01\u0E25\u0E32\u0E22\u0E40\u0E1B\u0E47\u0E19\u0E23\u0E2B\u0E31\u0E2A\u0E17\u0E35\u0E48\u0E22\u0E49\u0E2D\u0E19\u0E01\u0E25\u0E31\u0E1A\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49"
   - "\u0E01\u0E32\u0E23 \"\u0E41\u0E2D\u0E1A\u0E2D\u0E48\u0E32\u0E19\" \u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19\u0E17\u0E35\u0E48\u0E40\u0E01\u0E47\u0E1A\u0E40\u0E1B\u0E47\u0E19
     \"\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E18\u0E23\u0E23\u0E21\u0E14\u0E32\"
@@ -29,5 +24,10 @@ MonoBehaviour:
   - "\u0E01\u0E32\u0E23 \"\u0E2B\u0E25\u0E2D\u0E01\" \u0E40\u0E1A\u0E23\u0E32\u0E27\u0E4C\u0E40\u0E0B\u0E2D\u0E23\u0E4C\u0E43\u0E2B\u0E49\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E08\u0E32\u0E01
     https:// (\u0E1B\u0E25\u0E2D\u0E14\u0E20\u0E31\u0E22) \u0E40\u0E1B\u0E47\u0E19
     http:// (\u0E44\u0E21\u0E48  \u0E1B\u0E25\u0E2D\u0E14\u0E20\u0E31\u0E22)"
-  correctAnswers_OptionIndex: 02000000030000000100000000000000
+  options:
+  - Insecure Data in Transit
+  - Downgrade Attack
+  - Insecure Data at Rest
+  - Hashing
+  correctAnswers_OptionIndex: 03000000020000000000000001000000
   story: {fileID: 11400000, guid: c36db4412ad8b414a9cd10c85db056cf, type: 2}
