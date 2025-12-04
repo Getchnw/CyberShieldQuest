@@ -16,7 +16,7 @@ MonoBehaviour:
   questionText: "\u0E20\u0E31\u0E22\u0E04\u0E38\u0E01\u0E04\u0E32\u0E21 Hardcode
     Hunter (\u0E19\u0E31\u0E01\u0E25\u0E48\u0E32\u0E01\u0E38\u0E0D\u0E41\u0E08\u0E1D\u0E31\u0E07\u0E42\u0E04\u0E49\u0E14)
     \u0E04\u0E49\u0E19\u0E2B\u0E32\u0E01\u0E38\u0E0D\u0E41\u0E08\u0E08\u0E32\u0E01\u0E17\u0E35\u0E48\u0E43\u0E14?"
-  quiz: {fileID: 11400000, guid: ebd4152ce654009429bd373ab60bc086, type: 2}
+  quiz: {fileID: 11400000, guid: 2fda85d077ac4a4498db54056c866b1c, type: 2}
   questionOrder: 2
   answerOptions:
   - "(A) \u0E43\u0E19\u0E10\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25 (Database)"
