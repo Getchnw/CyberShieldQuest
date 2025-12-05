@@ -35,6 +35,22 @@ public class GameData
     public List<PlayerPostTestScore> postTestResults;
     public List<PlayerPreTestScore> preTestResults;
     // เก็บข้อมูลผู้เล่น
+    [System.Serializable]
+    public class DeckData 
+    {
+        public int deck_id; 
+        public string deck_name;
+        
+        // ⚠️ แก้จาก List<int> เป็น List<string>
+        public List<string> card_ids_in_deck; 
+
+        public DeckData(int id, string name)
+        {
+            deck_id = id;
+            deck_name = name;
+            card_ids_in_deck = new List<string>();
+        }
+    }
     public GameData()
     {
         profile = new PlayerProfile(); // สร้างโปรไฟล์เริ่มต้น
@@ -110,17 +126,20 @@ public class PlayerCardInventoryItem
 }
 
 [System.Serializable]
-public class DeckData // รวมตาราง Decks และ DeckCards ไว้ด้วยกัน
+
+public class DeckData 
 {
-    public int deck_id; // เช่น 1, 2, 3
+    public int deck_id; 
     public string deck_name;
-    public List<int> card_ids_in_deck; // เก็บ ID ของการ์ดที่อยู่ในเด็คนี้
+    
+    // ⚠️ แก้จาก List<int> เป็น List<string>
+    public List<string> card_ids_in_deck; 
 
     public DeckData(int id, string name)
     {
         deck_id = id;
         deck_name = name;
-        card_ids_in_deck = new List<int>();
+        card_ids_in_deck = new List<string>();
     }
 }
 
