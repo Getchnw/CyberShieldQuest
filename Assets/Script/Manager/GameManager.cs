@@ -56,6 +56,9 @@ public class GameManager : MonoBehaviour
         CurrentGameData.profile.level = 1;
         CurrentGameData.profile.experience = 0;
 
+        // 🔥 เสกการ์ดให้ผู้เล่นตอนเริ่มเกมใหม่
+        // Dev_AddAllCards();
+
         // สั่งให้ SaveSystem บันทึกข้อมูลใหม่นี้ลงไฟล์ทันที
         SaveSystem.SaveGameData(CurrentGameData);
         Debug.Log("New game data created and saved.");
@@ -283,7 +286,45 @@ public class GameManager : MonoBehaviour
         SaveCurrentGame();
     }
 
+    // ลิสต์รายชื่อการ์ดที่จะเสก (ใส่ ID การ์ดที่นี่)
+    [ContextMenu("DEV: Add All Cards")] // <- นี่คือคำสั่งพิเศษ
+    public void Dev_AddAllCards()
+    {
+        if (CurrentGameData == null) CurrentGameData = new GameData();
 
+        // 🔥 กันการเสกการ์ดซ้ำ
+        if (CurrentGameData.hasInitializedCards)
+        {
+            Debug.Log("⚠️ Cards already initialized! Skipping...");
+            return;
+        }
+
+        // โหลดการ์ดทั้งหมดจาก Resources แล้วเสกให้ผู้เล่น
+        CardData[] allCards = Resources.LoadAll<CardData>("GameContent/Cards");
+        
+        Debug.Log($"🔥 Loaded {allCards.Length} cards from resources");
+        
+        // เสกการ์ดทั้งหมด อย่างละ 10 ใบ
+        foreach (CardData card in allCards)
+        {
+            AddCardToInventory(card.card_id, 3);
+            Debug.Log($"✅ Added card: {card.card_id} ({card.cardName})");
+        }
+        
+        // 🔥 ตั้ง flag เพื่อกันการเสกซ้ำ
+        CurrentGameData.hasInitializedCards = true;
+        
+        SaveCurrentGame();
+        Debug.Log($"✨ เสกการ์ด {allCards.Length} ใบเรียบร้อย! (Cheat Mode Activated)");
+    }
+
+    // 🔥 DEV: ลบ Save File
+    [ContextMenu("DEV: Clear Save")]
+    public void Dev_ClearSave()
+    {
+        SaveSystem.DeleteSaveData();
+        Debug.Log("✨ Save file deleted! Restart the game to create a new one.");
+    }
     /// บันทึกความคืบหน้าของ Story Chapter
     public void AdvanceChapterProgress(int chapterID, int stars_earned, int score)
     {
