@@ -477,6 +477,20 @@ public class GameManager : MonoBehaviour
             });
         }
     }
-
+    // คลิกขวาที่ชื่อสคริปต์ใน Inspector -> เลือก "DEV: Add 5000 Gold"
+    [ContextMenu("DEV: Add 5000 Gold")]
+    public void Dev_AddGold()
+    {
+        if (CurrentGameData == null) CurrentGameData = new GameData();
+        
+        CurrentGameData.profile.gold += 5000; // เสกเงิน
+        SaveCurrentGame(); // บันทึก
+        
+        Debug.Log($"เสกเงินเรียบร้อย! ตอนนี้มี: {CurrentGameData.profile.gold} Gold");
+        
+        // แจ้งเตือน UI ให้รู้ด้วย
+        OnGoldChanged?.Invoke(CurrentGameData.profile.gold);
+        OnDataLoaded?.Invoke(); 
+    }
 
 }

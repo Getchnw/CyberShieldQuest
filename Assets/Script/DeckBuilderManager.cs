@@ -315,7 +315,7 @@ public class DeckBuilderManager : MonoBehaviour
             int mon = deck.Count(x => x.type == CardType.Monster);
             int spl = deck.Count(x => x.type == CardType.Spell);
             int eqp = deck.Count(x => x.type == CardType.EquipSpell);
-            typeStatText.text = $"Type: Mon {mon} | Spell {spl} | Equip {eqp}";
+            typeStatText.text = $"Type: Mon {mon}   Spell {spl}   Equip {eqp}";
         }
         if (costStatText != null) {
             string s = "Cost: ";

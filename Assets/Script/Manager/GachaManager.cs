@@ -3,75 +3,157 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
 using TMPro;
-
+using System.Collections;
 public class GachaManager : MonoBehaviour
 {
     [Header("Settings")]
-    public int costPerPull = 100; // ราคาต่อการสุ่ม 1 ครั้ง
+    public int costPerPull = 100;
 
-    [Header("Drop Rates (รวมกันต้องได้ 100)")]
+    [Header("Drop Rates")]
     public int commonRate = 60;
     public int rareRate = 30;
     public int epicRate = 8;
     public int legendaryRate = 2;
 
     [Header("UI References")]
-    public TextMeshProUGUI goldText;     // ข้อความแสดงเงิน
-    public GameObject resultPanel;       // หน้าต่างผลลัพธ์ (Panel สีดำ)
-    public Transform resultGrid;         // พื้นที่วางการ์ด (Content ใน ScrollView)
-    public GameObject cardDisplayPrefab; // Prefab CardSlot
+    public TextMeshProUGUI goldText;    
+    public GameObject resultPanel;      
+    public Transform resultGrid;        
+    public GameObject cardDisplayPrefab;
 
-    // ตัวแปรเก็บข้อมูลการ์ดทั้งหมดในเกม
+    [Header("Banner UI")]
+    public TextMeshProUGUI currentBannerNameText; 
+    public Button pullOneButton;   
+    public Button pullTenButton;
+    [Header("Banner Images")]
+    public Image bannerImageDisplay;  // ตัว Image บนหน้าจอที่จะให้เปลี่ยนรูป
+    public Sprite[] bannerSprites;    // อาเรย์เก็บรูป 3 รูป (ลากใส่ใน Inspector)
+    // ข้อมูลภายใน
     private List<CardData> allCards;
+    private MainCategory currentTargetCategory = MainCategory.A01; 
 
     void Start()
     {
-        // 1. โหลดการ์ดทั้งหมดจาก Resources มารอไว้
         allCards = Resources.LoadAll<CardData>("GameContent/Cards").ToList();
         
-        // 2. ปิดหน้าต่างผลลัพธ์ก่อนเริ่ม
+        // เริ่มต้นเลือกตู้ A01
+        SelectBanner(1); 
+        
+        UpdateUI(); // ✅ มีฟังก์ชันรองรับแล้ว
         if(resultPanel != null) resultPanel.SetActive(false);
     }
 
     void Update()
     {
-        // 3. อัปเดตตัวเลขเงินตลอดเวลา
-        if (GameManager.Instance != null && GameManager.Instance.CurrentGameData != null && goldText != null)
+        UpdateUI(); // อัปเดตเงินตลอดเวลา
+    }
+
+    // 🔥 ฟังก์ชันที่เพิ่มเข้ามา
+    void UpdateUI()
+    {
+        if(GameManager.Instance != null && GameManager.Instance.CurrentGameData != null && goldText != null)
         {
-            goldText.text = $"Gold: {GameManager.Instance.CurrentGameData.profile.gold}";
+            goldText.text = $"{GameManager.Instance.CurrentGameData.profile.gold}";
         }
     }
 
     // =========================================================
-    // 🔥 ฟังก์ชันสำหรับปุ่มกด (Public void ไม่มีพารามิเตอร์)
+    // ระบบเลือกตู้ (Select Banner)
     // =========================================================
+    public void SelectBanner(int categoryIndex)
+    {
+        if (categoryIndex == 1) currentTargetCategory = MainCategory.A01;
+        else if (categoryIndex == 2) currentTargetCategory = MainCategory.A02;
+        else if (categoryIndex == 3) currentTargetCategory = MainCategory.A03;
+        else currentTargetCategory = MainCategory.General;
 
+        if (currentBannerNameText != null)
+            currentBannerNameText.text = $"Current Banner: {currentTargetCategory}";
+        
+        if (bannerImageDisplay != null && bannerSprites != null && bannerSprites.Length > 0)
+        {
+            // categoryIndex ส่งมาเป็น 1, 2, 3
+            // แต่อาเรย์เริ่มที่ 0, 1, 2 -> เลยต้องลบ 1
+            int spriteIndex = categoryIndex - 1;
+
+            // เช็คกัน Error (เผื่อลืมใส่รูป)
+            if (spriteIndex >= 0 && spriteIndex < bannerSprites.Length)
+            {
+                bannerImageDisplay.sprite = bannerSprites[spriteIndex];
+            }
+        }
+        bool isUnlocked = CheckUnlockStatus(categoryIndex);
+        
+        if (pullOneButton != null) pullOneButton.interactable = isUnlocked;
+        if (pullTenButton != null) pullTenButton.interactable = isUnlocked;
+
+        if (!isUnlocked && currentBannerNameText != null)
+            currentBannerNameText.text += " (LOCKED)";
+    }
+
+    bool CheckUnlockStatus(int categoryIndex)
+    {
+        if (GameManager.Instance == null) return true; // กัน Error ตอนเทส
+
+        // 🔥 กำหนดเงื่อนไข: ตู้นี้ต้องผ่าน Chapter ไหนบ้าง? (ใส่เลข ID ของ Chapter ตามจริงของคุณ)
+        List<int> requiredChapters = new List<int>();
+
+        switch (categoryIndex)
+        {
+            case 1: // ตู้ A01 (Broken Access)
+                // สมมติว่าเนื้อเรื่อง A01 คือ Chapter 1, 2, 3
+                requiredChapters = new List<int> { 1, 2, 3 }; 
+                break;
+
+            case 2: // ตู้ A02 (Crypto)
+                // สมมติว่าเนื้อเรื่อง A02 คือ Chapter 4, 5, 6, 7, 8
+                requiredChapters = new List<int> { 4, 5,6,7,8 }; 
+                break;
+
+            case 3: // ตู้ A03 (Injection)
+                // สมมติว่าเนื้อเรื่อง A03 คือ Chapter 9, 10, 11, 12
+                requiredChapters = new List<int> { 9,10,11,12 }; 
+                break;
+            
+            default:
+                return true; // ตู้อื่นๆ เปิดตลอด
+        }
+
+        // 🔥 ลูปเช็ค: ต้องผ่าน "ครบทุกบท" ในลิสต์ข้างบน ถึงจะเปิดตู้ได้
+        foreach (int chapID in requiredChapters)
+        {
+            // ดึงข้อมูล Chapter จาก GameManager
+            var chapterData = GameManager.Instance.CurrentGameData.chapterProgress
+                              .FirstOrDefault(c => c.chapter_id == chapID);
+
+            // ถ้าหาไม่เจอ หรือ ยังเล่นไม่จบ (is_completed = false) -> ล็อคตู้ทันที 🔒
+            if (chapterData == null || !chapterData.is_completed)
+            {
+                return false; 
+            }
+        }
+
+        // ถ้าวนลูปจนจบแล้วไม่ติดขัดอะไร แปลว่าผ่านครบหมดแล้ว -> ปลดล็อค! 🔓
+        return true; 
+    }
+
+    // =========================================================
+    // ปุ่มกดสุ่ม
+    // =========================================================
     public void PullOne()
     {
-        // เช็คเงิน
         int currentGold = GameManager.Instance.CurrentGameData.profile.gold;
-        
         if (currentGold >= costPerPull)
         {
-            // 1. หักเงิน
-            GameManager.Instance.DecreaseGold(costPerPull); 
-
-            // 2. สุ่มการ์ด
-            CardData pulledCard = RandomCard();
-
-            // 3. เพิ่มเข้ากระเป๋า
-            GameManager.Instance.AddCardToInventory(pulledCard.card_id, 1);
+            GameManager.Instance.DecreaseGold(costPerPull);
             
-            // 4. บันทึกเกมทันที
+            CardData pulledCard = RandomCard(currentTargetCategory);
+            
+            GameManager.Instance.AddCardToInventory(pulledCard.card_id, 1);
             GameManager.Instance.SaveCurrentGame();
-
-            // 5. โชว์ผล
             ShowResult(new List<CardData> { pulledCard });
         }
-        else
-        {
-            Debug.Log("เงินไม่พอ! (Not enough Gold)");
-        }
+        else Debug.Log("เงินไม่พอ!");
     }
 
     public void PullTen()
@@ -81,90 +163,94 @@ public class GachaManager : MonoBehaviour
 
         if (currentGold >= totalCost)
         {
-            // 1. หักเงิน
             GameManager.Instance.DecreaseGold(totalCost);
-
-            // 2. สุ่ม 10 ใบ
             List<CardData> pulledList = new List<CardData>();
             for (int i = 0; i < 10; i++)
             {
-                CardData c = RandomCard();
+                CardData c = RandomCard(currentTargetCategory);
                 pulledList.Add(c);
                 GameManager.Instance.AddCardToInventory(c.card_id, 1);
             }
-
-            // 3. บันทึกเกม
             GameManager.Instance.SaveCurrentGame();
-
-            // 4. โชว์ผล
             ShowResult(pulledList);
         }
-        else
-        {
-            Debug.Log("เงินไม่พอ! (Not enough Gold)");
-        }
-    }
-
-    // ปุ่มปิดหน้าต่างผลลัพธ์
-    public void CloseResult()
-    {
-        if (resultPanel != null) resultPanel.SetActive(false);
+        else Debug.Log("เงินไม่พอ!");
     }
 
     // =========================================================
-    // 🎲 Logic การสุ่ม (System)
+    // Logic การสุ่ม (กรองตามตู้)
     // =========================================================
-
-    CardData RandomCard()
+    CardData RandomCard(MainCategory targetCategory)
     {
-        int rng = Random.Range(0, 100); // สุ่มเลข 0-99
+        int rng = Random.Range(0, 100);
         Rarity targetRarity = Rarity.Common;
 
-        // คำนวณเรท
         if (rng < legendaryRate) targetRarity = Rarity.Legendary;
         else if (rng < legendaryRate + epicRate) targetRarity = Rarity.Epic;
         else if (rng < legendaryRate + epicRate + rareRate) targetRarity = Rarity.Rare;
         else targetRarity = Rarity.Common;
 
-        // คัดกรองการ์ดเฉพาะระดับที่สุ่มได้
-        List<CardData> pool = allCards.FindAll(x => x.rarity == targetRarity);
+        // กรอง 2 ชั้น: Rarity + Category
+        List<CardData> pool = allCards.FindAll(x => x.rarity == targetRarity && x.mainCategory == targetCategory);
 
-        // กันเหนียว: ถ้าไม่มีการ์ดระดับนั้นเลย ให้ไปสุ่ม Common แทน
-        if (pool.Count == 0) pool = allCards.FindAll(x => x.rarity == Rarity.Common);
-
-        // สุ่มใบหนึ่งจากใน Pool
-        if (pool.Count > 0)
-            return pool[Random.Range(0, pool.Count)];
+        // Fallback: ถ้าไม่มีของระดับนั้นในตู้นี้ ให้สุ่ม Common ของตู้นี้แทน
+        if (pool.Count == 0) 
+        {
+            pool = allCards.FindAll(x => x.rarity == Rarity.Common && x.mainCategory == targetCategory);
+        }
         
-        return allCards[0]; // กรณีฉุกเฉิน (ไม่ควรเกิด)
+        // Fallback สุดท้าย: สุ่มมั่วๆ จากทั้งหมด (กัน Error)
+        if (pool.Count == 0) pool = allCards;
+
+        return pool[Random.Range(0, pool.Count)];
     }
 
-    // =========================================================
-    // 🖼️ แสดงผล (UI)
-    // =========================================================
+   
 
     void ShowResult(List<CardData> cards)
     {
-        if (resultPanel == null) return;
-
-        resultPanel.SetActive(true);
+        if(resultPanel != null) resultPanel.SetActive(true);
         
-        // ล้างการ์ดเก่าทิ้งก่อน
-        foreach(Transform child in resultGrid) Destroy(child.gameObject);
+        if(resultGrid != null)
+        {
+            // ล้างของเก่า
+            foreach(Transform child in resultGrid) Destroy(child.gameObject);
+            
+            // ใช้ Coroutine เพื่อหน่วงเวลา
+            StartCoroutine(SpawnCardsRoutine(cards));
+        }
+    }
 
-        // สร้างการ์ดใหม่ตามลิสต์ที่ได้
+    // ฟังก์ชันสร้างการ์ดทีละใบแบบมีอนิเมชั่น
+    IEnumerator SpawnCardsRoutine(List<CardData> cards)
+    {
         foreach(var card in cards)
         {
             GameObject obj = Instantiate(cardDisplayPrefab, resultGrid);
-            
-            // เรียกใช้ Setup ของ CardUISlot
-            // ส่ง -1 เพื่อซ่อนตัวเลขจำนวน
-            // ส่ง null เพื่อไม่ให้คลิกได้
             var slot = obj.GetComponent<CardUISlot>();
-            if(slot != null) 
+            if(slot != null) slot.Setup(card, -1, null, null); 
+
+            // เริ่มต้นที่ขนาด 0 (ซ่อนอยู่)
+            obj.transform.localScale = Vector3.zero;
+
+            // สั่งให้ขยายขึ้นมา (Scale Up)
+            float timer = 0;
+            float duration = 0.3f; // ใช้เวลา 0.3 วิ
+            while(timer < duration)
             {
-                slot.Setup(card, -1, null, null);
+                timer += Time.deltaTime;
+                float t = timer / duration;
+                // สูตร BackEaseOut (ทำให้เด้งดึ๋งเกินนิดนึงแล้วหดกลับ)
+                float ease = 1 + 2.70158f * Mathf.Pow(t - 1, 3) + 1.70158f * Mathf.Pow(t - 1, 2);
+                
+                obj.transform.localScale = Vector3.one * ease;
+                yield return null;
             }
+            obj.transform.localScale = Vector3.one; // จบที่ขนาดปกติ
+
+            // รอแป๊บนึงค่อยเสกใบต่อไป
+            yield return new WaitForSeconds(0.1f);
         }
     }
+    public void CloseResult() { if(resultPanel != null) resultPanel.SetActive(false); }
 }
