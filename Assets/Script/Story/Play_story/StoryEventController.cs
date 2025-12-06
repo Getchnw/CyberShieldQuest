@@ -47,7 +47,8 @@ public class StoryEventController : MonoBehaviour
 
         // ปิด ฺBackground
         dialoguePanel.SetActive(false);
-        quizBackgroundPanel.SetActive(false);
+        // quizBackgroundPanel.SetActive(false);
+        quizBackgroundPanel.SetActive(true);
         if (logWindowPanel != null) logWindowPanel.SetActive(false); // ปิดหน้า Log ก่อน
 
         // 2. ดึงข้อมูล

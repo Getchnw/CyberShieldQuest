@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 52c94746d2f95dc4ab0424aa6ac35668, type: 3}
-  m_Name: Reward_chap1_star2_card
+  m_Name: Reward_chap1_star3_card
   m_EditorClassIdentifier: 
   reward_id: 20
   quiz: {fileID: 11400000, guid: a023592fe75c4834e861d9e5a95cd5aa, type: 2}
