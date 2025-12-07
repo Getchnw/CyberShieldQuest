@@ -6,6 +6,8 @@ using UnityEngine.UI;
 public class MainMenu : MonoBehaviour
 {
     AudioManger AudioManger;
+    [SerializeField] private GameObject recheckPanel;
+    [SerializeField] private Button recheckNewgameButton;
 
     private void Start()
     {
@@ -28,9 +30,29 @@ public class MainMenu : MonoBehaviour
     {
         Use_SFX_Click_Button();
 
-        // สั่งให้ GameManager สร้างข้อมูลเกมใหม่
-        GameManager.Instance.CreateNewGame();
+        if (hasSaveFile())
+        {
+            recheckPanel.SetActive(true);
+            recheckNewgameButton.onClick.RemoveAllListeners();
+            recheckNewgameButton.onClick.AddListener(() =>
+            {
+                ConfirmNewGame();
+            });
+        }
+        else
+        {
+            ConfirmNewGame();
+        }
+    }
 
+    private bool hasSaveFile()
+    {
+        return SaveSystem.SaveFileExists();
+    }
+
+    private void ConfirmNewGame()
+    {
+        GameManager.Instance.CreateNewGame();
         SceneManager.LoadScene("Home");
     }
 
