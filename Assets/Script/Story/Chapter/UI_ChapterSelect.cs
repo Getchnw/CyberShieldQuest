@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
-using TMPro;                       
-using UnityEngine.UI;                
+using TMPro;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
@@ -10,13 +10,13 @@ public class UI_ChapterSelect : MonoBehaviour
     [Header("Content GameObject")]
     [SerializeField] private Transform buttonContainer;
     [SerializeField] private GameObject BoxPrefab;
-    
+
     [Header("Chapter Card Prefab")]
-    [SerializeField] private GameObject chapterButtonPrefab; 
+    [SerializeField] private GameObject chapterButtonPrefab;
 
     [Header("Navigation Buttons")]
     [SerializeField] private Button buttonNext; // 3. ลากปุ่ม "ถัดไป" มาใส่
-    [SerializeField] private Button buttonPrev; 
+    [SerializeField] private Button buttonPrev;
 
     // เอาไว้เก็บPageที่สร้าง
     private List<GameObject> instantiatedPages = new List<GameObject>();
@@ -52,7 +52,7 @@ public class UI_ChapterSelect : MonoBehaviour
     /// </summary>
     // private void RefreshChapterLocks()
     // {
-        
+
     //     if (GameManager.Instance == null || GameManager.Instance.CurrentGameData == null) 
     //     {
     //         return;
@@ -122,7 +122,7 @@ public class UI_ChapterSelect : MonoBehaviour
         PopulateChapterList();
 
         // รอให้จบเฟรมนี้ก่อน เพื่อให้ GridLayoutGroup มีเวลาทำงานจัดเรียงการ์ด
-        yield return new WaitForEndOfFrame(); 
+        yield return new WaitForEndOfFrame();
 
         foreach (GameObject page in instantiatedPages)
         {
@@ -137,7 +137,7 @@ public class UI_ChapterSelect : MonoBehaviour
         // 1. "ถาม" GameManager ว่าเราเลือก Story ไหนมา
         string selectedStoryId = GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId;
         // 2. "ถาม" Database ว่า Story ID นี้ มี Chapter อะไรบ้าง
-        List<ChapterData> chapters = GameContentDatabase.Instance.GetChaptersByStoryID(selectedStoryId);        
+        List<ChapterData> chapters = GameContentDatabase.Instance.GetChaptersByStoryID(selectedStoryId);
         var chapterProgress = GameManager.Instance.CurrentGameData.chapterProgress ?? new List<PlayerChapterProgress>();
         if (chapters == null || chapters.Count == 0)
         {
@@ -164,11 +164,16 @@ public class UI_ChapterSelect : MonoBehaviour
             // (GetComponentInChildren จะค้นหา Text, Button ที่อยู่ข้างใน)
             GameObject newButton = Instantiate(chapterButtonPrefab, currentPageBox.transform);
             TextMeshProUGUI Name = newButton.GetComponentInChildren<TextMeshProUGUI>();
-            Button buttonComponent = newButton.GetComponent<Button>(); 
+            Button buttonComponent = newButton.GetComponent<Button>();
             Image cardImage = newButton.GetComponent<Image>();
             Transform lockTransform = newButton.transform.Find("Lock");
+            Transform StarTransform = newButton.transform.Find("Star box");
             Image LockImage = null;
             if (lockTransform != null) LockImage = lockTransform.GetComponent<Image>();
+            if (StarTransform != null)
+            {
+                StarTransform.gameObject.SetActive(false);
+            }
             // Transform comingSoonTransform = newButton.transform.Find("ComingSoon");
 
 
@@ -198,7 +203,7 @@ public class UI_ChapterSelect : MonoBehaviour
                 // previousProgress uses snake_case fields (is_completed)
                 if (previousProgress != null && previousProgress.is_completed) isUnlocked = true;
             }
-            // 7. ตั้งค่าปุ่ม
+            // 7. ตั้งค่าปุ่ม และ ดาว
             if (buttonComponent != null)
             {
                 if (isUnlocked)
@@ -208,10 +213,44 @@ public class UI_ChapterSelect : MonoBehaviour
                     buttonComponent.onClick.AddListener(() => SelectChapter(capturedId));
                     //if (comingSoonTransform != null) comingSoonTransform.gameObject.SetActive(false);
                     if (LockImage != null) LockImage.gameObject.SetActive(false);
+                    if (StarTransform != null)
+                    {
+                        StarTransform.gameObject.SetActive(true); // เปิดกล่องใส่ดาว
+
+                        // ดึงข้อมูลความคืบหน้าของด่านนี้
+                        PlayerChapterProgress currentProgress = chapterProgress.Find(p => p.chapter_id == chap.chapter_id);
+                        int starsEarned = 0;
+
+                        if (currentProgress != null)
+                        {
+                            starsEarned = currentProgress.stars_earned;
+                        }
+
+                        // วนลูปเช็คดาวทีละดวง
+                        for (int i = 0; i < StarTransform.childCount; i++)
+                        {
+                            GameObject starObj = StarTransform.GetChild(i).gameObject;
+
+                            // หลักการ:
+                            // i = 0 (ดาวดวงที่ 1): เปิดเมื่อ starsEarned >= 1 (หรือ i < starsEarned คือ 0 < 1 เป็นจริง)
+                            // i = 1 (ดาวดวงที่ 2): เปิดเมื่อ starsEarned >= 2
+                            // i = 2 (ดาวดวงที่ 3): เปิดเมื่อ starsEarned >= 3
+
+                            if (i < starsEarned)
+                            {
+                                starObj.SetActive(true); // เปิดดาว
+                            }
+                            else
+                            {
+                                starObj.SetActive(false); // ปิดดาว
+                            }
+                        }
+                    }
                 }
                 else
                 {
                     buttonComponent.interactable = false;
+
                     //if (comingSoonTransform != null) comingSoonTransform.gameObject.SetActive(false);
                 }
             }
@@ -228,10 +267,10 @@ public class UI_ChapterSelect : MonoBehaviour
         // ถ้ามีหน้าเดียว (การ์ด 1-4 ใบ)
         if (instantiatedPages.Count <= 1)
         {
-            if(buttonNext != null) buttonNext.gameObject.SetActive(false);
-            if(buttonPrev != null) buttonPrev.gameObject.SetActive(false);
+            if (buttonNext != null) buttonNext.gameObject.SetActive(false);
+            if (buttonPrev != null) buttonPrev.gameObject.SetActive(false);
         }
-        
+
         // แสดงเฉพาะหน้าแรก
         if (instantiatedPages.Count > 0)
         {
@@ -271,7 +310,7 @@ public class UI_ChapterSelect : MonoBehaviour
             currentPageIndex++;
             // แสดงหน้าใหม่
             instantiatedPages[currentPageIndex].SetActive(true);
-            
+
             UpdateNavigationButtons(); // อัปเดตสถานะปุ่ม
         }
     }
@@ -286,7 +325,7 @@ public class UI_ChapterSelect : MonoBehaviour
             currentPageIndex--;
             // แสดงหน้าใหม่
             instantiatedPages[currentPageIndex].SetActive(true);
-            
+
             UpdateNavigationButtons(); // อัปเดตสถานะปุ่ม
         }
     }
@@ -295,8 +334,8 @@ public class UI_ChapterSelect : MonoBehaviour
     {
         Debug.Log($"เลือก Chapter ID: {chapterId}");
         // (คุณอาจจะฝาก Chapter ID ไว้กับ GameManager อีกที)
-        GameManager.Instance.SaveSelectedChapter(chapterId); 
-        
+        GameManager.Instance.SaveSelectedChapter(chapterId);
+
         // (แล้วโหลด Scene ถัดไป เช่น Scene เนื้อเรื่อง หรือ Scene ต่อสู้)
         SceneManager.LoadScene("Template_StoryScene");
     }

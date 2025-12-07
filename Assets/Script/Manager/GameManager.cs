@@ -259,12 +259,6 @@ public class GameManager : MonoBehaviour
 
             quizProgress.is_completed = isCompleted || quizProgress.is_completed;
             quizProgress.stars_earned = stars_earned > quizProgress.stars_earned ? stars_earned : quizProgress.stars_earned;
-            // หา chapter id จาก quiz id โดยใช้ฐานข้อมูล ChapterEventsData
-            int chapterId = GameContentDatabase.Instance.GetChapterIdByQuizId(quizID);
-            if (chapterId >= 0)
-            {
-                AdvanceChapterProgress(chapterId, stars_earned, highestScore);
-            }
         }
         else
         {
@@ -276,13 +270,15 @@ public class GameManager : MonoBehaviour
                 is_completed = isCompleted,
                 stars_earned = stars_earned
             });
-            // หา chapter id จาก quiz id โดยใช้ฐานข้อมูล ChapterEventsData
-            int chapterId = GameContentDatabase.Instance.GetChapterIdByQuizId(quizID);
-            if (chapterId >= 0)
-            {
-                AdvanceChapterProgress(chapterId, stars_earned, highestScore);
-            }
         }
+
+        int chapterId = GameContentDatabase.Instance.GetChapterIdByQuizId(quizID);
+        if (chapterId >= 0)
+        {
+            // ส่งค่าคะแนนและดาวของ *รอบนี้* ไปเช็คกับ Chapter
+            AdvanceChapterProgress(chapterId, currentStars, highestScore, isCompleted);
+        }
+
         SaveCurrentGame();
     }
 
@@ -301,19 +297,19 @@ public class GameManager : MonoBehaviour
 
         // โหลดการ์ดทั้งหมดจาก Resources แล้วเสกให้ผู้เล่น
         CardData[] allCards = Resources.LoadAll<CardData>("GameContent/Cards");
-        
+
         Debug.Log($"🔥 Loaded {allCards.Length} cards from resources");
-        
+
         // เสกการ์ดทั้งหมด อย่างละ 10 ใบ
         foreach (CardData card in allCards)
         {
             AddCardToInventory(card.card_id, 3);
             Debug.Log($"✅ Added card: {card.card_id} ({card.cardName})");
         }
-        
+
         // 🔥 ตั้ง flag เพื่อกันการเสกซ้ำ
         CurrentGameData.hasInitializedCards = true;
-        
+
         SaveCurrentGame();
         Debug.Log($"✨ เสกการ์ด {allCards.Length} ใบเรียบร้อย! (Cheat Mode Activated)");
     }
@@ -326,7 +322,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("✨ Save file deleted! Restart the game to create a new one.");
     }
     /// บันทึกความคืบหน้าของ Story Chapter
-    public void AdvanceChapterProgress(int chapterID, int stars_earned, int score)
+    public void AdvanceChapterProgress(int chapterID, int stars_earned, int score, bool is_completed)
     {
         if (CurrentGameData == null) return;
 
@@ -336,7 +332,7 @@ public class GameManager : MonoBehaviour
         // 1. ถ้าเคยเล่นแล้ว: อัปเดตความคืบหน้า
         if (chapterProgress != null)
         {
-            chapterProgress.is_completed = true;
+            // chapterProgress.is_completed = true;
             // อัปเดต Event ล่าสุดที่ผ่าน
             if (stars_earned > chapterProgress.stars_earned)
             {
@@ -346,6 +342,9 @@ public class GameManager : MonoBehaviour
             {
                 chapterProgress.high_score = score;
             }
+            // ถ้าผ่านด่านนี้แล้ว
+            chapterProgress.is_completed = is_completed || chapterProgress.is_completed;
+
         }
         else
         {
@@ -353,7 +352,7 @@ public class GameManager : MonoBehaviour
             CurrentGameData.chapterProgress.Add(new PlayerChapterProgress
             {
                 chapter_id = chapterID,
-                is_completed = true,
+                is_completed = is_completed,
                 stars_earned = stars_earned,
                 high_score = score
             });
@@ -482,15 +481,15 @@ public class GameManager : MonoBehaviour
     public void Dev_AddGold()
     {
         if (CurrentGameData == null) CurrentGameData = new GameData();
-        
+
         CurrentGameData.profile.gold += 5000; // เสกเงิน
         SaveCurrentGame(); // บันทึก
-        
+
         Debug.Log($"เสกเงินเรียบร้อย! ตอนนี้มี: {CurrentGameData.profile.gold} Gold");
-        
+
         // แจ้งเตือน UI ให้รู้ด้วย
         OnGoldChanged?.Invoke(CurrentGameData.profile.gold);
-        OnDataLoaded?.Invoke(); 
+        OnDataLoaded?.Invoke();
     }
 
 }

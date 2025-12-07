@@ -212,9 +212,15 @@ public class UI_QuizController : MonoBehaviour
         StarText.text = $"Star earned : {stars}";
         resultScoreText.text = $"Score : {correctAnswersCount} / {allQuestions.Count}";
 
-        // 2. บันทึกผลลัพธ์ลง GameManager
-        GameManager.Instance.UpdateQuizProgress(currentQuiz.quiz_id, correctAnswersCount, true);
-
+        // 2. บันทึกผลลัพธ์ลง GameManager 
+        if (stars == 0)
+        {
+            GameManager.Instance.UpdateQuizProgress(currentQuiz.quiz_id, correctAnswersCount, false);
+        }
+        else
+        {
+            GameManager.Instance.UpdateQuizProgress(currentQuiz.quiz_id, correctAnswersCount, true);
+        }
         // 3. (สำคัญ) แสดง "ของรางวัล"
         DisplayRewards(stars);
     }
