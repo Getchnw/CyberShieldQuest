@@ -276,7 +276,7 @@ public class GameManager : MonoBehaviour
         if (chapterId >= 0)
         {
             // ส่งค่าคะแนนและดาวของ *รอบนี้* ไปเช็คกับ Chapter
-            AdvanceChapterProgress(chapterId, currentStars, highestScore, isCompleted);
+            AdvanceChapterProgress(chapterId, stars_earned, highestScore, isCompleted);
         }
 
         SaveCurrentGame();
