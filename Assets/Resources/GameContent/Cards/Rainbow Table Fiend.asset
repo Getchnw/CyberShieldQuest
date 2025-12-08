@@ -17,10 +17,12 @@ MonoBehaviour:
   artwork: {fileID: 21300000, guid: 54534a5f46afa7b4cb4b607a3e0b0004, type: 3}
   frame: {fileID: 0}
   type: 0
-  mainCategory: 2
+  mainCategory: 1
   subCategory: 7
+  rarity: 0
   cost: 4
   atk: 2
+  hp: 0
   abilityText: "[Cont.] \u0E44\u0E14\u0E49\u0E23\u0E31\u0E1A +1 Attack \u0E15\u0E48\u0E2D\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E17\u0E38\u0E01
     2 \u0E43\u0E1A\u0E43\u0E19\u0E2A\u0E38\u0E2A\u0E32\u0E19\u0E02\u0E2D\u0E07\u0E1D\u0E48\u0E32\u0E22\u0E15\u0E23\u0E07\u0E02\u0E49\u0E32\u0E21"
   flavorText: "[A02: No Salt] \u0E1E\u0E08\u0E19\u0E32\u0E19\u0E38\u0E01\u0E23\u0E21\u0E41\u0E2E\u0E0A\u0E02\u0E19\u0E32\u0E14\u0E21\u0E2B\u0E36\u0E21\u0E32\u0E17\u0E35\u0E48\u0E43\u0E0A\u0E49\u0E42\u0E08\u0E21\u0E15\u0E35

@@ -17,10 +17,12 @@ MonoBehaviour:
   artwork: {fileID: 21300000, guid: a9ae3398a1d7a2d4e98e887b4d507930, type: 3}
   frame: {fileID: 0}
   type: 2
-  mainCategory: 2
+  mainCategory: 1
   subCategory: 4
+  rarity: 0
   cost: 4
   atk: 0
+  hp: 0
   abilityText: "[Cont.] \u0E01\u0E32\u0E23\u0E4C\u0E14\u0E43\u0E1A\u0E19\u0E35\u0E49\u0E16\u0E37\u0E2D\u0E27\u0E48\u0E32
     '\u0E16\u0E39\u0E01\u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17' \u0E40\u0E2A\u0E21\u0E2D\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E43\u0E0A\u0E49
     Intercept"

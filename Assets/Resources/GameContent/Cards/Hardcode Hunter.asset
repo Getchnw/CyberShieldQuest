@@ -17,10 +17,12 @@ MonoBehaviour:
   artwork: {fileID: 21300000, guid: 117a4d7480e2aad45b8ec81d8bdbd03a, type: 3}
   frame: {fileID: 0}
   type: 0
-  mainCategory: 2
+  mainCategory: 1
   subCategory: 8
+  rarity: 0
   cost: 6
   atk: 3
+  hp: 0
   abilityText: "[Deploy] \u0E14\u0E39\u0E40\u0E14\u0E47\u0E04\u0E02\u0E2D\u0E07\u0E1D\u0E48\u0E32\u0E22\u0E15\u0E23\u0E07\u0E02\u0E49\u0E32\u0E21
     \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E01\u0E32\u0E23\u0E4C\u0E14 2 \u0E43\u0E1A \u0E2A\u0E48\u0E07\u0E25\u0E07\u0E2A\u0E38\u0E2A\u0E32\u0E19"
   flavorText: "[A02: Bad Key] \u0E19\u0E31\u0E01\u0E25\u0E48\u0E32\u0E01\u0E38\u0E0D\u0E41\u0E08\u0E17\u0E35\u0E48\u0E04\u0E49\u0E19\u0E2B\u0E32

@@ -17,10 +17,12 @@ MonoBehaviour:
   artwork: {fileID: 21300000, guid: 2ff6a7c5cb98b674d9f908baa139daf0, type: 3}
   frame: {fileID: 0}
   type: 0
-  mainCategory: 2
+  mainCategory: 1
   subCategory: 6
+  rarity: 0
   cost: 3
   atk: 3
+  hp: 0
   abilityText: "[Deploy] \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E17\u0E33\u0E25\u0E32\u0E22
     Equip Spell 1 \u0E43\u0E1A\u0E02\u0E2D\u0E07\u0E1D\u0E48\u0E32\u0E22\u0E15\u0E23\u0E07\u0E02\u0E49\u0E32\u0E21\u0E17\u0E35\u0E48\u0E21\u0E35
     Cost 3 \u0E2B\u0E23\u0E37\u0E2D\u0E19\u0E49\u0E2D\u0E22\u0E01\u0E27\u0E48\u0E32"

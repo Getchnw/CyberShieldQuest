@@ -17,10 +17,12 @@ MonoBehaviour:
   artwork: {fileID: 21300000, guid: 6fa1ba3ad4590d44a9bfaa762ee7e20c, type: 3}
   frame: {fileID: 0}
   type: 0
-  mainCategory: 1
+  mainCategory: 0
   subCategory: 2
+  rarity: 0
   cost: 5
   atk: 3
+  hp: 0
   abilityText: "[Deploy] Equip Spell \u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14\u0E02\u0E2D\u0E07\u0E1D\u0E48\u0E32\u0E22\u0E15\u0E23\u0E07\u0E02\u0E49\u0E32\u0E21
     \u0E2A\u0E39\u0E0D\u0E40\u0E2A\u0E35\u0E22 Type \u0E02\u0E2D\u0E07\u0E15\u0E31\u0E27\u0E40\u0E2D\u0E07\u0E44\u0E1B\u0E08\u0E19\u0E08\u0E1A\u0E40\u0E17\u0E34\u0E23\u0E4C\u0E19"
   flavorText: "[A01: Path Traversal] \u0E19\u0E31\u0E01\u0E41\u0E1B\u0E25\u0E07\u0E01\u0E32\u0E22\u0E02\u0E31\u0E49\u0E19\u0E2A\u0E39\u0E07

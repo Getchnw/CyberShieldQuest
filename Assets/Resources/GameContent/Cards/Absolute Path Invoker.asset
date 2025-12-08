@@ -17,10 +17,12 @@ MonoBehaviour:
   artwork: {fileID: 21300000, guid: a778886e8a5b0c14a8e83c9fe528fb28, type: 3}
   frame: {fileID: 0}
   type: 0
-  mainCategory: 1
+  mainCategory: 0
   subCategory: 2
+  rarity: 0
   cost: 5
   atk: 2
+  hp: 0
   abilityText: "[Strike] \u0E1A\u0E31\u0E07\u0E04\u0E31\u0E1A Equip Spell 1 \u0E43\u0E1A\u0E02\u0E2D\u0E07\u0E1D\u0E48\u0E32\u0E22\u0E15\u0E23\u0E07\u0E02\u0E49\u0E32\u0E21\u0E43\u0E2B\u0E49
     Intercept \u0E01\u0E32\u0E23\u0E42\u0E08\u0E21\u0E15\u0E35\u0E19\u0E35\u0E49"
   flavorText: "[A01: Path Traversal] \u0E21\u0E31\u0E19\u0E44\u0E21\u0E48 '\u0E44\u0E15\u0E48\u0E01\u0E25\u0E31\u0E1A'

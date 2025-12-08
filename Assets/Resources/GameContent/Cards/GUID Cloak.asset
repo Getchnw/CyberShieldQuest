@@ -17,10 +17,12 @@ MonoBehaviour:
   artwork: {fileID: 21300000, guid: 119cd4e58056a1a4789a1e85cc1ec4ec, type: 3}
   frame: {fileID: 0}
   type: 2
-  mainCategory: 1
+  mainCategory: 0
   subCategory: 1
+  rarity: 0
   cost: 2
   atk: 0
+  hp: 0
   abilityText: "[Cont.] Monster \u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17 [A01: IDOR]
     \u0E02\u0E2D\u0E07\u0E1D\u0E48\u0E32\u0E22\u0E15\u0E23\u0E07\u0E02\u0E49\u0E32\u0E21\u0E17\u0E35\u0E48\u0E21\u0E35
     Cost 3 \u0E2B\u0E23\u0E37\u0E2D\u0E19\u0E49\u0E2D\u0E22\u0E01\u0E27\u0E48\u0E32
