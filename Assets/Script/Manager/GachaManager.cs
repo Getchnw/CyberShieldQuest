@@ -159,32 +159,71 @@ public class GachaManager : MonoBehaviour
         }
     }
 
+    // Helper: แปลง MainCategory เป็น index สำหรับเช็ค Unlock
+    int GetCategoryIndex(MainCategory cat)
+    {
+        if (cat == MainCategory.A01) return 1;
+        if (cat == MainCategory.A02) return 2;
+        if (cat == MainCategory.A03) return 3;
+        return 0; // General
+    }
+
     // =========================================================
     // ระบบสุ่ม (Gacha Logic)
     // =========================================================
     public void PullOne()
     {
+        Debug.Log("🔵 PullOne() called");
+        
         // เช็คเงื่อนไขอีกรอบกันเหนียว (เผื่อแฮกปุ่ม)
-        if (!CheckUnlockStatus((int)currentTargetCategory == 1 ? 1 : (int)currentTargetCategory == 2 ? 2 : 3)) return;
+        int catIndex = GetCategoryIndex(currentTargetCategory);
+        if (!CheckUnlockStatus(catIndex))
+        {
+            Debug.LogWarning("❌ Banner ยังไม่ปลดล็อค!");
+            return;
+        }
+
+        if (GameManager.Instance == null || GameManager.Instance.CurrentGameData == null)
+        {
+            Debug.LogError("❌ GameManager is NULL!");
+            return;
+        }
 
         int currentGold = GameManager.Instance.CurrentGameData.profile.gold;
+        Debug.Log($"💰 Current Gold: {currentGold}, Cost: {costPerPull}");
+        
         if (currentGold >= costPerPull)
         {
             GameManager.Instance.DecreaseGold(costPerPull);
             CardData pulledCard = RandomCard(currentTargetCategory);
             GameManager.Instance.AddCardToInventory(pulledCard.card_id, 1);
             GameManager.Instance.SaveCurrentGame();
+            Debug.Log($"✅ Pulled: {pulledCard.cardName}");
             ShowResult(new List<CardData> { pulledCard });
         }
-        else Debug.Log("เงินไม่พอ!");
+        else Debug.LogWarning($"❌ เงินไม่พอ! มี {currentGold} ต้องการ {costPerPull}");
     }
 
     public void PullTen()
     {
-        if (!CheckUnlockStatus((int)currentTargetCategory == 1 ? 1 : (int)currentTargetCategory == 2 ? 2 : 3)) return;
+        Debug.Log("🔵 PullTen() called");
+        
+        int catIndex = GetCategoryIndex(currentTargetCategory);
+        if (!CheckUnlockStatus(catIndex))
+        {
+            Debug.LogWarning("❌ Banner ยังไม่ปลดล็อค!");
+            return;
+        }
+
+        if (GameManager.Instance == null || GameManager.Instance.CurrentGameData == null)
+        {
+            Debug.LogError("❌ GameManager is NULL!");
+            return;
+        }
 
         int totalCost = costPerPull * 10;
         int currentGold = GameManager.Instance.CurrentGameData.profile.gold;
+        Debug.Log($"💰 Current Gold: {currentGold}, Total Cost: {totalCost}");
 
         if (currentGold >= totalCost)
         {
@@ -197,6 +236,7 @@ public class GachaManager : MonoBehaviour
                 GameManager.Instance.AddCardToInventory(c.card_id, 1);
             }
             GameManager.Instance.SaveCurrentGame();
+            Debug.Log($"✅ Pulled {pulledList.Count} cards");
             ShowResult(pulledList);
         }
         else Debug.Log("เงินไม่พอ!");
