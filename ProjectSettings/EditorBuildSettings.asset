@@ -24,6 +24,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Story.unity
     guid: bbee383781bbdb44ea35e5681df073b6
   - enabled: 1
+    path: Assets/Scenes/collection.unity
+    guid: 0887215cac9280a4d8bde94b98437539
+  - enabled: 1
     path: Assets/Scenes/Template_select_chapter_story.unity
     guid: 347196f780e91eb4aa23620ead0be2b2
   - enabled: 1

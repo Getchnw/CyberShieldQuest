@@ -491,5 +491,20 @@ public class GameManager : MonoBehaviour
         OnGoldChanged?.Invoke(CurrentGameData.profile.gold);
         OnDataLoaded?.Invoke();
     }
+    // ------------------------------------------------------------
+    // 🔥 ฟังก์ชันเช็คจำนวนการ์ด (GetCardAmount)
+    // ------------------------------------------------------------
+    public int GetCardAmount(string cardID)
+    {
+        // ถ้ายังไม่โหลดข้อมูล ให้ตอบว่ามี 0 ใบ
+        if (CurrentGameData == null) return 0;
 
+        // ค้นหาการ์ดในกระเป๋า (Inventory) ที่มี ID ตรงกัน
+        // (ใช้ FirstOrDefault จำเป็นต้องมี using System.Linq; ด้านบนไฟล์)
+        var item = CurrentGameData.cardInventory.FirstOrDefault(x => x.card_id == cardID);
+        
+        // ถ้าเจอ -> ส่งจำนวนกลับไป (item.quantity)
+        // ถ้าไม่เจอ -> ส่ง 0 กลับไป
+        return item != null ? item.quantity : 0;
+    }
 }

@@ -265,6 +265,8 @@ public class PlayerProfile
     public int level = 1;
     public int experience = 0;
     public int gold = 0;
+    
+    public int scrap = 0;
 }
 
 [System.Serializable]
