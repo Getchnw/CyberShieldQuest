@@ -121,7 +121,7 @@ public class GachaManager : MonoBehaviour
             
             if (!isUnlocked)
             {
-                currentBannerNameText.text += " <color=red>(LOCKED - Complete Previous Chapter)</color>";
+                currentBannerNameText.text += " <color=red> ( LOCKED )</color>";
                 if(bannerImageDisplay != null) bannerImageDisplay.color = Color.gray; 
             }
             else
