@@ -421,33 +421,42 @@ public class GameManager : MonoBehaviour
         SaveCurrentGame();
     }
 
-    public void SavePreTest_PostTest(bool isPreOrPost, string story_id, int score, int Maxscore)
-    {
-        //คะแนนของPretest
-        if (isPreOrPost)
-        {
-            CurrentGameData.preTestResults.Add(new PlayerPreTestScore
-            {
-                story_id = story_id,
-                score = score,
-                Maxscore = Maxscore
-            });
-            SaveStatusPreTest_PostTest(isPreOrPost, story_id);
-        }
-        // ของPostTest
-        else
-        {
-            CurrentGameData.postTestResults.Add(new PlayerPostTestScore
-            {
-                story_id = story_id,
-                score = score,
-                Maxscore = Maxscore
-            });
-            SaveStatusPreTest_PostTest(isPreOrPost, story_id);
-        }
-        SaveCurrentGame();
-    }
 
+    public void SavePreTest_PostTest(
+        bool isPreOrPost, string story_id
+        , int score, int Maxscore
+        , List<Qustion_Answer> answersList
+    )
+    {
+        if (CurrentGameData == null) return;
+        {
+            //คะแนนของPretest
+            if (isPreOrPost)
+            {
+                CurrentGameData.preTestResults.Add(new PlayerPreTestScore
+                {
+                    story_id = story_id,
+                    TotalScore = score,
+                    MaxScore = Maxscore,
+                    Qustion_Answers = new List<Qustion_Answer>(answersList)
+                });
+                SaveStatusPreTest_PostTest(isPreOrPost, story_id);
+            }
+            // ของPostTest
+            else
+            {
+                CurrentGameData.postTestResults.Add(new PlayerPostTestScore
+                {
+                    story_id = story_id,
+                    TotalScore = score,
+                    MaxScore = Maxscore,
+                    Qustion_Answers = new List<Qustion_Answer>(answersList)
+                });
+                SaveStatusPreTest_PostTest(isPreOrPost, story_id);
+            }
+            SaveCurrentGame();
+        }
+    }
     /// บันทึกว่าผ่านด่าน Stage แล้ว
     public void CompleteStage(int stageID, int starsEarned)
     {

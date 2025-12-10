@@ -123,4 +123,52 @@ public class MatchingPanelUI : MonoBehaviour
         // เช็คว่ามีช่องไหนยังเป็น -1 ไหม
         return !spawnedDropZones.Any(z => z.currentDroppedAnswerIndex == -1);
     }
+
+    public List<Qustion_Answer> GetSplitQuestionAnswers()
+    {
+        List<Qustion_Answer> subAnswers = new List<Qustion_Answer>();
+
+        // วนลูปทุกคู่โจทย์ที่มี (เช่น 4 ข้อ)
+        foreach (var zone in spawnedDropZones)
+        {
+            Qustion_Answer qa = new Qustion_Answer();
+
+            // 1. ระบุโจทย์ข้อย่อยนั้นๆ
+            // เช่น "Matching: SQL Injection"
+            string promptText = questionData.prompts[zone.promptIndex];
+            qa.QustionText = "Matching: " + promptText;
+
+            // 2. ระบุคำตอบที่ผู้เล่นเลือก
+            string answerText = "[No Answer]";
+            int score = 0;
+
+            if (zone.currentDroppedAnswerIndex != -1)
+            {
+                // ชื่อคำตอบที่ลากมาวาง
+                answerText = questionData.options[zone.currentDroppedAnswerIndex];
+
+                // ตรวจว่าคู่นี้ถูกไหม?
+                int correctAnswerIndex = questionData.correctAnswers_OptionIndex[zone.promptIndex];
+                if (zone.currentDroppedAnswerIndex == correctAnswerIndex)
+                {
+                    score = 1; // ถูกได้ 1 คะแนน
+                }
+            }
+
+            qa.AnswerText = answerText;
+            qa.score = score;
+
+            // เพิ่มข้อย่อยนี้ลงใน List
+            subAnswers.Add(qa);
+        }
+
+        return subAnswers;
+    }
+
+    public int GetMaxScore()
+    {
+        // คะแนนเต็ม = จำนวนข้อที่ต้องจับคู่
+        if (questionData == null || questionData.prompts == null) return 0;
+        return questionData.prompts.Count;
+    }
 }

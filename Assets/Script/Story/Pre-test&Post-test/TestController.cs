@@ -284,24 +284,23 @@ public class TestController : MonoBehaviour
         }
     }
 
-    void EndTestAndSaveResults()
+    void EndTestAndSaveResults(List<Qustion_Answer> answerList, int calculatedMaxScore)
     {
         Debug.Log("--- จบแบบทดสอบ ---");
         string storyId = GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId;
-        int totalQuestions = allQuestions.Count;
-        int score = correctAnswersCount;
+        // int totalQuestions = allQuestions.Count;
+        // int score = correctAnswersCount;
 
         // ใช้ Enum เช็ค
         if (currentTestMode == TestMode.PreTest)
         {
-            GameManager.Instance.SavePreTest_PostTest(true, storyId, score, totalQuestions);
+            GameManager.Instance.SavePreTest_PostTest(true, storyId, correctAnswersCount, calculatedMaxScore, answerList);
         }
         else if (currentTestMode == TestMode.PostTest)
         {
-            GameManager.Instance.SavePreTest_PostTest(false, storyId, score, totalQuestions);
+            GameManager.Instance.SavePreTest_PostTest(false, storyId, correctAnswersCount, calculatedMaxScore, answerList);
         }
 
-        // ซ่อนหน้าทดสอบ
         if (mainTestBackground != null)
         {
             mainTestBackground.SetActive(false);
@@ -446,18 +445,71 @@ public class TestController : MonoBehaviour
 
     void CalculateTotalScoreAndFinish()
     {
-        int totalScore = 0;
+        int totalScoreEarned = 0;
+        int totalMaxScore = 0;
+
+        List<Qustion_Answer> collectedAnswers = new List<Qustion_Answer>();
+
         foreach (var panel in instantiatedPanels)
         {
-            // สมมติว่าทุก Panel มีฟังก์ชัน IsAnswerCorrect() ที่คืนค่า bool หรือ int
-            // คุณต้องไปแก้ IsAnswerCorrect ใน Panel ให้คืนค่าคะแนนถ้าต้องการคะแนนละเอียด
-            if (panel.GetComponent<MatchingPanelUI>()?.IsAnswerCorrect() ?? false) totalScore++;
-            else if (panel.GetComponent<FillInBlankPanelUI>()?.IsAnswerCorrect() ?? false) totalScore++;
-            else if (panel.GetComponent<TrueFalsePanelUI>()?.IsAnswerCorrect() ?? false) totalScore++;
+            Qustion_Answer qaData = null;
+            int panelMaxScore = 0;
+            // --- Matching ---
+            if (panel.GetComponent<MatchingPanelUI>() != null)
+            {
+                var p = panel.GetComponent<MatchingPanelUI>();
+
+                // ดึง List ข้อย่อย
+                List<Qustion_Answer> subList = p.GetSplitQuestionAnswers();
+
+                // รวมคะแนน Matching
+                foreach (var sub in subList)
+                {
+                    sub.TypeQustion = TypeQustion.Matching;
+                    totalScoreEarned += sub.score; // ใช้ตัวแปรที่ประกาศไว้ข้างบน
+                }
+                collectedAnswers.AddRange(subList);
+                totalMaxScore += p.GetMaxScore();
+
+                // Matching จัดการเสร็จแล้ว ข้ามไป Loop ถัดไปเลย เพื่อไม่ให้ชน Logic ข้างล่าง
+                continue;
+            }
+
+            // --- Fill In Blank ---
+            else if (panel.GetComponent<FillInBlankPanelUI>() != null)
+            {
+                var p = panel.GetComponent<FillInBlankPanelUI>();
+                qaData = p.GetQuestionAnswerData();
+                if (qaData != null) qaData.TypeQustion = TypeQustion.FillBlank;
+                panelMaxScore = p.GetMaxScore();
+            }
+            // --- True / False ---
+            else if (panel.GetComponent<TrueFalsePanelUI>() != null)
+            {
+                var p = panel.GetComponent<TrueFalsePanelUI>();
+                qaData = p.GetQuestionAnswerData();
+                if (qaData != null) qaData.TypeQustion = TypeQustion.TrueFalse;
+                panelMaxScore = p.GetMaxScore();
+            }
+
+            // 3. รวมคะแนน (สำหรับ FillBlank และ TrueFalse)
+            if (qaData != null)
+            {
+                totalScoreEarned += qaData.score;
+                collectedAnswers.Add(qaData);
+                totalMaxScore += panelMaxScore;
+            }
         }
 
-        correctAnswersCount = totalScore;
-        EndTestAndSaveResults();
+        if (collectedAnswers == null)
+        {
+            collectedAnswers = new List<Qustion_Answer>(); // กันตาย สร้าง List เปล่ารอไว้
+        }
+
+        correctAnswersCount = totalScoreEarned;
+        // ส่งข้อมูลไปบันทึก
+        EndTestAndSaveResults(collectedAnswers, totalMaxScore);
+
     }
 
 

@@ -60,4 +60,29 @@ public class TrueFalsePanelUI : MonoBehaviour
         if (selectedAnswer == null) return false; // ยังไม่ตอบ
         return selectedAnswer.Value == questionData.isCorrectAnswerTrue;
     }
+
+    public Qustion_Answer GetQuestionAnswerData()
+    {
+        Qustion_Answer qa = new Qustion_Answer();
+
+        // เก็บโจทย์
+        qa.QustionText = questionData.statement;
+
+        // เก็บคำตอบที่เลือก (แปลงเป็น String)
+        if (selectedAnswer == null) qa.AnswerText = "No Answer";
+        else qa.AnswerText = selectedAnswer.Value ? "True" : "False";
+
+        // เก็บดาแนนข้อนี้ (ถ้าถูกได้ 1 ผิดได้ 0)
+        qa.score = IsAnswerCorrect() ? 1 : 0;
+
+        return qa;
+    }
+
+
+    // เพิ่มฟังก์ชันนี้
+    public int GetMaxScore()
+    {
+        return 1; // ข้อสอบถูกผิด มีแค่ 1 คะแนน
+    }
+
 }

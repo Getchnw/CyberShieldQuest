@@ -40,7 +40,7 @@
 //     {
 //         public int deck_id; 
 //         public string deck_name;
-        
+
 //         // ⚠️ แก้จาก List<int> เป็น List<string>
 //         public List<string> card_ids_in_deck; 
 
@@ -130,7 +130,7 @@
 // {
 //     public int deck_id; 
 //     public string deck_name;
-    
+
 //     // ⚠️ แก้จาก List<int> เป็น List<string>
 //     public List<string> card_ids_in_deck; 
 
@@ -189,11 +189,11 @@ using System.Collections.Generic;
 
 // ⚠️ สำคัญ: DeckData ต้องอยู่นอกวงเล็บของ GameData ก่อน!
 [System.Serializable]
-public class DeckData 
+public class DeckData
 {
-    public int deck_id; 
+    public int deck_id;
     public string deck_name;
-    public List<string> card_ids_in_deck; 
+    public List<string> card_ids_in_deck;
 
     public DeckData(int id, string name)
     {
@@ -213,21 +213,21 @@ public class GameData
     public List<PlayerCardInventoryItem> cardInventory;
 
     // 3. Decks
-    public List<DeckData> decks; 
+    public List<DeckData> decks;
 
     // 4. Progress ต่างๆ
     public List<PlayerStageProgress> stageProgress;
     public List<PlayerChapterProgress> chapterProgress;
     public List<PlayerQuizProgress> quizProgress;
-    public List<int> claimedQuizRewardRuleIDs; 
+    public List<int> claimedQuizRewardRuleIDs;
 
     public PlayerTutorialData tutorialData;
-    public PlayerSelectedStory selectedStory; 
+    public PlayerSelectedStory selectedStory;
     public PlayerPreTest statusPreTest;
     public PlayerPostTest statusPostTest;
     public List<PlayerPostTestScore> postTestResults;
     public List<PlayerPreTestScore> preTestResults;
-    
+
     // 🔥 Flag เพื่อกันการเสกการ์ดซ้ำ
     public bool hasInitializedCards = false;
 
@@ -237,10 +237,10 @@ public class GameData
         profile = new PlayerProfile();
         tutorialData = new PlayerTutorialData();
         selectedStory = new PlayerSelectedStory();
-        
+
         cardInventory = new List<PlayerCardInventoryItem>();
-        decks = new List<DeckData>(); 
-        
+        decks = new List<DeckData>();
+
         statusPostTest = new PlayerPostTest();
         statusPreTest = new PlayerPreTest();
         preTestResults = new List<PlayerPreTestScore>();
@@ -249,7 +249,7 @@ public class GameData
         chapterProgress = new List<PlayerChapterProgress>();
         quizProgress = new List<PlayerQuizProgress>();
         claimedQuizRewardRuleIDs = new List<int>();
-        
+
         hasInitializedCards = false; // 🔥 ยังไม่เสกการ์ด
     }
 }
@@ -345,14 +345,32 @@ public class PlayerQuizProgress
 public class PlayerPreTestScore
 {
     public string story_id;
-    public int score;
-    public int Maxscore;
+    public int TotalScore;
+    public int MaxScore;
+    public List<Qustion_Answer> Qustion_Answers;
 }
 
 [System.Serializable]
 public class PlayerPostTestScore
 {
     public string story_id;
+    public int TotalScore;
+    public int MaxScore;
+    public List<Qustion_Answer> Qustion_Answers;
+}
+
+[System.Serializable]
+public enum TypeQustion
+{
+    TrueFalse,
+    FillBlank,
+    Matching
+}
+[System.Serializable]
+public class Qustion_Answer
+{
+    public string QustionText;
+    public string AnswerText;
     public int score;
-    public int Maxscore;
+    public TypeQustion TypeQustion;
 }

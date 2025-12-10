@@ -146,4 +146,39 @@ public class FillInBlankPanelUI : MonoBehaviour
         // เช็คว่ามีช่องไหนว่างไหม
         return !spawnedDropZones.Any(z => string.IsNullOrEmpty(z.currentDroppedAnswerID));
     }
+
+    // ... (Code เดิมด้านบน) ...
+
+    // เพิ่มฟังก์ชันนี้ลงไปท้าย Class
+    public Qustion_Answer GetQuestionAnswerData()
+    {
+        Qustion_Answer qa = new Qustion_Answer();
+
+        // 1. สร้างโจทย์ (เอาประโยคมาต่อกันเพื่อเป็น Reference)
+        // หรือจะใช้ชื่อหัวข้อก็ได้ถ้าประโยคยาวไป
+        qa.QustionText = "Fill In Blank: " + string.Join(" ... ", questionData.sentences.Select(s => s.sentencePart1));
+
+        // 2. รวบรวมคำตอบที่ผู้เล่นใส่ในช่องว่าง
+        List<string> playerAnswers = new List<string>();
+        foreach (var zone in spawnedDropZones)
+        {
+            if (string.IsNullOrEmpty(zone.currentDroppedAnswerID))
+                playerAnswers.Add("[Blank]");
+            else
+                playerAnswers.Add(zone.currentDroppedAnswerID);
+        }
+        qa.AnswerText = string.Join(", ", playerAnswers);
+
+        // 3. คะแนนรวมของหน้านี้
+        qa.score = CheckAnswers();
+
+        return qa;
+    }
+
+    public int GetMaxScore()
+    {
+        // คะแนนเต็ม = จำนวนช่องว่างที่ต้องเติม
+        if (questionData == null || questionData.sentences == null) return 0;
+        return questionData.sentences.Count;
+    }
 }
