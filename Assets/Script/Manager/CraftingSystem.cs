@@ -7,11 +7,11 @@ public static class CraftingSystem
     {
         switch (rarity)
         {
-            case Rarity.Common: return 50;
+            case Rarity.Common: return 100;
             case Rarity.Rare: return 150;
             case Rarity.Epic: return 400;
             case Rarity.Legendary: return 1000;
-            default: return 50;
+            default: return 100;
         }
     }
 
