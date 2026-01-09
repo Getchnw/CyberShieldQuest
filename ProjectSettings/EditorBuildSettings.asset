@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Stage.unity
     guid: 5ea651d02ba83ea429a315d6cca311e0
   - enabled: 1
+    path: Assets/Scenes/Battle.unity
+    guid: da97ee45aad6b3a4094265e662f0b72d
+  - enabled: 1
     path: Assets/Scenes/deck.unity
     guid: 9c871389ef001c94ab510a7457f0357e
   - enabled: 1

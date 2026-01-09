@@ -485,6 +485,21 @@ public class GameManager : MonoBehaviour
             });
         }
     }
+    
+    // เช็คว่าด่านนี้ผ่านแล้วหรือยัง
+    public bool IsStageCleared(string stageID)
+    {
+        if (CurrentGameData == null) return false;
+        
+        // แปลง string เป็น int
+        if (int.TryParse(stageID, out int id))
+        {
+            var stage = CurrentGameData.stageProgress.FirstOrDefault(s => s.stage_id == id);
+            return stage != null && stage.is_completed;
+        }
+        return false;
+    }
+    
     // คลิกขวาที่ชื่อสคริปต์ใน Inspector -> เลือก "DEV: Add 5000 Gold"
     [ContextMenu("DEV: Add 5000 Gold")]
     public void Dev_AddGold()
