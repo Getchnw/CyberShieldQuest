@@ -73,10 +73,14 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         _cardData = data;
         
-        // ตั้งรูปการ์ด
-        if(artworkImage != null && data.artwork != null) 
+        // ตั้งรูปการ์ด และบังคับให้รับ Raycast เสมอ (กันกรณี prefab ปิดไว้)
+        if (artworkImage != null)
         {
-            artworkImage.sprite = data.artwork;
+            artworkImage.raycastTarget = true;
+            if (data.artwork != null)
+            {
+                artworkImage.sprite = data.artwork;
+            }
         }
         else if (data.artwork == null)
         {
@@ -87,8 +91,13 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         isOnField = false; 
         mulliganSelected = false;
         
-        // เปิด CanvasGroup ให้คลิกได้
-        if (canvasGroup) canvasGroup.blocksRaycasts = true;
+        // เปิด CanvasGroup ให้คลิกได้ (กันเคส prefab ปิดไว้)
+        if (canvasGroup)
+        {
+            canvasGroup.blocksRaycasts = true;
+            canvasGroup.interactable = true;
+            canvasGroup.alpha = 1f;
+        }
         
         // ตั้งชื่อ GameObject ให้หาง่ายๆ ใน Hierarchy
         gameObject.name = data.cardName;
@@ -193,31 +202,42 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         if (_cardData == null) return;
 
-        // 🔥 LEFT CLICK = ดูรายละเอียดการ์ด (ทุกโหมด)
-        if (eventData.button == PointerEventData.InputButton.Left)
+        bool isPrimary = eventData.button == PointerEventData.InputButton.Left;
+        bool isSecondary = eventData.button == PointerEventData.InputButton.Right;
+
+        // 🔥 คลิกซ้าย = เปิดรายละเอียดการ์ดเท่านั้น (ถ้าคลิกซ้ำให้ปิด)
+        if (isPrimary)
         {
             if (BattleManager.Instance != null && BattleManager.Instance.cardDetailView != null)
             {
-                BattleManager.Instance.cardDetailView.Open(_cardData);
-                Debug.Log($"📋 เปิด detail: {_cardData.cardName}");
+                // ถ้ากำลังแสดงการ์ดนี้อยู่แล้ว → ปิด
+                if (BattleManager.Instance.cardDetailView.IsShowingCard(_cardData))
+                {
+                    BattleManager.Instance.cardDetailView.Close();
+                    Debug.Log($"❌ ปิด detail: {_cardData.cardName}");
+                }
+                else
+                {
+                    // ถ้ายังไม่เปิดหรือเปิดการ์ดอื่นอยู่ → เปิดการ์ดนี้
+                    BattleManager.Instance.cardDetailView.Open(_cardData);
+                    Debug.Log($"📋 เปิด detail: {_cardData.cardName}");
+                }
             }
             else
             {
                 Debug.LogWarning("CardDetailView not found in BattleManager");
             }
-            return;
+            return; // หยุดที่นี่ ไม่ทำแอ็กชันอื่น
         }
 
-        // 🔥 RIGHT CLICK = การทำงานต่างๆตามโหมด
-        if (eventData.button != PointerEventData.InputButton.Right) return;
+        // ใช้คลิกขวาเท่านั้นสำหรับการกระทำหลัก (เล่น/โจมตี/ป้องกัน)
+        if (!isSecondary) return;
 
         // === โหมด Mulligan ===
         if (BattleManager.Instance != null && BattleManager.Instance.IsMulliganPhase())
         {
-            // 🔥 Right click ใน mulligan: toggle การ์ดเข้า/ออก swap slots
             bool isInSwapSlot = false;
-            Transform originalSlot = transform.parent;
-            
+
             if (BattleManager.Instance.mulliganSwapSlots != null)
             {
                 foreach (var swapSlot in BattleManager.Instance.mulliganSwapSlots)
@@ -229,10 +249,9 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                     }
                 }
             }
-            
+
             if (isInSwapSlot)
             {
-                // 🔥 ถ้าอยู่ใน swap slot -> ย้ายกลับ mulligan slot
                 Transform freeMulliganSlot = BattleManager.Instance.GetFreeMulliganSlot();
                 if (freeMulliganSlot != null)
                 {
@@ -248,7 +267,6 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             }
             else
             {
-                // 🔥 ถ้าอยู่ใน mulligan slot -> ย้ายไป swap slot (เลือกเปลี่ยน)
                 bool moved = BattleManager.Instance.TryMoveCardToSwapSlot(this);
                 if (moved)
                 {
@@ -263,19 +281,19 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
 
         // === โหมดปกติ ===
-        
+
         // 1. เล่นการ์ดจากมือ
         if (!isOnField && BattleManager.Instance != null && BattleManager.Instance.state == BattleState.PLAYERTURN)
         {
             BattleManager.Instance.OnCardPlayed(this);
             Debug.Log($"▶️ เล่น {_cardData.cardName}");
+            return;
         }
+
         // 2. อยู่บนสนาม
-        else if (isOnField && BattleManager.Instance != null)
+        if (isOnField && BattleManager.Instance != null)
         {
-            // ตาเรา -> โจมตี
-            if (BattleManager.Instance.state == BattleState.PLAYERTURN && 
-                _cardData.type == CardType.Monster)
+            if (BattleManager.Instance.state == BattleState.PLAYERTURN && _cardData.type == CardType.Monster)
             {
                 if (!hasAttacked)
                 {
@@ -287,7 +305,6 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                     Debug.Log("⚠️ การ์ดนี้โจมตีแล้ว");
                 }
             }
-            // โหมดป้องกัน -> เลือกกัน
             else if (BattleManager.Instance.state == BattleState.DEFENDER_CHOICE)
             {
                 if (_cardData.type == CardType.EquipSpell)

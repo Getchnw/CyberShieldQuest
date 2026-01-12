@@ -531,21 +531,30 @@ public class BattleManager : MonoBehaviour
         }
         
         // 🔥 ซ่อนช่อง mulligan slots ทั้งหมด
-        if (mulliganSlots != null)
+        if (mulliganSlots != null && mulliganSlots.Length > 0)
         {
+            // ซ่อน parent GameObject ของ mulliganSlots (muliganslot)
+            Transform mulliganSlotsParent = mulliganSlots[0]?.parent;
+            if (mulliganSlotsParent != null)
+            {
+                CanvasGroup parentCg = mulliganSlotsParent.GetComponent<CanvasGroup>();
+                if (parentCg != null)
+                {
+                    parentCg.alpha = 0f;
+                    parentCg.blocksRaycasts = false;
+                    parentCg.interactable = false;
+                }
+                mulliganSlotsParent.gameObject.SetActive(false);
+                Debug.Log($"✅ ซ่อน {mulliganSlotsParent.name}");
+            }
+            
             foreach (var slot in mulliganSlots)
             {
                 if (slot != null)
                 {
-                    // ปิด Image ถ้ามี
                     Image slotImg = slot.GetComponent<Image>();
-                    if (slotImg != null)
-                    {
-                        slotImg.enabled = false;
-                        Debug.Log($"✅ ปิด Image ของ {slot.name}");
-                    }
+                    if (slotImg != null) slotImg.enabled = false;
                     
-                    // ล้าง CanvasGroup ด้วย
                     CanvasGroup slotCg = slot.GetComponent<CanvasGroup>();
                     if (slotCg != null)
                     {
@@ -556,25 +565,33 @@ public class BattleManager : MonoBehaviour
                     slot.gameObject.SetActive(false);
                 }
             }
-            Debug.Log("✅ ซ่อน mulliganSlots");
         }
         
         // 🔥 ซ่อนช่อง mulligan swap slots ทั้งหมด
-        if (mulliganSwapSlots != null)
+        if (mulliganSwapSlots != null && mulliganSwapSlots.Length > 0)
         {
+            // ซ่อน parent GameObject ของ mulliganSwapSlots (muliganswap)
+            Transform mulliganSwapParent = mulliganSwapSlots[0]?.parent;
+            if (mulliganSwapParent != null)
+            {
+                CanvasGroup parentCg = mulliganSwapParent.GetComponent<CanvasGroup>();
+                if (parentCg != null)
+                {
+                    parentCg.alpha = 0f;
+                    parentCg.blocksRaycasts = false;
+                    parentCg.interactable = false;
+                }
+                mulliganSwapParent.gameObject.SetActive(false);
+                Debug.Log($"✅ ซ่อน {mulliganSwapParent.name}");
+            }
+            
             foreach (var slot in mulliganSwapSlots)
             {
                 if (slot != null)
                 {
-                    // ปิด Image ถ้ามี
                     Image swapImg = slot.GetComponent<Image>();
-                    if (swapImg != null)
-                    {
-                        swapImg.enabled = false;
-                        Debug.Log($"✅ ปิด Image ของ {slot.name}");
-                    }
+                    if (swapImg != null) swapImg.enabled = false;
                     
-                    // ล้าง CanvasGroup ด้วย
                     CanvasGroup swapCg = slot.GetComponent<CanvasGroup>();
                     if (swapCg != null)
                     {
@@ -585,7 +602,6 @@ public class BattleManager : MonoBehaviour
                     slot.gameObject.SetActive(false);
                 }
             }
-            Debug.Log("✅ ซ่อน mulliganSwapSlots");
         }
     }
 
@@ -1361,10 +1377,17 @@ public class BattleManager : MonoBehaviour
                     }
 
                     // 3. ดึงกลับ (เช็คว่าตัวยังอยู่ไหม ถ้าถูกทำลายในระหว่าง defend จะ skip)
-                    if (monster != null && monster.gameObject != null)
+                    if (monster != null && monster.gameObject != null && monster.transform != null)
                     {
                         yield return StartCoroutine(MoveToTarget(monster.transform, startPos, 0.25f));
-                        if (monster != null) monster.transform.localPosition = Vector3.zero; // Snap (check again)
+                        if (monster != null && monster.transform != null) 
+                        {
+                            monster.transform.localPosition = Vector3.zero; // Snap (check again)
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("✅ มอนสเตอร์ถูกทำลายแล้ว (กันได้) → ไม่ต้องดึงกลับ");
                     }
 
                     if (state == BattleState.LOST) break;
@@ -1404,15 +1427,13 @@ public class BattleManager : MonoBehaviour
     {
         if (state != BattleState.DEFENDER_CHOICE) return;
 
-        // 🔥 เซ็ตแล้วก่อน destroy เพื่อกันค้าง
-        playerHasMadeChoice = true;
-        if (takeDamageButton) takeDamageButton.SetActive(false);
-
         // 🔥 ตรวจสอบ null ก่อนเช็คประเภท
         if (currentAttackerBot == null || currentAttackerBot.GetData() == null || 
             myShield == null || myShield.GetData() == null)
         {
             Debug.LogWarning("OnPlayerSelectBlocker: null card data detected!");
+            playerHasMadeChoice = true;
+            if (takeDamageButton) takeDamageButton.SetActive(false);
             return;
         }
 
@@ -1423,12 +1444,21 @@ public class BattleManager : MonoBehaviour
             ShowDamagePopupString("Double KO!", currentAttackerBot.transform);
             Destroy(currentAttackerBot.gameObject);
             Destroy(myShield.gameObject);
+            Debug.Log("🛡️ กันได้! ประเภทตรงกัน - ทั้งคู่ทำลาย");
         }
         else
         {
             ShowDamagePopupString("Shield Break!", myShield.transform);
             Destroy(myShield.gameObject);
+            
+            // ประเภทไม่ตรง → ผู้เล่นยังต้องรับดาเมจ
+            PlayerTakeDamage(currentAttackerBot.GetData().atk);
+            Debug.Log("🛡️ กันไม่ได้! ประเภทไม่ตรง - โล่แตก ยังรับดาเมจ");
         }
+        
+        // 🔥 เซ็ตแล้วหลัง logic กันค้าง
+        playerHasMadeChoice = true;
+        if (takeDamageButton) takeDamageButton.SetActive(false);
     }
 
     // --------------------------------------------------------
@@ -1442,6 +1472,13 @@ public class BattleManager : MonoBehaviour
 
     IEnumerator MoveToTarget(Transform obj, Vector3 target, float duration)
     {
+        // 🔥 ตรวจสอบ object ก่อน - ถ้า null หรือ destroy ไปแล้วให้หยุดทันที
+        if (obj == null) 
+        {
+            Debug.Log("⚠️ MoveToTarget: obj เป็น null → ข้าม");
+            yield break;
+        }
+
         // duration = เวลาที่ใช้ (เช่น 0.2 วินาที คือเร็วมาก)
         if (duration <= 0f) duration = 0.1f; 
 
@@ -1450,16 +1487,34 @@ public class BattleManager : MonoBehaviour
 
         while (elapsedTime < duration)
         {
+            // 🔥 เช็ค obj ทุก frame เพื่อหยุดถ้ามันถูก destroy
+            if (obj == null)
+            {
+                Debug.Log("⚠️ MoveToTarget: obj ถูก destroy ระหว่าง coroutine → ข้าม");
+                yield break;
+            }
+
             // ขยับตามเวลา (Lerp)
             obj.position = Vector3.Lerp(startPos, target, (elapsedTime / duration));
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        obj.position = target;
-        
-        // 🔥 เพิ่ม: Shake effect ตอนถึงเป้าหมาย (Impact)
-        yield return StartCoroutine(ShakeEffect(obj, 0.15f, 15f));
+        // 🔥 เช็ค obj สุดท้ายก่อน snap
+        if (obj != null)
+        {
+            obj.position = target;
+            
+            // 🔥 เพิ่ม: Shake effect ตอนถึงเป้าหมาย (Impact)
+            if (obj != null) // เช็คอีกครั้งเผื่อ destroy ระหว่างรอ
+            {
+                yield return StartCoroutine(ShakeEffect(obj, 0.15f, 15f));
+            }
+        }
+        else
+        {
+            yield break; // ออกจาก coroutine ถ้า obj เป็น null
+        }
     }
 
     // 🔥 เพิ่ม: Shake effect สำหรับ Impact

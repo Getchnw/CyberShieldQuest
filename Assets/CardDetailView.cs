@@ -12,9 +12,18 @@ public class CardDetailView : MonoBehaviour
     public TextMeshProUGUI abilityText;
     public TextMeshProUGUI flavorText;
 
+    private CardData currentCard; // จำการ์ดที่กำลังแสดงอยู่
+
+    // เช็คว่ากำลังแสดงการ์ดนี้อยู่หรือไม่
+    public bool IsShowingCard(CardData card)
+    {
+        return gameObject.activeSelf && currentCard == card;
+    }
+
     // ฟังก์ชันเปิดหน้าต่าง
     public void Open(CardData data)
     {
+        currentCard = data; // จำการ์ดที่กำลังแสดง
         gameObject.SetActive(true); // โชว์หน้าต่าง
 
         // 1. ใส่รูป
@@ -52,6 +61,7 @@ public class CardDetailView : MonoBehaviour
     // ฟังก์ชันปิดหน้าต่าง (ผูกกับปุ่ม Close)
     public void Close()
     {
+        currentCard = null; // ล้างการ์ดที่จำไว้
         gameObject.SetActive(false);
     }
 }
