@@ -27,6 +27,7 @@ public class GameContentDatabase : MonoBehaviour
     [SerializeField] private List<MatchingQuestion> matchingQuestionsDatabase = new List<MatchingQuestion>();
     [SerializeField] private List<FillInBlankQuestion> fillInBlankQuestionsDatabase = new List<FillInBlankQuestion>();
     [SerializeField] private List<TrueFalseQuestion> trueFalseQuestionsDatabase = new List<TrueFalseQuestion>();
+    [SerializeField] private List<DailyRewardData> dailyRewardDatabase = new List<DailyRewardData>();
 
 
     void Awake()
@@ -451,6 +452,36 @@ public class GameContentDatabase : MonoBehaviour
 #endif
         }
 
+        // ดึง Daily Reward Data
+        if (dailyRewardDatabase == null || dailyRewardDatabase.Count == 0)
+        {
+            var loadDailyRewardData = Resources.LoadAll<DailyRewardData>("GameContent/DailyReward");
+            if (loadDailyRewardData != null && loadDailyRewardData.Length > 0)
+            {
+                dailyRewardDatabase = new List<DailyRewardData>(loadDailyRewardData);
+            }
+#if UNITY_EDITOR
+            try
+            {
+                string[] guids = UnityEditor.AssetDatabase.FindAssets("t:DailyRewardData", new[] { "Assets/Script/Database" });
+                if (guids != null && guids.Length > 0)
+                {
+                    dailyRewardDatabase = new List<DailyRewardData>();
+                    foreach (var g in guids)
+                    {
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+                        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<DailyRewardData>(path);
+                        if (asset != null) dailyRewardDatabase.Add(asset);
+                    }
+                    Debug.Log($"Editor auto-loaded {dailyRewardDatabase.Count} DailyRewardData from Assets/Script/Database.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Auto-load DailyRewardData failed: {e.Message}");
+            }
+#endif
+        }
     }
 
     //ฟังก์ชันดึงข้อมูลตาม ID ต่างๆ
@@ -588,5 +619,38 @@ public class GameContentDatabase : MonoBehaviour
             .ToList();
     }
 
+    // ดึง Daily Reward ทั้งหมด
+    public List<DailyRewardData> GetAllDailyRewardData()
+    {
+        if (dailyRewardDatabase == null) return new List<DailyRewardData>();
+        return dailyRewardDatabase;
+    }
+
+    // ดึง Daily Reward ตามลำดับ (ตัวแรก)
+    public DailyRewardData GetDailyRewardData()
+    {
+        if (dailyRewardDatabase == null || dailyRewardDatabase.Count == 0) return null;
+        return dailyRewardDatabase[0];
+    }
+
+    // // ดึง Daily Reward ตามลำดับที่กำหนด
+    // public DailyRewardData GetDailyRewardDataByIndex(int index)
+    // {
+    //     if (dailyRewardDatabase == null || index < 0 || index >= dailyRewardDatabase.Count) return null;
+    //     return dailyRewardDatabase[index];
+    // }
+
+    // // ดึงรางวัลของวันที่กำหนด (จาก index)
+    // public DailyRewardItem GetDailyRewardItemByDay(int dayIndex)
+    // {
+    //     var dailyReward = GetDailyRewardData();
+    //     if (dailyReward == null || dailyReward.rewards == null) 
+    //         return default;
+
+    //     if (dayIndex < 0 || dayIndex >= dailyReward.rewards.Length)
+    //         return default;
+
+    //     return dailyReward.rewards[dayIndex];
+    // }
 }
 

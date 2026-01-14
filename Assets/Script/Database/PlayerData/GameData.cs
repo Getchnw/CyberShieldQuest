@@ -231,6 +231,10 @@ public class GameData
     // 🔥 Flag เพื่อกันการเสกการ์ดซ้ำ
     public bool hasInitializedCards = false;
 
+    public bool isNewGameStarted = false;
+    // Daily Login
+    public PlayerDailyLogin dailyLoginData = new PlayerDailyLogin();
+
     // Constructor (ตัวสร้างข้อมูลเริ่มต้น)
     public GameData()
     {
@@ -251,6 +255,9 @@ public class GameData
         claimedQuizRewardRuleIDs = new List<int>();
 
         hasInitializedCards = false; // 🔥 ยังไม่เสกการ์ด
+        isNewGameStarted = false;
+        // Daily Login
+        dailyLoginData = new PlayerDailyLogin();
     }
 }
 
@@ -265,7 +272,7 @@ public class PlayerProfile
     public int level = 1;
     public int experience = 0;
     public int gold = 0;
-    
+
     public int scrap = 0;
 }
 
@@ -373,4 +380,18 @@ public class Qustion_Answer
     public string AnswerText;
     public int score;
     public TypeQustion TypeQustion;
+}
+
+[System.Serializable]
+public class PlayerDailyLogin
+{
+    public string lastClaimedDate; // เก็บวันที่รับล่าสุด "yyyy-MM-dd"
+    public int currentStreak;      // เก็บจำนวนวันต่อเนื่อง (1-7)
+
+    // Constructor สำหรับค่าเริ่มต้น
+    public PlayerDailyLogin()
+    {
+        lastClaimedDate = "";
+        currentStreak = 0;
+    }
 }

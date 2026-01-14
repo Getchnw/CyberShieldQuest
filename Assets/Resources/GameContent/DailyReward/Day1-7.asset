@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 714220787199fa44fbdc67ff71b3f609, type: 3}
+  m_Name: Day1-7
+  m_EditorClassIdentifier: 
+  rewards:
+  - rewardName: Gold 500 G
+    dayLabel: Day1
+    type: 1
+    amount: 500
+    card: {fileID: 0}
+    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+  - rewardName: Gold 500 G
+    dayLabel: Day2
+    type: 1
+    amount: 500
+    card: {fileID: 0}
+    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+  - rewardName: Gold 500 G
+    dayLabel: Day3
+    type: 1
+    amount: 500
+    card: {fileID: 0}
+    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+  - rewardName: Gold 500 G
+    dayLabel: Day4
+    type: 1
+    amount: 500
+    card: {fileID: 0}
+    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+  - rewardName: Gold 500 G
+    dayLabel: Day5
+    type: 1
+    amount: 500
+    card: {fileID: 0}
+    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+  - rewardName: Gold 500 G
+    dayLabel: Day6
+    type: 1
+    amount: 500
+    card: {fileID: 0}
+    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+  - rewardName: XML Parser Hardening
+    dayLabel: Day7
+    type: 0
+    amount: 500
+    card: {fileID: 11400000, guid: 28aa11ea2c35e4d4abfdb78bc59742a5, type: 2}
+    icon: {fileID: 0}
