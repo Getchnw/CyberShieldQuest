@@ -72,6 +72,12 @@ public class BattleManager : MonoBehaviour
     [Header("--- Card Detail View ---")]
     public CardDetailView cardDetailView;
 
+    [Header("--- Sacrifice Confirm Popup ---")]
+    public GameObject sacrificeConfirmPanel; // Panel ยืนยันการ sacrifice
+    public TextMeshProUGUI sacrificeMessageText; // ข้อความอธิบาย
+    public Button sacrificeConfirmButton; // ปุ่มยืนยัน
+    public Button sacrificeCancelButton; // ปุ่มยกเลิก
+
     [Header("--- Deck Position ---")]
     public Transform deckPileTransform; // ตำแหน่งเด็คที่การ์ดจะบินออกมา
 
@@ -99,6 +105,11 @@ public class BattleManager : MonoBehaviour
     private BattleCardUI currentAttackerBot; 
     private bool playerHasMadeChoice = false; 
     private List<CardData> enemyDeckList = new List<CardData>();
+    
+    // 🔥 Sacrifice System
+    private bool sacrificeConfirmed = false;
+    private BattleCardUI newCardToSacrifice = null;
+    private BattleCardUI targetCardToReplace = null;
     
     // 🔥 Mulligan System
     private int playerMulliganLeft = 1;
@@ -1868,4 +1879,121 @@ public class BattleManager : MonoBehaviour
         if(playerHPText)playerHPText.text=$"{currentHP}/{maxHP}"; 
         if(enemyHPText)enemyHPText.text=$"{enemyCurrentHP}/{enemyMaxHP}"; 
     }
+
+    // --------------------------------------------------------
+    // 🔄 SACRIFICE SYSTEM (ลงการ์ดใหม่ทับเก่า)
+    // --------------------------------------------------------
+
+    public void ShowSacrificeConfirmPopup(BattleCardUI newCard, BattleCardUI oldCard)
+    {
+        if (sacrificeConfirmPanel == null)
+        {
+            Debug.LogError("❌ sacrificeConfirmPanel ยังไม่ถูกตั้ง!");
+            return;
+        }
+
+        newCardToSacrifice = newCard;
+        targetCardToReplace = oldCard;
+        sacrificeConfirmed = false;
+
+        // คำนวณคอสต์ส่วนต่าง
+        CardData newData = newCard.GetData();
+        CardData oldData = oldCard.GetData();
+        int costDiff = newData.cost - oldData.cost;
+
+        string message = $"Sacrifice {oldData.cardName} ({oldData.cost} PP)\n" +
+                         $"to {newData.cardName} ({newData.cost} PP)?\n\n" +
+                         $"Cost: {(costDiff > 0 ? "+" + costDiff : costDiff)} PP";
+
+        if (sacrificeMessageText) sacrificeMessageText.text = message;
+
+        // ตั้ง Listener สำหรับปุ่ม
+        if (sacrificeConfirmButton)
+        {
+            sacrificeConfirmButton.onClick.RemoveAllListeners();
+            sacrificeConfirmButton.onClick.AddListener(OnSacrificeConfirm);
+        }
+
+        if (sacrificeCancelButton)
+        {
+            sacrificeCancelButton.onClick.RemoveAllListeners();
+            sacrificeCancelButton.onClick.AddListener(OnSacrificeCancel);
+        }
+
+        // เปิด panel
+        sacrificeConfirmPanel.SetActive(true);
+        Debug.Log($"🔄 เปิด Sacrifice Popup: {oldData.cardName} → {newData.cardName}");
+    }
+
+    void OnSacrificeConfirm()
+    {
+        if (newCardToSacrifice == null || targetCardToReplace == null)
+        {
+            Debug.LogWarning("⚠️ Sacrifice Card หรือ Target Card เป็น null");
+            OnSacrificeCancel();
+            return;
+        }
+
+        CardData newData = newCardToSacrifice.GetData();
+        CardData oldData = targetCardToReplace.GetData();
+        int costDiff = newData.cost - oldData.cost;
+
+        // เช็ค PP ว่าเพียงพอ
+        if (currentPP < costDiff)
+        {
+            Debug.Log($"⚠️ PP ไม่พอ ({currentPP}/{costDiff})");
+            if (sacrificeMessageText) 
+                sacrificeMessageText.text = $"PP ไม่พอ! ต้องการ {costDiff} PP แต่มีแค่ {currentPP} PP";
+            return;
+        }
+
+        // บังคับปิด popup ก่อนทำ sacrifice logic
+        sacrificeConfirmPanel.SetActive(false);
+
+        // ทำการ Sacrifice
+        PerformSacrifice(newCardToSacrifice, targetCardToReplace, costDiff);
+
+        // ล้างตัวแปร
+        newCardToSacrifice = null;
+        targetCardToReplace = null;
+    }
+
+    void OnSacrificeCancel()
+    {
+        sacrificeConfirmPanel.SetActive(false);
+        newCardToSacrifice = null;
+        targetCardToReplace = null;
+        Debug.Log("❌ ยกเลิก Sacrifice");
+    }
+
+    void PerformSacrifice(BattleCardUI newCard, BattleCardUI oldCard, int costDiff)
+    {
+        CardData newData = newCard.GetData();
+        CardData oldData = oldCard.GetData();
+
+        // จ่าย PP ส่วนต่าง (อาจเป็นลบ = ได้ PP)
+        currentPP -= costDiff;
+        Debug.Log($"🔄 Sacrifice: {oldData.cardName} → {newData.cardName}, Cost Diff: {costDiff}, PP: {currentPP}");
+
+        // ย้ายการ์ดใหม่ไปยังช่องของการ์ดเก่า
+        Transform oldCardSlot = oldCard.transform.parent;
+        newCard.transform.SetParent(oldCardSlot);
+        newCard.transform.localPosition = Vector3.zero;
+        newCard.isOnField = true;
+        newCard.hasAttacked = false; // การ์ดใหม่สามารถโจมตีได้เหมือน normal summon
+        newCard.GetComponent<Image>().color = Color.white; // ไม่เป็นสีเทา
+
+        // ทำลายการ์ดเก่า
+        Destroy(oldCard.gameObject);
+
+        // ลบการ์ดใหม่ออกจากมือ
+        Destroy(newCard.gameObject);
+
+        // เล่นเสียง
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
+
+        UpdateUI();
+        Debug.Log($"✅ Sacrifice สำเร็จ!");
+    }
 }
+
