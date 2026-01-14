@@ -34,6 +34,33 @@ public class CardSlot : MonoBehaviour, IDropHandler
                 BattleCardUI targetCard = transform.GetChild(0).GetComponent<BattleCardUI>();
                 if (targetCard != null && BattleManager.Instance != null)
                 {
+                    // ห้ามสังเวยการ์ดใบเดียวกัน (ลากทับตัวเอง)
+                    if (ReferenceEquals(card, targetCard)) return;
+
+                    var newType = card.GetData().type;
+                    var targetType = targetCard.GetData().type;
+
+                    // ป้องกันลากการ์ดคนละประเภทลงช่องผิด
+                    if (newType != allowedType || targetType != allowedType || newType != targetType)
+                    {
+                        Debug.Log("⚠️ Sacrifice ไม่ได้: ประเภทการ์ดไม่ตรงกับช่อง");
+                        return;
+                    }
+
+                    // ต้องมีการ์ดเก่าอยู่บนสนามจริง ๆ
+                    if (!targetCard.isOnField)
+                    {
+                        Debug.Log("⚠️ Sacrifice ไม่ได้: การ์ดเป้าหมายยังไม่อยู่บนสนาม");
+                        return;
+                    }
+
+                    // การ์ดใหม่ต้องมาจากมือ ไม่ใช่การ์ดบนสนาม
+                    if (card.isOnField)
+                    {
+                        Debug.Log("⚠️ Sacrifice ไม่ได้: การ์ดใหม่อยู่บนสนามแล้ว");
+                        return;
+                    }
+
                     // ตรวจสอบว่ากำลังเล่นตาผู้เล่น
                     if (BattleManager.Instance.state == BattleState.PLAYERTURN)
                     {

@@ -1900,10 +1900,11 @@ public class BattleManager : MonoBehaviour
         CardData newData = newCard.GetData();
         CardData oldData = oldCard.GetData();
         int costDiff = newData.cost - oldData.cost;
+        int costToPay = Mathf.Max(0, costDiff); // ถ้าใบใหม่ถูกกว่า ไม่จ่ายเพิ่มและไม่คืน
 
         string message = $"Sacrifice {oldData.cardName} ({oldData.cost} PP)\n" +
-                         $"to {newData.cardName} ({newData.cost} PP)?\n\n" +
-                         $"Cost: {(costDiff > 0 ? "+" + costDiff : costDiff)} PP";
+                 $"to {newData.cardName} ({newData.cost} PP)?\n\n" +
+                 $"Cost: {(costToPay > 0 ? "-" + costToPay : "0")} PP";
 
         if (sacrificeMessageText) sacrificeMessageText.text = message;
 
@@ -1937,13 +1938,14 @@ public class BattleManager : MonoBehaviour
         CardData newData = newCardToSacrifice.GetData();
         CardData oldData = targetCardToReplace.GetData();
         int costDiff = newData.cost - oldData.cost;
+        int costToPay = Mathf.Max(0, costDiff);
 
-        // เช็ค PP ว่าเพียงพอ
-        if (currentPP < costDiff)
+        // เช็ค PP ว่าเพียงพอ (เฉพาะเมื่อต้องจ่าย)
+        if (costToPay > 0 && currentPP < costToPay)
         {
-            Debug.Log($"⚠️ PP ไม่พอ ({currentPP}/{costDiff})");
+            Debug.Log($"⚠️ PP ไม่พอ ({currentPP}/{costToPay})");
             if (sacrificeMessageText) 
-                sacrificeMessageText.text = $"PP ไม่พอ! ต้องการ {costDiff} PP แต่มีแค่ {currentPP} PP";
+                sacrificeMessageText.text = $"PP ไม่พอ! ต้องการ {costToPay} PP แต่มีแค่ {currentPP} PP";
             return;
         }
 
@@ -1951,7 +1953,7 @@ public class BattleManager : MonoBehaviour
         sacrificeConfirmPanel.SetActive(false);
 
         // ทำการ Sacrifice
-        PerformSacrifice(newCardToSacrifice, targetCardToReplace, costDiff);
+        PerformSacrifice(newCardToSacrifice, targetCardToReplace, costToPay);
 
         // ล้างตัวแปร
         newCardToSacrifice = null;
@@ -1966,28 +1968,25 @@ public class BattleManager : MonoBehaviour
         Debug.Log("❌ ยกเลิก Sacrifice");
     }
 
-    void PerformSacrifice(BattleCardUI newCard, BattleCardUI oldCard, int costDiff)
+    void PerformSacrifice(BattleCardUI newCard, BattleCardUI oldCard, int costToPay)
     {
         CardData newData = newCard.GetData();
         CardData oldData = oldCard.GetData();
 
-        // จ่าย PP ส่วนต่าง (อาจเป็นลบ = ได้ PP)
-        currentPP -= costDiff;
-        Debug.Log($"🔄 Sacrifice: {oldData.cardName} → {newData.cardName}, Cost Diff: {costDiff}, PP: {currentPP}");
+        // จ่าย PP เฉพาะส่วนที่ต้องจ่าย (ไม่คืนกรณีถูกกว่า)
+        currentPP -= costToPay;
+        Debug.Log($"🔄 Sacrifice: {oldData.cardName} → {newData.cardName}, Cost To Pay: {costToPay}, PP: {currentPP}");
 
         // ย้ายการ์ดใหม่ไปยังช่องของการ์ดเก่า
         Transform oldCardSlot = oldCard.transform.parent;
         newCard.transform.SetParent(oldCardSlot);
         newCard.transform.localPosition = Vector3.zero;
         newCard.isOnField = true;
-        newCard.hasAttacked = false; // การ์ดใหม่สามารถโจมตีได้เหมือน normal summon
+        newCard.hasAttacked = true; // ลงแบบสังเวยต้องรอเทิร์นถัดไปถึงจะตีได้
         newCard.GetComponent<Image>().color = Color.white; // ไม่เป็นสีเทา
 
         // ทำลายการ์ดเก่า
         Destroy(oldCard.gameObject);
-
-        // ลบการ์ดใหม่ออกจากมือ
-        Destroy(newCard.gameObject);
 
         // เล่นเสียง
         if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
