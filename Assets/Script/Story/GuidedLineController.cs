@@ -1,0 +1,198 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+using TMPro;
+
+public class GuidedLineController : MonoBehaviour
+{
+    // 1. กำหนดประเภทของไกด์ไลน์ (เพิ่มเผื่อไว้ให้ครบ)
+    public enum TutorialType
+    {
+        Home,
+        Story,
+        Stage,
+        Deck,
+        Shop
+    }
+
+    [Header("Settings")]
+    [Tooltip("เลือกประเภท: หน้าแรกเลือก Home / ปุ่ม Story เลือก Story")]
+    [SerializeField] private TutorialType tutorialType = TutorialType.Home;
+
+    [Tooltip("ชื่อ Scene ที่จะไปต่อ (สำหรับ Story/Stage/Deck/Shop)")]
+    [SerializeField] private string nextSceneName; 
+
+    [Header("UI Objects (ห้ามลืมลากใส่!)")]
+    [SerializeField] private GameObject tutorialPanel; // ตัวแม่ของหน้าต่างสอน
+    [SerializeField] private List<GameObject> tutorialPages; // รูปภาพแต่ละหน้า
+
+    [Header("UI Text")]
+    [SerializeField] private TextMeshProUGUI headerText;      
+    [SerializeField] private TextMeshProUGUI descriptionText; 
+
+    [Header("Text Data")]
+    [TextArea(1, 3)] [SerializeField] private string[] pageTitles;       
+    [TextArea(3, 5)] [SerializeField] private string[] pageDescriptions; 
+
+    [Header("Buttons")]
+    [SerializeField] private Button nextButton;
+    [SerializeField] private Button backButton;
+    [SerializeField] private TextMeshProUGUI nextButtonText;
+
+    private int currentIndex = 0;
+
+    void Start()
+    {
+        // ถ้าเป็นหน้า Home: ให้เช็กและเด้งเองอัตโนมัติ
+        if (tutorialType == TutorialType.Home)
+        {
+             // เช็กว่ามี GameManager และยังไม่เคยดู Home Tutorial ใช่ไหม
+             if (GameManager.Instance != null && !GameManager.Instance.CurrentGameData.tutorialData.hasSeenTutorial_Home)
+            {
+                StartTutorial();
+            }
+            else
+            {
+                // ถ้าเคยดูแล้ว หรือไม่ใช่ครั้งแรก ให้ปิดทิ้ง
+                if (tutorialPanel != null) tutorialPanel.SetActive(false);
+            }
+        }
+        else
+        {
+            // ถ้าเป็นโหมดอื่น (Story, Stage, etc.) ให้ปิดรอไว้ก่อน (รอคนกดปุ่ม)
+            if (tutorialPanel != null) tutorialPanel.SetActive(false);
+        }
+
+        // เชื่อมปุ่ม Next/Back ให้ทำงาน
+        if (nextButton != null) nextButton.onClick.AddListener(OnNextClick);
+        if (backButton != null) backButton.onClick.AddListener(OnBackClick);
+    }
+
+    // --- ฟังก์ชันสำหรับปุ่มกด (เช่น ปุ่ม Story) ---
+    // ลากฟังก์ชันนี้ไปใส่ใน On Click ของปุ่ม Story
+    public void ClickToEnterMode()
+    {
+        bool hasSeen = false;
+
+        // 1. ตรวจสอบข้อมูลจาก Save ว่าเคยดูหรือยัง
+        if (GameManager.Instance != null)
+        {
+            var data = GameManager.Instance.CurrentGameData.tutorialData;
+            switch (tutorialType)
+            {
+                case TutorialType.Story: hasSeen = data.hasSeenTutorial_Story; break;
+                // กรณีเผื่ออนาคต (ต้องเพิ่มตัวแปรใน GameData ก่อนนะ)
+                // case TutorialType.Stage: hasSeen = data.hasSeenTutorial_Stage; break;
+                // case TutorialType.Deck: hasSeen = data.hasSeenTutorial_Deck; break;
+            }
+        }
+
+        // 2. ตัดสินใจ
+        if (hasSeen)
+        {
+            Debug.Log("เคยดูแล้ว -> เข้าเกมเลย");
+            GoToNextScene(); 
+        }
+        else
+        {
+            Debug.Log("ยังไม่เคยดู -> เปิด Tutorial");
+            StartTutorial(); 
+        }
+    }
+
+    public void StartTutorial()
+    {
+        if (tutorialPanel != null) tutorialPanel.SetActive(true);
+        else Debug.LogError("ลืมลาก Tutorial Panel ใส่ใน Inspector!");
+
+        currentIndex = 0;
+        UpdatePageDisplay();
+    }
+
+    void OnNextClick()
+    {
+        if (currentIndex < tutorialPages.Count - 1)
+        {
+            currentIndex++;
+            UpdatePageDisplay();
+        }
+        else
+        {
+            CompleteTutorial();
+        }
+    }
+
+    void OnBackClick()
+    {
+        if (currentIndex > 0)
+        {
+            currentIndex--;
+            UpdatePageDisplay();
+        }
+    }
+
+    void UpdatePageDisplay()
+    {
+        // เปิดรูปที่ตรงกับหน้าปัจจุบัน ปิดรูปอื่น
+        for (int i = 0; i < tutorialPages.Count; i++)
+        {
+            if (tutorialPages[i] != null) tutorialPages[i].SetActive(i == currentIndex);
+        }
+
+        // เปลี่ยนข้อความ
+        if (headerText != null && pageTitles.Length > currentIndex)
+            headerText.text = pageTitles[currentIndex];
+
+        if (descriptionText != null && pageDescriptions.Length > currentIndex)
+            descriptionText.text = pageDescriptions[currentIndex];
+
+        // จัดการสถานะปุ่ม
+        if (backButton != null) backButton.interactable = (currentIndex > 0);
+
+        if (nextButtonText != null)
+        {
+            if (currentIndex == tutorialPages.Count - 1) nextButtonText.text = "GO!"; // หรือ FINISH
+            else nextButtonText.text = "NEXT";
+        }
+    }
+
+    void CompleteTutorial()
+    {
+        // 1. บันทึกว่าดูจบแล้ว
+        if (GameManager.Instance != null)
+        {
+            var data = GameManager.Instance.CurrentGameData.tutorialData;
+            
+            if (tutorialType == TutorialType.Home) data.hasSeenTutorial_Home = true;
+            else if (tutorialType == TutorialType.Story) data.hasSeenTutorial_Story = true;
+            // else if (tutorialType == TutorialType.Stage) data.hasSeenTutorial_Stage = true;
+            
+            GameManager.Instance.SaveCurrentGame();
+        }
+
+        // 2. จบแล้วทำไงต่อ?
+        if (tutorialType == TutorialType.Home)
+        {
+            // หน้าแรกแค่ปิดหน้าต่าง
+            if (tutorialPanel != null) tutorialPanel.SetActive(false);
+        }
+        else
+        {
+            // โหมดอื่น (Story) จบแล้วให้เปลี่ยนฉาก
+            GoToNextScene();
+        }
+    }
+
+    void GoToNextScene()
+    {
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            SceneManager.LoadScene(nextSceneName);
+        }
+        else
+        {
+            Debug.LogError("Error: คุณลืมใส่ชื่อ Scene ในช่อง Next Scene Name!");
+        }
+    }
+}
