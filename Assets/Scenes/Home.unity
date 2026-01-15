@@ -6442,7 +6442,7 @@ GameObject:
   - component: {fileID: 1241568298}
   - component: {fileID: 1241568297}
   m_Layer: 0
-  m_Name: GuidedManger
+  m_Name: GuidedManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
