@@ -309,13 +309,24 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             {
                 if (_cardData.type == CardType.EquipSpell)
                 {
-                    BattleManager.Instance.OnPlayerSelectBlocker(this);
-                    Debug.Log($"🛡️ ใช้กัน: {_cardData.cardName}");
+                    // 🔥 ให้เลือกกัน เสมอ (ไม่ว่า subCategory ตรงหรือต่างก็ได้)
+                    // OnPlayerSelectBlocker จะจัดการตรรมชาติการป้องกันเอง
+                    var currentAttackerData = BattleManager.Instance.GetCurrentAttackerData();
+                    if (currentAttackerData != null)
+                    {
+                        Debug.Log($"🛡️ เลือกกันด้วย {_cardData.cardName} ({_cardData.subCategory}) ต่อต้าน โจมตี ({currentAttackerData.subCategory})");
+                        BattleManager.Instance.OnPlayerSelectBlocker(this);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("⚠️ ไม่พบข้อมูลการโจมตี!");
+                        BattleManager.Instance.OnPlayerSkipBlock();
+                    }
                 }
                 else
                 {
                     BattleManager.Instance.OnPlayerSkipBlock();
-                    Debug.Log("⚠️ ไม่ได้ใช้กัน");
+                    Debug.Log("⚠️ ไม่ได้ใช้กัน (ไม่ใช่ EquipSpell)");
                 }
             }
         }

@@ -1195,11 +1195,11 @@ public class BattleManager : MonoBehaviour
         // พุ่งไป (เร็วขึ้น 0.3 วินาที)
         yield return StartCoroutine(MoveToTarget(attacker.transform, enemySpot.position, 0.3f));
 
-        BattleCardUI botShield = GetBestEnemyEquip(attacker.GetData().mainCategory);
+        BattleCardUI botShield = GetBestEnemyEquip(attacker.GetData().subCategory);
 
         if (botShield != null)
         {
-            Debug.Log($"🛡️ บอทกันด้วย {botShield.GetData().cardName}");
+            Debug.Log($"🛡️ บอทกันด้วย {botShield.GetData().cardName} ({botShield.GetData().subCategory})");
             if(AudioManager.Instance) AudioManager.Instance.PlaySFX("Block");
 
             // 🔥 ตรวจสอบ null ก่อนเช็คประเภท
@@ -1210,33 +1210,32 @@ public class BattleManager : MonoBehaviour
                 yield break;
             }
 
-            bool match = (attacker.GetData().mainCategory == botShield.GetData().mainCategory);
+            CardData attackerData = attacker.GetData();
+            CardData shieldData = botShield.GetData();
+            bool match = (attackerData.subCategory == shieldData.subCategory);
 
             if (match)
             {
-                Debug.Log("🛡️ ประเภทตรงกัน -> โล่กันไว้ การ์ดเราไม่พัง");
-                ShowDamagePopupString("Blocked!", botShield.transform);
-                yield return new WaitForSeconds(0.2f);
+                // ประเภทตรง → ทำลายทั้งคู่
+                ShowDamagePopupString("Double KO!", attacker.transform);
+                Destroy(attacker.gameObject);
                 Destroy(botShield.gameObject);
-                yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
+                Debug.Log($"✅ บอทกันได้! ประเภทตรงกัน ({shieldData.subCategory}) - ทั้งคู่ทำลาย ไม่เสีย HP");
             }
             else
             {
-                Debug.Log("🛡️ ประเภทไม่ตรง -> ทำลายโล่แต่บอทยังรับดาเมจ");
+                // ประเภทต่างกัน → ทำลายเฉพาะโล่
                 ShowDamagePopupString("Shield Break!", botShield.transform);
-                yield return new WaitForSeconds(0.2f);
                 Destroy(botShield.gameObject);
-                
-                // 🔥 แก้: ยังต้องจ่ายดาเมจให้บอท
-                EnemyTakeDamage(damage);
-                
-                // ถอยกลับ
-                yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
+                Debug.Log($"✅ บอทกันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก ไม่เสีย HP");
             }
+
+            yield return new WaitForSeconds(0.2f);
+            yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
         }
         else
         {
-            Debug.Log($"💥 ตีผ่าน -> บอทรับดาเมจ {damage}");
+            Debug.Log($"💥 ไม่มีโล่ -> บอทรับดาเมจ {damage}");
             EnemyTakeDamage(damage);
             yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
         }
@@ -1418,6 +1417,11 @@ public class BattleManager : MonoBehaviour
     }
 
     // ใช้เมื่อผู้เล่นเลือกไม่กัน (เช่น คลิกที่การ์ดอื่นหรือกดปุ่มข้าม)
+    public CardData GetCurrentAttackerData()
+    {
+        return currentAttackerBot != null ? currentAttackerBot.GetData() : null;
+    }
+
     public void OnPlayerSkipBlock()
     {
         if (state != BattleState.DEFENDER_CHOICE) return;
@@ -1448,23 +1452,27 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        bool match = (currentAttackerBot.GetData().mainCategory == myShield.GetData().mainCategory);
+        CardData attackerData = currentAttackerBot.GetData();
+        CardData shieldData = myShield.GetData();
+        
+        Debug.Log($"🛡️ ตรวจสอบการกัน: โจมตี={attackerData.cardName} ({attackerData.subCategory}), โล่={shieldData.cardName} ({shieldData.subCategory})");
+        
+        bool match = (attackerData.subCategory == shieldData.subCategory);
 
         if (match)
         {
             ShowDamagePopupString("Double KO!", currentAttackerBot.transform);
             Destroy(currentAttackerBot.gameObject);
             Destroy(myShield.gameObject);
-            Debug.Log("🛡️ กันได้! ประเภทตรงกัน - ทั้งคู่ทำลาย");
+            Debug.Log($"✅ กันได้! ประเภทตรงกัน ({attackerData.subCategory}) - ทั้งคู่ทำลาย ไม่เสีย HP");
         }
         else
         {
             ShowDamagePopupString("Shield Break!", myShield.transform);
             Destroy(myShield.gameObject);
             
-            // ประเภทไม่ตรง → ผู้เล่นยังต้องรับดาเมจ
-            PlayerTakeDamage(currentAttackerBot.GetData().atk);
-            Debug.Log("🛡️ กันไม่ได้! ประเภทไม่ตรง - โล่แตก ยังรับดาเมจ");
+            // 🔥 ประเภทไม่ตรง → โล่แตก แต่ไม่เสีย HP (ปกป้องสำเร็จ)
+            Debug.Log($"✅ กันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก แต่ไม่เสีย HP");
         }
         
         // 🔥 เซ็ตแล้วหลัง logic กันค้าง
@@ -1579,15 +1587,16 @@ public class BattleManager : MonoBehaviour
         return null;
     }
 
-    BattleCardUI GetBestEnemyEquip(MainCategory cat)
+    BattleCardUI GetBestEnemyEquip(SubCategory cat)
     {
+        // 🔥 เลือกโล่ตัวแรกที่มี (ไม่สนใจ subCategory)
+        // OnPlayerSelectBlocker จะจัดการตรรมชาติการป้องกัน (ตรง = ทำลายทั้งคู่, ต่างกัน = ทำลายแค่โล่)
         foreach (Transform slot in enemyEquipSlots)
         {
             if (slot.childCount > 0)
             {
                 var s = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (s != null && s.GetData() != null && s.GetData().mainCategory == cat) return s;
-                if (s != null) return s;
+                if (s != null && s.GetData() != null) return s;
             }
         }
         return null;
