@@ -223,6 +223,10 @@ public class BattleManager : MonoBehaviour
         // 5. Mulligan Phase (ผู้เล่นเลือกก่อนเสมอ)
         yield return StartCoroutine(PlayerMulliganPhase());
 
+        // 🔥 DEBUG: ตรวจสอบว่าหลัง Mulligan บอทเหลือกี่ใบ
+        int enemyHandBeforeTurn = enemyHandArea != null ? enemyHandArea.childCount : 0;
+        Debug.Log($"🤖 [SETUP DONE] บอทเหลือการ์ด {enemyHandBeforeTurn} ใบก่อนเทิร์นแรก");
+
         // 6. เริ่มเทิร์น
         if (playerFirstTurn)
             StartPlayerTurn();
@@ -1338,8 +1342,9 @@ public class BattleManager : MonoBehaviour
         enemyCurrentPP = enemyMaxPP;
 
         // กฎจั่วบอท: ถ้ามือ >= 5 จั่ว 1, ถ้ามือน้อยกว่า 5 จั่วให้ครบ 5
-        int enemyHandCount = enemyHandArea != null ? enemyHandArea.GetComponentsInChildren<BattleCardUI>().Length : 0;
+        int enemyHandCount = enemyHandArea != null ? enemyHandArea.childCount : 0;
         int enemyDrawAmount = enemyHandCount >= 5 ? 1 : Mathf.Max(0, 5 - enemyHandCount);
+        Debug.Log($"🤖 บอทจั่วการ์ด: มือปัจจุบัน {enemyHandCount} ใบ, จั่ว {enemyDrawAmount} ใบ");
         if (enemyDrawAmount > 0)
             yield return StartCoroutine(DrawEnemyCard(enemyDrawAmount));
 
@@ -1434,6 +1439,10 @@ public class BattleManager : MonoBehaviour
         if (img) img.color = Color.gray;
 
         Debug.Log($"🤖 บอทลงการ์ด: {ui.GetData()?.cardName} (ห้ามตีเทิร์นนี้)");
+
+        // ตรวจสอบจำนวนการ์ดหลังลง
+        int handAfter = enemyHandArea != null ? enemyHandArea.childCount : 0;
+        Debug.Log($"🤖 มือบอทหลังลงการ์ด: {handAfter} ใบ");
 
         // จัดมือใหม่หลังลงการ์ด
         ArrangeEnemyHand();
@@ -1899,7 +1908,7 @@ public class BattleManager : MonoBehaviour
                     startPos = new Vector3(500, 0, 0); // default position ขวาบน
                 }
                 
-                // สร้างการ์ดที่ตำแหน่งเด็ค
+                // สร้างการ์ดจริง (ต้องเพื่อให้บอทรู้ว่าการ์ดนั้นคืออะไร)
                 GameObject cardObj = Instantiate(cardPrefab, startPos, Quaternion.identity);
                 Canvas canvas = FindObjectOfType<Canvas>();
                 if (canvas != null)
@@ -1912,6 +1921,19 @@ public class BattleManager : MonoBehaviour
                 {
                     cardObj.transform.localScale = Vector3.zero;
                     ui.Setup(cardData);
+                    
+                    // ซ่อนรูปการ์ดแสดงแค่หลังการ์ด
+                    var img = cardObj.GetComponent<Image>();
+                    if (img != null)
+                    {
+                        // เปลี่ยนไปแสดงหลังการ์ด (cardBackPrefab sprite)
+                        if (cardBackPrefab != null)
+                        {
+                            var backImg = cardBackPrefab.GetComponent<Image>();
+                            if (backImg != null && backImg.sprite != null)
+                                img.sprite = backImg.sprite;
+                        }
+                    }
                     
                     // อนิเมชั่นบินไปมือบอท
                     float duration = 0.3f;
@@ -1937,8 +1959,8 @@ public class BattleManager : MonoBehaviour
                     // ตั้งค่าการ์ดบอท
                     var cg = cardObj.GetComponent<CanvasGroup>();
                     if(cg == null) cg = cardObj.AddComponent<CanvasGroup>();
-                    cg.interactable = false;
-                    cg.blocksRaycasts = false;
+                    cg.interactable = false; // ไม่ให้บอทเล่นจากมือ
+                    cg.blocksRaycasts = false; // ไม่ให้คลิก
                     
                     var le = cardObj.GetComponent<LayoutElement>();
                     if(le == null) le = cardObj.AddComponent<LayoutElement>();
