@@ -80,6 +80,7 @@ public class BattleManager : MonoBehaviour
 
     [Header("--- Deck Position ---")]
     public Transform deckPileTransform; // ตำแหน่งเด็คที่การ์ดจะบินออกมา
+    public Transform enemyDeckPileTransform; // ตำแหน่งเด็คบอทที่การ์ดจะบินออกมา
 
     [Header("--- Mulligan UI ---")]
     public Button playerMulliganButton;
@@ -93,7 +94,7 @@ public class BattleManager : MonoBehaviour
     [Header("--- Hand Layout ---")]
     public bool useHandLayoutGroup = true;
     public float handSpacing = 30f;
-    public Vector2 handCardPreferredSize = new Vector2(140f, 200f);
+    public Vector2 handCardPreferredSize = new Vector2(100f, 140f);
 
     private bool isEnding = false;
     private bool resultConfirmed = false;
@@ -197,7 +198,7 @@ public class BattleManager : MonoBehaviour
 
             // จั่วเปิด 4 ใบให้ผู้เล่น และ 4 ใบให้บอท
             DrawCard(4, handArea);
-            DrawEnemyCard(4);
+            StartCoroutine(DrawEnemyCard(4));
 
             // เริ่มเทิร์นทันที
             if (playerFirstTurn)
@@ -217,7 +218,7 @@ public class BattleManager : MonoBehaviour
 
         // 4. Draw Cards ลง Mulligan Slots
         yield return StartCoroutine(DrawCardsToSlots(4, mulliganSlots));
-        DrawEnemyCard(4);
+        yield return StartCoroutine(DrawEnemyCard(4));
 
         // 5. Mulligan Phase (ผู้เล่นเลือกก่อนเสมอ)
         yield return StartCoroutine(PlayerMulliganPhase());
@@ -509,8 +510,6 @@ public class BattleManager : MonoBehaviour
     {
         if (playerMulliganConfirmButton)
         {
-            playerMulliganConfirmButton.gameObject.SetActive(true);
-            playerMulliganConfirmButton.onClick.RemoveAllListeners();
             playerMulliganConfirmButton.onClick.AddListener(OnPlayerMulliganConfirm);
         }
     }
@@ -846,6 +845,68 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"✅ จัดการ์ดในมือแบบ manual (spacing={spacing}, count={cardsInHand.Length})");
     }
 
+    // 🔥 จัดมือบอทให้มองเห็นได้ (เหมือนผู้เล่น แต่ปิดการโต้ตอบ)
+    void ArrangeEnemyHand()
+    {
+        if (enemyHandArea == null) return;
+
+        var cards = enemyHandArea.GetComponentsInChildren<BattleCardUI>();
+        if (cards.Length == 0) return;
+
+        var layout = enemyHandArea.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+        if (useHandLayoutGroup && layout != null)
+        {
+            layout.enabled = true;
+            layout.spacing = handSpacing;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+
+            foreach (var card in cards)
+            {
+                if (card == null) continue;
+                if (card.transform.parent != enemyHandArea)
+                    card.transform.SetParent(enemyHandArea, false);
+
+                var rt = card.GetComponent<RectTransform>();
+                if (rt != null)
+                {
+                    rt.localScale = Vector3.one;
+                    rt.localRotation = Quaternion.identity;
+                }
+
+                var le = card.GetComponent<UnityEngine.UI.LayoutElement>();
+                if (le == null) le = card.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
+                le.preferredWidth = handCardPreferredSize.x;
+                le.preferredHeight = handCardPreferredSize.y;
+                le.minWidth = 0f;
+                le.minHeight = 0f;
+                le.flexibleWidth = 0f;
+                le.flexibleHeight = 0f;
+
+                var img = card.GetComponent<Image>();
+                if (img) img.color = Color.white;
+
+                var cg = card.GetComponent<CanvasGroup>();
+                if (cg)
+                {
+                    cg.interactable = false;
+                    cg.blocksRaycasts = true;
+                    cg.alpha = 1f;
+                }
+            }
+
+            var rect = enemyHandArea as RectTransform;
+            if (rect)
+            {
+                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+                Canvas.ForceUpdateCanvases();
+            }
+        }
+    }
+
     int ReplaceSelectedMulliganCards()
     {
         int replacedCount = 0;
@@ -1031,7 +1092,10 @@ public class BattleManager : MonoBehaviour
         if (endTurnButton) endTurnButton.SetActive(true);
         if (takeDamageButton) takeDamageButton.SetActive(false);
 
-        DrawCard(1);
+        // กฎจั่ว: ถ้ามือ >= 5 จั่ว 1, ถ้ามือน้อยกว่า 5 จั่วให้ครบ 5
+        int handCount = handArea != null ? handArea.GetComponentsInChildren<BattleCardUI>().Length : 0;
+        int drawAmount = handCount >= 5 ? 1 : Mathf.Max(0, 5 - handCount);
+        DrawCard(drawAmount);
         UpdateUI();
     }
 
@@ -1273,6 +1337,12 @@ public class BattleManager : MonoBehaviour
         enemyMaxPP = Mathf.Clamp(turnCount, 1, 10);
         enemyCurrentPP = enemyMaxPP;
 
+        // กฎจั่วบอท: ถ้ามือ >= 5 จั่ว 1, ถ้ามือน้อยกว่า 5 จั่วให้ครบ 5
+        int enemyHandCount = enemyHandArea != null ? enemyHandArea.GetComponentsInChildren<BattleCardUI>().Length : 0;
+        int enemyDrawAmount = enemyHandCount >= 5 ? 1 : Mathf.Max(0, 5 - enemyHandCount);
+        if (enemyDrawAmount > 0)
+            yield return StartCoroutine(DrawEnemyCard(enemyDrawAmount));
+
         // 🔥 รีเซ็ตสถานะโจมตีของมอนสเตอร์บอททั้งหมด
         ResetAllEnemyMonstersAttackState();
 
@@ -1289,50 +1359,84 @@ public class BattleManager : MonoBehaviour
 
     void BotSummonPhase()
     {
+        if (enemyHandArea == null) return;
+
+        // ลิสต์การ์ดในมือบอท (เฉพาะที่ยังไม่ลงสนาม)
+        var handCards = enemyHandArea.GetComponentsInChildren<BattleCardUI>();
+
         Transform freeMonSlot = GetFreeSlot(CardType.Monster, false);
         if (freeMonSlot != null)
         {
-            CardData botCard = enemyDeckList.Find(x => x.type == CardType.Monster);
-            if (botCard != null && enemyCurrentPP >= botCard.cost)
+            var cardUi = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.Monster && enemyCurrentPP >= c.GetData().cost);
+            if (cardUi != null)
             {
-                SpawnBotCard(botCard, freeMonSlot);
-                enemyCurrentPP -= botCard.cost;
-                enemyDeckList.Remove(botCard);
+                StartCoroutine(AnimateBotPlayCard(cardUi, freeMonSlot));
+                enemyCurrentPP -= cardUi.GetData().cost;
             }
         }
 
         Transform freeEqSlot = GetFreeSlot(CardType.EquipSpell, false);
         if (freeEqSlot != null)
         {
-            CardData botCard = enemyDeckList.Find(x => x.type == CardType.EquipSpell);
-            if (botCard != null && enemyCurrentPP >= botCard.cost)
+            var cardUi = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.EquipSpell && enemyCurrentPP >= c.GetData().cost);
+            if (cardUi != null)
             {
-                SpawnBotCard(botCard, freeEqSlot);
-                enemyCurrentPP -= botCard.cost;
-                enemyDeckList.Remove(botCard);
+                StartCoroutine(AnimateBotPlayCard(cardUi, freeEqSlot));
+                enemyCurrentPP -= cardUi.GetData().cost;
             }
         }
     }
 
-    void SpawnBotCard(CardData data, Transform slot)
+    IEnumerator AnimateBotPlayCard(BattleCardUI ui, Transform slot)
     {
-        GameObject newCard = Instantiate(cardPrefab, slot);
-        var ui = newCard.GetComponent<BattleCardUI>();
-        ui.Setup(data);
+        if (ui == null || ui.transform == null || slot == null) yield break;
+
+        // ย้ายไปอยู่ระดับ Canvas เพื่อบิน
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas != null)
+        {
+            ui.transform.SetParent(canvas.transform, worldPositionStays: true);
+        }
+
+        Vector3 startPos = ui.transform.position;
+        Vector3 endPos = slot.position;
+        Vector3 startScale = ui.transform.localScale;
+        float duration = 0.35f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easeT = 1f - Mathf.Pow(1f - t, 3);
+
+            ui.transform.position = Vector3.Lerp(startPos, endPos, easeT);
+            ui.transform.localScale = Vector3.Lerp(startScale, Vector3.one, easeT);
+            yield return null;
+        }
+
+        // Snap เข้า slot
+        ui.transform.SetParent(slot, worldPositionStays: false);
+        ui.transform.localPosition = Vector3.zero;
+        ui.transform.localScale = Vector3.one;
+
         ui.isOnField = true;
-        // จัดให้อยู่กึ่งกลางช่องและขนาดมาตรฐาน
-        RectTransform rect = newCard.GetComponent<RectTransform>();
+
+        // ปรับขนาดการ์ดและสถานะโจมตี
+        RectTransform rect = ui.GetComponent<RectTransform>();
         if (rect != null)
         {
-            rect.anchoredPosition = Vector2.zero;
             rect.sizeDelta = new Vector2(140, 200);
         }
-        
-        // 🔥 แก้: บอทลงมาตีไม่ได้ เทิร์นนี้ (Summoning Sickness)
-        ui.hasAttacked = true;
-        newCard.GetComponent<Image>().color = Color.gray;
-        
-        Debug.Log($"🤖 บอทลงมอนสเตอร์: {data.cardName} (ห้ามตีเทิร์นนี้)");
+
+        ui.hasAttacked = true; // summoning sickness
+        var img = ui.GetComponent<Image>();
+        if (img) img.color = Color.gray;
+
+        Debug.Log($"🤖 บอทลงการ์ด: {ui.GetData()?.cardName} (ห้ามตีเทิร์นนี้)");
+
+        // จัดมือใหม่หลังลงการ์ด
+        ArrangeEnemyHand();
     }
 
     // 🔥 Logic บอทโจมตี (แบบ Safe Mode กันค้าง)
@@ -1762,20 +1866,92 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    public void DrawEnemyCard(int n) 
+    IEnumerator DrawEnemyCard(int n) 
     { 
         if (enemyDeckList.Count < n)
         {
             Debug.LogWarning("⚠️ Deck empty while drawing (enemy)");
             StartCoroutine(EndBattle(true));
-            return;
+            yield break;
         }
 
         for(int i=0;i<n;i++) 
         {
+            CardData cardData = enemyDeckList[0];
             enemyDeckList.RemoveAt(0);
-            if(cardBackPrefab && enemyHandArea) Instantiate(cardBackPrefab, enemyHandArea);
+            
+            if(cardPrefab && enemyHandArea) 
+            {
+                // หาตำแหน่งเด็คบอท
+                Vector3 startPos = Vector3.zero;
+                
+                if (enemyDeckPileTransform != null)
+                {
+                    startPos = enemyDeckPileTransform.position;
+                }
+                else if (deckPileTransform != null)
+                {
+                    // ใช้เด็คผู้เล่นถ้าไม่มีเด็คบอท
+                    startPos = deckPileTransform.position;
+                }
+                else
+                {
+                    startPos = new Vector3(500, 0, 0); // default position ขวาบน
+                }
+                
+                // สร้างการ์ดที่ตำแหน่งเด็ค
+                GameObject cardObj = Instantiate(cardPrefab, startPos, Quaternion.identity);
+                Canvas canvas = FindObjectOfType<Canvas>();
+                if (canvas != null)
+                {
+                    cardObj.transform.SetParent(canvas.transform, worldPositionStays: true);
+                }
+                
+                BattleCardUI ui = cardObj.GetComponent<BattleCardUI>();
+                if(ui != null)
+                {
+                    cardObj.transform.localScale = Vector3.zero;
+                    ui.Setup(cardData);
+                    
+                    // อนิเมชั่นบินไปมือบอท
+                    float duration = 0.3f;
+                    float elapsed = 0f;
+                    Vector3 endPos = enemyHandArea.position;
+                    
+                    while (elapsed < duration)
+                    {
+                        elapsed += Time.deltaTime;
+                        float t = elapsed / duration;
+                        float easeT = 1f - Mathf.Pow(1f - t, 3);
+                        
+                        cardObj.transform.position = Vector3.Lerp(startPos, endPos, easeT);
+                        cardObj.transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, easeT);
+                        
+                        yield return null;
+                    }
+                    
+                    // Snap เข้ามือบอท
+                    cardObj.transform.SetParent(enemyHandArea, false);
+                    cardObj.transform.localScale = Vector3.one;
+                    
+                    // ตั้งค่าการ์ดบอท
+                    var cg = cardObj.GetComponent<CanvasGroup>();
+                    if(cg == null) cg = cardObj.AddComponent<CanvasGroup>();
+                    cg.interactable = false;
+                    cg.blocksRaycasts = false;
+                    
+                    var le = cardObj.GetComponent<LayoutElement>();
+                    if(le == null) le = cardObj.AddComponent<LayoutElement>();
+                    le.preferredWidth = handCardPreferredSize.x;
+                    le.preferredHeight = handCardPreferredSize.y;
+                }
+                
+                // พักเล็กน้อยระหว่างการ์ด
+                yield return new WaitForSeconds(0.1f);
+            }
         }
+
+        ArrangeEnemyHand();
     }
 
     void ShuffleList(List<CardData> list) 

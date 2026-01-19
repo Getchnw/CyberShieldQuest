@@ -123,6 +123,10 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        // ห้ามลากการ์ดฝั่งบอทในมือ
+        if (BattleManager.Instance != null && transform.parent == BattleManager.Instance.enemyHandArea)
+            return;
+
         // ถ้าลงสนามแล้ว ห้ามลากย้าย (กฏ Cyber Shield Quest: ลงแล้วห้ามย้ายช่อง)
         if (isOnField) return; 
 
@@ -146,6 +150,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (BattleManager.Instance != null && transform.parent == BattleManager.Instance.enemyHandArea)
+            return;
         if (isOnField) return;
         // ขยับการ์ดตามเมาส์
         transform.position = eventData.position;
@@ -153,6 +159,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (BattleManager.Instance != null && transform.parent == BattleManager.Instance.enemyHandArea)
+            return;
         if (isOnField) return;
 
         // 1. เปิดการมองเห็นคืน
