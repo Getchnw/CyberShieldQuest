@@ -17,10 +17,12 @@ MonoBehaviour:
   artwork: {fileID: 21300000, guid: b268461f16459bd4a899ab6949011143, type: 3}
   frame: {fileID: 0}
   type: 3
-  mainCategory: 1
+  mainCategory: 0
   subCategory: 1
+  rarity: 0
   cost: 1
   atk: 1
+  hp: 0
   abilityText: 
   flavorText: "Token \u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E42\u0E14\u0E22
     Unauthorized Creator"

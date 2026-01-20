@@ -1136,6 +1136,8 @@ public class BattleManager : MonoBehaviour
 
         int selectedIndex = PlayerPrefs.GetInt("SelectedDeckIndex", 0);
         if (selectedIndex < 0 || selectedIndex >= data.decks.Count) selectedIndex = 0;
+        
+        Debug.Log($"🎴 โหลดเด็คที่เลือก: index {selectedIndex} (PlayerPrefs 'SelectedDeckIndex')");
 
         DeckData selectedDeck = data.decks[selectedIndex];
         if (selectedDeck == null || selectedDeck.card_ids_in_deck == null || selectedDeck.card_ids_in_deck.Count == 0)

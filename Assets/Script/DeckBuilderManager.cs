@@ -57,7 +57,8 @@ public class DeckBuilderManager : MonoBehaviour
                 CreateNewDeck("First Deck");
             }
             
-            currentDeckIndex = 0; // ✅ Reset index
+            currentDeckIndex = PlayerPrefs.GetInt("SelectedDeckIndex", 0); // โหลดเด็คที่ผู้เล่นเลือกไว้ (ค่าเริ่มต้น 0)
+            if (currentDeckIndex >= data.decks.Count) currentDeckIndex = 0; // ป้องกัน index ผิด
             RefreshDropdown(); 
             RefreshUI();
             RefreshLeftPanel(); // เพิ่มเรียกใหม่
@@ -208,6 +209,8 @@ public class DeckBuilderManager : MonoBehaviour
         GameManager.Instance.SaveCurrentGame(); // เซฟทันที
 
         currentDeckIndex = GameManager.Instance.CurrentGameData.decks.Count - 1;
+        PlayerPrefs.SetInt("SelectedDeckIndex", currentDeckIndex);
+        PlayerPrefs.Save();
         RefreshDropdown(); RefreshUI();
     }
 
@@ -222,7 +225,13 @@ public class DeckBuilderManager : MonoBehaviour
         RefreshDropdown(); RefreshUI();
     }
 
-    public void OnDropdownChanged(int index) { currentDeckIndex = index; RefreshUI(); }
+    public void OnDropdownChanged(int index) { 
+        currentDeckIndex = index; 
+        PlayerPrefs.SetInt("SelectedDeckIndex", index);
+        PlayerPrefs.Save();
+        Debug.Log($"✅ บันทึกเด็คที่เลือก: index {index}");
+        RefreshUI(); 
+    }
 
     // --- ย้ายการ์ด ---
     void AddToDeck(CardData card) {
@@ -315,7 +324,7 @@ public class DeckBuilderManager : MonoBehaviour
             int mon = deck.Count(x => x.type == CardType.Monster);
             int spl = deck.Count(x => x.type == CardType.Spell);
             int eqp = deck.Count(x => x.type == CardType.EquipSpell);
-            typeStatText.text = $"Monster {mon}   Spell {spl}   Equip {eqp}";
+            typeStatText.text = $"Monster {mon}   Spell {spl}   Equip  {eqp}";
         }
         if (costStatText != null) {
             string s = "Cost: ";
