@@ -3048,6 +3048,9 @@ MonoBehaviour:
   fillInBlankQuestionsDatabase: []
   trueFalseQuestionsDatabase: []
   dailyRewardDatabase: []
+  trueFalseDescriptionDatabase: []
+  matchingDescriptionDatabase: []
+  fillInBlankDescriptionDatabase: []
 --- !u!4 &547108706
 Transform:
   m_ObjectHideFlags: 0

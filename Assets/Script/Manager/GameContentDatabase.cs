@@ -28,7 +28,9 @@ public class GameContentDatabase : MonoBehaviour
     [SerializeField] private List<FillInBlankQuestion> fillInBlankQuestionsDatabase = new List<FillInBlankQuestion>();
     [SerializeField] private List<TrueFalseQuestion> trueFalseQuestionsDatabase = new List<TrueFalseQuestion>();
     [SerializeField] private List<DailyRewardData> dailyRewardDatabase = new List<DailyRewardData>();
-
+    [SerializeField] private List<TrueFalseDescription> trueFalseDescriptionDatabase = new List<TrueFalseDescription>();
+    [SerializeField] private List<MatchingDescription> matchingDescriptionDatabase = new List<MatchingDescription>();
+    [SerializeField] private List<FillInBlankDescription> fillInBlankDescriptionDatabase = new List<FillInBlankDescription>();
 
     void Awake()
     {
@@ -482,6 +484,99 @@ public class GameContentDatabase : MonoBehaviour
             }
 #endif
         }
+
+        // ดึง trueFalse Description data
+        if (trueFalseDescriptionDatabase == null || trueFalseDescriptionDatabase.Count == 0)
+        {
+            var loadTrueFalseDescription = Resources.LoadAll<TrueFalseDescription>("GameContent/DescriptionTrueFale");
+            if (loadTrueFalseDescription != null && loadTrueFalseDescription.Length > 0)
+            {
+                trueFalseDescriptionDatabase = new List<TrueFalseDescription>(loadTrueFalseDescription);
+            }
+#if UNITY_EDITOR
+            try
+            {
+                string[] guids = UnityEditor.AssetDatabase.FindAssets("t:TrueFalseDescription", new[] { "Assets/Script/Database" });
+                if (guids != null && guids.Length > 0)
+                {
+                    trueFalseDescriptionDatabase = new List<TrueFalseDescription>();
+                    foreach (var g in guids)
+                    {
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+                        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<TrueFalseDescription>(path);
+                        if (asset != null) trueFalseDescriptionDatabase.Add(asset);
+                    }
+                    Debug.Log($"Editor auto-loaded {trueFalseDescriptionDatabase.Count} TrueFalseDescription from Assets/Script/Database.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Auto-load TrueFalseDescription failed: {e.Message}");
+            }
+#endif
+        }
+
+        // ดึง matching Description data
+        if (matchingDescriptionDatabase == null || matchingDescriptionDatabase.Count == 0)
+        {
+            var loadMatchingDescription = Resources.LoadAll<MatchingDescription>("GameContent/DescriptionMatching");
+            if (loadMatchingDescription != null && loadMatchingDescription.Length > 0)
+            {
+                matchingDescriptionDatabase = new List<MatchingDescription>(loadMatchingDescription);
+            }
+#if UNITY_EDITOR
+            try
+            {
+                string[] guids = UnityEditor.AssetDatabase.FindAssets("t:MatchingDescription", new[] { "Assets/Script/Database" });
+                if (guids != null && guids.Length > 0)
+                {
+                    matchingDescriptionDatabase = new List<MatchingDescription>();
+                    foreach (var g in guids)
+                    {
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+                        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<MatchingDescription>(path);
+                        if (asset != null) matchingDescriptionDatabase.Add(asset);
+                    }
+                    Debug.Log($"Editor auto-loaded {matchingDescriptionDatabase.Count} MatchingDescription from Assets/Script/Database.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Auto-load MatchingDescription failed: {e.Message}");
+            }   
+#endif
+        }
+
+        // ดึง Fill in Blank Description data
+        if (fillInBlankDescriptionDatabase == null || fillInBlankDescriptionDatabase.Count == 0)
+        {
+            var loadFillInBlankDescription = Resources.LoadAll<FillInBlankDescription>("GameContent/DescriptionFillInBlank");
+            if (loadFillInBlankDescription != null && loadFillInBlankDescription.Length > 0)
+            {
+                fillInBlankDescriptionDatabase = new List<FillInBlankDescription>(loadFillInBlankDescription);
+            }
+#if UNITY_EDITOR
+            try
+            {
+                string[] guids = UnityEditor.AssetDatabase.FindAssets("t:FillInBlankDescription", new[] { "Assets/Script/Database" });
+                if (guids != null && guids.Length > 0)
+                {
+                    fillInBlankDescriptionDatabase = new List<FillInBlankDescription>();
+                    foreach (var g in guids)
+                    {
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+                        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<FillInBlankDescription>(path);
+                        if (asset != null) fillInBlankDescriptionDatabase.Add(asset);
+                    }
+                    Debug.Log($"Editor auto-loaded {fillInBlankDescriptionDatabase.Count} FillInBlankDescription from Assets/Script/Database.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Auto-load FillInBlankDescription failed: {e.Message}");
+            }
+#endif
+        }
     }
 
     //ฟังก์ชันดึงข้อมูลตาม ID ต่างๆ
@@ -652,5 +747,25 @@ public class GameContentDatabase : MonoBehaviour
 
     //     return dailyReward.rewards[dayIndex];
     // }
+
+    // ดึงคำอธิบายของ True/False ตาม ID story
+    public List<TrueFalseDescription> GetTrueFalseDescriptionByID(string story_id)
+    {
+        if (trueFalseDescriptionDatabase == null) return null;
+        return trueFalseDescriptionDatabase.Where(TF => TF.TrueFalse.story.story_id == story_id).ToList();
+    }
+
+    // ดึงคำอธิบายของ Matching ตาม ID story
+    public List<MatchingDescription> GetMatchingDescriptionByID(string story_id)
+    {
+        if (matchingDescriptionDatabase == null) return null;
+        return matchingDescriptionDatabase.Where(M => M.Matching.story.story_id == story_id).ToList();
+    }
+    // ดึงคำอธิบายของ Fill in Blank ตาม ID story
+    public List<FillInBlankDescription> GetFillInBlankDescriptionByID(string story_id)
+    {
+        if (fillInBlankDescriptionDatabase == null) return null;
+        return fillInBlankDescriptionDatabase.Where(FB => FB.FillInBlank.story.story_id == story_id).ToList();
+    }
 }
 

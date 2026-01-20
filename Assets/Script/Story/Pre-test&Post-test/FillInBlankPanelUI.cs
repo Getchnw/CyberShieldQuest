@@ -101,22 +101,38 @@ public class FillInBlankPanelUI : MonoBehaviour
     public int CheckAnswers()
     {
         int correctCount = 0;
+
+        // วนลูปตามจำนวนช่องว่าง (DropZones)
         for (int i = 0; i < spawnedDropZones.Count; i++)
         {
-            // ดึง DropZone และ คำถามที่ตรงกัน
             DropZone zone = spawnedDropZones[i];
-            string correctAnswer = questionData.sentences[i].correctAnswer;
 
-            // ตรวจสอบ
-            if (zone.currentDroppedAnswerID == correctAnswer)
+            // 1. ดึง Index เฉลยจากข้อมูล (ในรูป Inspector คุณใส่เลข "3")
+            string correctIndexStr = questionData.sentences[i].correctAnswer;
+
+            // 2. แปลงเลข "3" ให้กลายเป็นข้อความจาก WordBank (เช่น "เข้ารหัสซ้อน...")
+            string correctWordText = "";
+            if (int.TryParse(correctIndexStr, out int index))
+            {
+                // ตรวจสอบว่า Index ไม่เกินขนาดของ WordBank
+                if (index >= 0 && index < questionData.wordBank.Count)
+                {
+                    correctWordText = questionData.wordBank[index];
+                }
+            }
+            else
+            {
+                // กรณีที่คุณใส่เฉลยเป็นข้อความตรงๆ ไม่ใช่ตัวเลข
+                correctWordText = correctIndexStr;
+            }
+
+            // 3. เทียบคำตอบ: สิ่งที่วาง (zone.currentDroppedAnswerID) == เฉลยที่เป็นข้อความ (correctWordText)
+            // ใช้ Trim() เพื่อตัดช่องว่างหน้าหลังกันพลาด
+            if (zone.currentDroppedAnswerID != null &&
+                zone.currentDroppedAnswerID.Trim() == correctWordText.Trim())
             {
                 correctCount++;
-                // (Optional: ทำให้ช่องเป็นสีเขียว)
             }
-            // else
-            // {
-            //     // (Optional: ทำให้ช่องเป็นสีแดง)
-            // }
         }
         return correctCount;
     }
@@ -156,7 +172,17 @@ public class FillInBlankPanelUI : MonoBehaviour
 
         // 1. สร้างโจทย์ (เอาประโยคมาต่อกันเพื่อเป็น Reference)
         // หรือจะใช้ชื่อหัวข้อก็ได้ถ้าประโยคยาวไป
-        qa.QustionText = "Fill In Blank: " + string.Join(" ... ", questionData.sentences.Select(s => s.sentencePart1));
+        // qa.QustionText = string.Join(" ... ", questionData.sentences.Select(s => s.sentencePart1) +
+        //     " _____ " +
+        //     string.Join(" ", s.sentencePart2)).ToArray();
+        // สมมติว่า sentencePart2 เป็น List หรือ Array
+        string result = string.Join("\n", questionData.sentences.Select(s =>
+            string.IsNullOrEmpty(s.sentencePart2)
+            ? s.sentencePart1 + " _____ "                       // ถ้าไม่มีส่วนหลัง
+            : s.sentencePart1 + " _____ " + s.sentencePart2     // ถ้ามีส่วนหลัง
+        ));
+
+        qa.QustionText = result;
 
         // 2. รวบรวมคำตอบที่ผู้เล่นใส่ในช่องว่าง
         List<string> playerAnswers = new List<string>();
