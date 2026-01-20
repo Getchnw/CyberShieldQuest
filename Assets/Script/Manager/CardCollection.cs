@@ -32,7 +32,11 @@ public class CollectionManager : MonoBehaviour
     void LoadCardLibrary()
     {
         CardData[] loaded = Resources.LoadAll<CardData>("GameContent/Cards");
-        allCardsLibrary = loaded.OrderBy(x => x.cost).ThenBy(x => x.card_id).ToList();
+        allCardsLibrary = loaded
+            .Where(x => x.type != CardType.Token) // ซ่อน Token ไม่ให้โชว์ใน Collection
+            .OrderBy(x => x.cost)
+            .ThenBy(x => x.card_id)
+            .ToList();
     }
 
     void RefreshUI()
