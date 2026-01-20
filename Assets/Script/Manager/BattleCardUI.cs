@@ -366,8 +366,16 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public void ResetAttackState()
     {
         hasAttacked = false;
-        // เปลี่ยนสีกลับเป็นปกติ (ถ้าตอนตีเปลี่ยนสีไว้)
-        if(artworkImage) artworkImage.color = Color.white;
+        // เปลี่ยนสีกลับเป็นปกติ และตรวจสอบให้แสดงหน้าการ์ด
+        if(artworkImage) 
+        {
+            artworkImage.color = Color.white;
+            // 🔥 แก้: ตรวจสอบให้แน่ใจว่าแสดงหน้าการ์ด
+            if (_cardData != null && _cardData.artwork != null)
+            {
+                artworkImage.sprite = _cardData.artwork;
+            }
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)

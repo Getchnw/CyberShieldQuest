@@ -81,6 +81,9 @@ public class BattleManager : MonoBehaviour
     [Header("--- Deck Position ---")]
     public Transform deckPileTransform; // ตำแหน่งเด็คที่การ์ดจะบินออกมา
     public Transform enemyDeckPileTransform; // ตำแหน่งเด็คบอทที่การ์ดจะบินออกมา
+    public TextMeshProUGUI playerDeckCountText; // แสดงจำนวนการ์ดที่เหลือในเด็คผู้เล่น
+    public TextMeshProUGUI enemyDeckCountText; // แสดงจำนวนการ์ดที่เหลือในเด็คบอท
+    [Range(3, 10)] public int deckVisualizationCount = 5; // จำนวนหลังการ์ดที่ซ้อนกัน
 
     [Header("--- Mulligan UI ---")]
     public Button playerMulliganButton;
@@ -116,6 +119,10 @@ public class BattleManager : MonoBehaviour
     private int playerMulliganLeft = 1;
     private int enemyMulliganLeft = 1;
     private bool playerFirstTurn = false; // true = ผู้เล่นเริ่มต้น
+    
+    // 🎴 Deck Visualization
+    private List<GameObject> playerDeckVisuals = new List<GameObject>();
+    private List<GameObject> enemyDeckVisuals = new List<GameObject>();
 
     void Awake()
     {
@@ -175,6 +182,9 @@ public class BattleManager : MonoBehaviour
 
         if (takeDamageButton) takeDamageButton.SetActive(false);
         if (resultPanel) resultPanel.SetActive(false);
+        
+        // 🎴 สร้างการแสดงผลเด็ค
+        CreateDeckVisualization();
 
         // 🔥 สุ่มผู้เริ่มต้น
         playerFirstTurn = Random.value > 0.5f;
@@ -375,7 +385,10 @@ public class BattleManager : MonoBehaviour
                 yield return new WaitForSeconds(0.2f);
                 slotIndex++;
             }
-        } 
+        }
+        
+        // 🎴 อัพเดทการแสดงผลเด็ค
+        UpdateDeckVisualization();
     }
 
     void ArrangeCardsIntoMulliganSlots()
@@ -1223,7 +1236,14 @@ public class BattleManager : MonoBehaviour
         
         cardUI.isOnField = true;
         cardUI.hasAttacked = true; 
-        cardUI.GetComponent<Image>().color = Color.gray; // สีเทา = Summoning Sickness
+        
+        // 🔥 แก้: ตรวจสอบให้แน่ใจว่าการ์ดแสดงหน้าไม่ใช่หลัง
+        var cardImage = cardUI.GetComponent<Image>();
+        if (cardImage != null && cardUI.GetData() != null && cardUI.GetData().artwork != null)
+        {
+            cardImage.sprite = cardUI.GetData().artwork; // แสดงหน้าการ์ด
+            cardImage.color = Color.gray; // สีเทา = Summoning Sickness
+        }
 
         if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
         UpdateUI();
@@ -1436,7 +1456,15 @@ public class BattleManager : MonoBehaviour
 
         ui.hasAttacked = true; // summoning sickness
         var img = ui.GetComponent<Image>();
-        if (img) img.color = Color.gray;
+        if (img)
+        {
+            // 🔥 แก้: ตรวจสอบให้แน่ใจว่าการ์ดแสดงหน้าไม่ใช่หลัง
+            if (ui.GetData() != null && ui.GetData().artwork != null)
+            {
+                img.sprite = ui.GetData().artwork; // แสดงหน้าการ์ด
+            }
+            img.color = Color.gray;
+        }
 
         Debug.Log($"🤖 บอทลงการ์ด: {ui.GetData()?.cardName} (ห้ามตีเทิร์นนี้)");
 
@@ -1730,7 +1758,17 @@ public class BattleManager : MonoBehaviour
                 var c = slot.GetChild(0).GetComponent<BattleCardUI>();
                 if (c) {
                     c.hasAttacked = false;
-                    c.GetComponent<Image>().color = Color.white; // คืนสี
+                    // 🔥 แก้: ตรวจสอบ Image ก่อน และให้แน่ใจว่าแสดงหน้าการ์ด
+                    var img = c.GetComponent<Image>();
+                    if (img != null)
+                    {
+                        img.color = Color.white; // คืนสี
+                        // ตรวจสอบว่าแสดงหน้าการ์ดถูกต้อง
+                        if (c.GetData() != null && c.GetData().artwork != null)
+                        {
+                            img.sprite = c.GetData().artwork;
+                        }
+                    }
                 }
             }
         }
@@ -1873,6 +1911,9 @@ public class BattleManager : MonoBehaviour
             ArrangeCardsInHand();
             Debug.Log("✅ จัดการ์ดในมือหลังจากจั่วเสร็จ");
         }
+        
+        // 🎴 อัพเดทการแสดงผลเด็ค
+        UpdateDeckVisualization();
     }
 
     IEnumerator DrawEnemyCard(int n) 
@@ -1974,6 +2015,9 @@ public class BattleManager : MonoBehaviour
         }
 
         ArrangeEnemyHand();
+        
+        // 🎴 อัพเดทการแสดงผลเด็ค
+        UpdateDeckVisualization();
     }
 
     void ShuffleList(List<CardData> list) 
@@ -2085,6 +2129,9 @@ public class BattleManager : MonoBehaviour
         if(enemyPPText)enemyPPText.text=$"{enemyCurrentPP}/{enemyMaxPP} PP";
         if(playerHPText)playerHPText.text=$"{currentHP}/{maxHP}"; 
         if(enemyHPText)enemyHPText.text=$"{enemyCurrentHP}/{enemyMaxHP}"; 
+        
+        // 🎴 อัพเดทจำนวนการ์ดในเด็ค
+        UpdateDeckCountUI();
     }
 
     // --------------------------------------------------------
@@ -2200,6 +2247,149 @@ public class BattleManager : MonoBehaviour
 
         UpdateUI();
         Debug.Log($"✅ Sacrifice สำเร็จ!");
+    }
+
+    // --------------------------------------------------------
+    // 🎴 DECK VISUALIZATION SYSTEM
+    // --------------------------------------------------------
+
+    void CreateDeckVisualization()
+    {
+        // สร้างหลังการ์ดซ้อนกันสำหรับเด็คผู้เล่น
+        if (deckPileTransform != null && cardBackPrefab != null)
+        {
+            ClearDeckVisualization(playerDeckVisuals);
+            int cardsToShow = Mathf.Min(deckList.Count, deckVisualizationCount);
+            
+            for (int i = 0; i < cardsToShow; i++)
+            {
+                GameObject cardBack = Instantiate(cardBackPrefab, deckPileTransform);
+                RectTransform rect = cardBack.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    rect.sizeDelta = new Vector2(140, 200);
+                    // ซ้อนกันเล็กน้อย (offset ตาม index)
+                    rect.anchoredPosition = new Vector2(i * 2f, -i * 2f);
+                }
+                cardBack.transform.SetAsFirstSibling(); // การ์ดล่างสุดอยู่ข้างหลัง
+                playerDeckVisuals.Add(cardBack);
+            }
+        }
+
+        // สร้างหลังการ์ดซ้อนกันสำหรับเด็คบอท
+        if (enemyDeckPileTransform != null && cardBackPrefab != null)
+        {
+            ClearDeckVisualization(enemyDeckVisuals);
+            int cardsToShow = Mathf.Min(enemyDeckList.Count, deckVisualizationCount);
+            
+            for (int i = 0; i < cardsToShow; i++)
+            {
+                GameObject cardBack = Instantiate(cardBackPrefab, enemyDeckPileTransform);
+                RectTransform rect = cardBack.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    rect.sizeDelta = new Vector2(140, 200);
+                    rect.anchoredPosition = new Vector2(i * 2f, -i * 2f);
+                }
+                cardBack.transform.SetAsFirstSibling();
+                enemyDeckVisuals.Add(cardBack);
+            }
+        }
+
+        UpdateDeckCountUI();
+    }
+
+    void UpdateDeckVisualization()
+    {
+        // อัพเดทเด็คผู้เล่น
+        if (deckPileTransform != null && cardBackPrefab != null)
+        {
+            int currentVisualCount = playerDeckVisuals.Count;
+            int targetVisualCount = Mathf.Min(deckList.Count, deckVisualizationCount);
+
+            // ถ้าเด็คลดลง ให้ลบการ์ดด้านบนออก
+            while (currentVisualCount > targetVisualCount && playerDeckVisuals.Count > 0)
+            {
+                int lastIndex = playerDeckVisuals.Count - 1;
+                if (playerDeckVisuals[lastIndex] != null)
+                {
+                    Destroy(playerDeckVisuals[lastIndex]);
+                }
+                playerDeckVisuals.RemoveAt(lastIndex);
+                currentVisualCount--;
+            }
+
+            // ถ้าเด็คเพิ่มขึ้น (กรณี reshuffle หรือเพิ่มการ์ด) ให้เพิ่มการ์ด
+            while (currentVisualCount < targetVisualCount)
+            {
+                GameObject cardBack = Instantiate(cardBackPrefab, deckPileTransform);
+                RectTransform rect = cardBack.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    rect.sizeDelta = new Vector2(140, 200);
+                    rect.anchoredPosition = new Vector2(currentVisualCount * 2f, -currentVisualCount * 2f);
+                }
+                cardBack.transform.SetAsFirstSibling();
+                playerDeckVisuals.Add(cardBack);
+                currentVisualCount++;
+            }
+        }
+
+        // อัพเดทเด็คบอท
+        if (enemyDeckPileTransform != null && cardBackPrefab != null)
+        {
+            int currentVisualCount = enemyDeckVisuals.Count;
+            int targetVisualCount = Mathf.Min(enemyDeckList.Count, deckVisualizationCount);
+
+            while (currentVisualCount > targetVisualCount && enemyDeckVisuals.Count > 0)
+            {
+                int lastIndex = enemyDeckVisuals.Count - 1;
+                if (enemyDeckVisuals[lastIndex] != null)
+                {
+                    Destroy(enemyDeckVisuals[lastIndex]);
+                }
+                enemyDeckVisuals.RemoveAt(lastIndex);
+                currentVisualCount--;
+            }
+
+            while (currentVisualCount < targetVisualCount)
+            {
+                GameObject cardBack = Instantiate(cardBackPrefab, enemyDeckPileTransform);
+                RectTransform rect = cardBack.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    rect.sizeDelta = new Vector2(140, 200);
+                    rect.anchoredPosition = new Vector2(currentVisualCount * 2f, -currentVisualCount * 2f);
+                }
+                cardBack.transform.SetAsFirstSibling();
+                enemyDeckVisuals.Add(cardBack);
+                currentVisualCount++;
+            }
+        }
+
+        UpdateDeckCountUI();
+    }
+
+    void ClearDeckVisualization(List<GameObject> visualList)
+    {
+        foreach (var card in visualList)
+        {
+            if (card != null) Destroy(card);
+        }
+        visualList.Clear();
+    }
+
+    void UpdateDeckCountUI()
+    {
+        if (playerDeckCountText != null)
+        {
+            playerDeckCountText.text = deckList.Count.ToString();
+        }
+
+        if (enemyDeckCountText != null)
+        {
+            enemyDeckCountText.text = enemyDeckList.Count.ToString();
+        }
     }
 }
 
