@@ -82,7 +82,7 @@ public class GuidedLineController : MonoBehaviour
             switch (tutorialType)
             {
                 case TutorialType.Story: hasSeen = data.hasSeenTutorial_Story; break;
-                // กรณีเผื่ออนาคต (ต้องเพิ่มตัวแปรใน GameData ก่อนนะ)
+                case TutorialType.Shop:  hasSeen = data.hasSeenTutorial_Shop; break;
                 // case TutorialType.Stage: hasSeen = data.hasSeenTutorial_Stage; break;
                 // case TutorialType.Deck: hasSeen = data.hasSeenTutorial_Deck; break;
             }
@@ -166,6 +166,7 @@ public class GuidedLineController : MonoBehaviour
             
             if (tutorialType == TutorialType.Home) data.hasSeenTutorial_Home = true;
             else if (tutorialType == TutorialType.Story) data.hasSeenTutorial_Story = true;
+            else if (tutorialType == TutorialType.Shop) data.hasSeenTutorial_Shop = true;
             // else if (tutorialType == TutorialType.Stage) data.hasSeenTutorial_Stage = true;
             
             GameManager.Instance.SaveCurrentGame();
