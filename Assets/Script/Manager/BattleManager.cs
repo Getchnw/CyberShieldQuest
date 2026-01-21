@@ -2317,13 +2317,27 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    void ShowDamagePopupString(string t, Transform pos) 
-    { 
-        if(damagePopupPrefab && pos) 
+    void ShowDamagePopupString(string t, Transform pos)
+    {
+        if (!damagePopupPrefab || !pos) return;
+
+        var go = Instantiate(damagePopupPrefab);
+        var canvas = FindObjectOfType<Canvas>();
+        if (canvas) go.transform.SetParent(canvas.transform, false);
+
+        var rect = go.transform as RectTransform;
+        var worldPos = pos.position;
+        if (rect)
         {
-            var go = Instantiate(damagePopupPrefab, pos.position, Quaternion.identity);
-            if(go.GetComponent<DamagePopup>()) go.GetComponent<DamagePopup>().Setup(0);
+            rect.position = Camera.main ? Camera.main.WorldToScreenPoint(worldPos) : worldPos;
         }
+        else
+        {
+            go.transform.position = worldPos;
+        }
+
+        var popup = go.GetComponent<DamagePopup>();
+        if (popup) popup.Setup(t);
     }
 
     void UpdateUI() 
@@ -3102,8 +3116,7 @@ public class BattleManager : MonoBehaviour
                 }
                 else
                 {
-                    // Fallback: ถ้าไม่มี BattleCardUI ใช้ Text
-                    var text = item.GetComponent<TextMeshProUGUI>();
+                    var text = item.GetComponentInChildren<TextMeshProUGUI>();
                     if (text != null)
                     {
                         text.text = card.cardName;

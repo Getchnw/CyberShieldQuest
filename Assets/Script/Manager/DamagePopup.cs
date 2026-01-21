@@ -14,22 +14,19 @@ public class DamagePopup : MonoBehaviour
         textColor = textMesh.color;
     }
 
-    public void Setup(int damageAmount)
+    public void Setup(string damageText)
     {
-        textMesh.text = damageAmount.ToString();
+        textMesh.text = damageText;
     }
 
     void Update()
     {
-        // 1. ลอยขึ้นข้างบน
-        transform.position += new Vector3(0, moveSpeed * Time.deltaTime, 0);
+        transform.position += new Vector3(0f, moveSpeed * Time.deltaTime, 0f);
 
-        // 2. ค่อยๆ จางหายไป
         textColor.a -= fadeSpeed * Time.deltaTime;
         textMesh.color = textColor;
 
-        // 3. ถ้าจางหมดแล้วให้ทำลายตัวเอง
-        if (textColor.a < 0)
+        if (textColor.a < 0f)
         {
             Destroy(gameObject);
         }
