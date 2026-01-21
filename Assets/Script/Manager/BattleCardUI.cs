@@ -213,6 +213,10 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         bool isPrimary = eventData.button == PointerEventData.InputButton.Left;
         bool isSecondary = eventData.button == PointerEventData.InputButton.Right;
 
+        // ห้ามโต้ตอบการ์ดที่อยู่ในมือบอท (ป้องกันการเปิดรายละเอียด)
+        if (BattleManager.Instance != null && transform.parent == BattleManager.Instance.enemyHandArea)
+            return;
+
         // 🔥 คลิกซ้าย = เปิดรายละเอียดการ์ดเท่านั้น (ถ้าคลิกซ้ำให้ปิด)
         if (isPrimary)
         {

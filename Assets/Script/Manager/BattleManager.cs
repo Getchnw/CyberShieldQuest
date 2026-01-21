@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
@@ -85,6 +86,17 @@ public class BattleManager : MonoBehaviour
     public TextMeshProUGUI enemyDeckCountText; // แสดงจำนวนการ์ดที่เหลือในเด็คบอท
     [Range(3, 10)] public int deckVisualizationCount = 5; // จำนวนหลังการ์ดที่ซ้อนกัน
 
+    [Header("--- Graveyard UI ---")]
+    public Transform playerGraveyardArea;          // จุดวาง/โชว์การ์ดสุสานผู้เล่น (เลือกใส่ได้)
+    public Transform enemyGraveyardArea;           // จุดวาง/โชว์การ์ดสุสานบอท (เลือกใส่ได้)
+    public TextMeshProUGUI playerGraveyardCountText; // UI นับจำนวนการ์ดสุสานผู้เล่น
+    public TextMeshProUGUI enemyGraveyardCountText;  // UI นับจำนวนการ์ดสุสานบอท
+    public GameObject playerGraveyardPanel;        // Popup รายการสุสานผู้เล่น (ถ้ามี)
+    public GameObject enemyGraveyardPanel;         // Popup รายการสุสานบอท (ถ้ามี)
+    public Transform playerGraveyardListRoot;      // Root สำหรับ spawn item สุสานผู้เล่น
+    public Transform enemyGraveyardListRoot;       // Root สำหรับ spawn item สุสานบอท
+    public GameObject graveyardListItemPrefab;     // Prefab รายการสุสาน (ถ้ามี)
+
     [Header("--- Mulligan UI ---")]
     public Button playerMulliganButton;
     public TextMeshProUGUI mulliganText;
@@ -123,6 +135,10 @@ public class BattleManager : MonoBehaviour
     // 🎴 Deck Visualization
     private List<GameObject> playerDeckVisuals = new List<GameObject>();
     private List<GameObject> enemyDeckVisuals = new List<GameObject>();
+    
+    // 🪦 Graveyard System (เก็บการ์ดที่ถูกทำลาย/discard)
+    private List<CardData> playerGraveyard = new List<CardData>();
+    private List<CardData> enemyGraveyard = new List<CardData>();
 
     void Awake()
     {
@@ -910,7 +926,7 @@ public class BattleManager : MonoBehaviour
                 if (cg)
                 {
                     cg.interactable = false;
-                    cg.blocksRaycasts = true;
+                    cg.blocksRaycasts = false; // กันคลิก/ดูรายละเอียดการ์ดบอท
                     cg.alpha = 1f;
                 }
             }
@@ -1248,19 +1264,185 @@ public class BattleManager : MonoBehaviour
         }
 
         if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
+        
+        // 🔥 ทริกเกอร์ OnDeploy Effects
+        ResolveEffects(cardUI, EffectTrigger.OnDeploy, isPlayer: true);
+        
         UpdateUI();
     }
 
-    // ใช้การ์ดเวทย์แล้วทิ้ง (ยังไม่ได้ใส่เอฟเฟกต์ แค่ตัดค่า PP และทำลายการ์ดบนมือ)
+    // ใช้การ์ดเวทย์แล้วทิ้ง (รองรับเอฟเฟกต์เวทย์)
     void CastSpellCard(BattleCardUI cardUI)
     {
+        if (cardUI == null || cardUI.GetData() == null) return;
+
+        // 🔍 ตรวจสอบว่าเวทย์นี้สามารถใช้ได้หรือไม่
+        if (!CanCastSpell(cardUI.GetData(), isPlayer: true))
+        {
+            Debug.Log($"⚠️ ไม่สามารถใช้เวทย์ได้: {cardUI.GetData().cardName} (ไม่มีเป้าหมายที่เหมาะสม)");
+            if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Denied");
+            return; // ยกเลิกการใช้เวทย์
+        }
+
         currentPP -= cardUI.GetCost();
 
-        // TODO: ใส่เอฟเฟกต์การ์ดเวทย์ที่ต้องการที่นี่
+        // 🎇 ลงสนามการ์ดเวทย์ก่อน (แสดงให้เห็นบนสนาม)
+        StartCoroutine(PlaySpellCardAnimation(cardUI, isPlayer: true));
+    }
 
+    /// <summary>ตรวจสอบว่าเวทย์สามารถใช้ได้หรือไม่ (ต้องมีเป้าหมายที่เหมาะสม)</summary>
+    bool CanCastSpell(CardData spellData, bool isPlayer)
+    {
+        if (spellData == null || spellData.effects == null) return true; // ไม่มี effect ถือว่า OK
+
+        // ตรวจสอบแต่ละ effect ว่า มีเป้าหมายหรือไม่
+        foreach (var effect in spellData.effects)
+        {
+            if (effect.trigger != EffectTrigger.OnDeploy) continue;
+
+            switch (effect.action)
+            {
+                case ActionType.Destroy:
+                case ActionType.ModifyStat:
+                    // ต้องมีเป้าหมาย (กำลังโจมตี)
+                    List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
+                    if (targets.Count == 0)
+                    {
+                        Debug.Log($"🚫 Effect {effect.action} ไม่มีเป้าหมาย!");
+                        return false;
+                    }
+                    break;
+
+                case ActionType.HealHP:
+                    // HealHP ใช้ได้เสมอ (ไม่ต้องมีเป้าหมายอื่น)
+                    break;
+
+                case ActionType.DiscardDeck:
+                case ActionType.RevealHand:
+                    // เทพอกพ is ok ก็ว่า ok (ต้องการ discard/reveal ได้)
+                    break;
+
+                // effect อื่นๆ ถือว่า OK
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>เล่นอนิเมชั่นการ์ดเวทย์และเอฟเฟกต์</summary>
+    IEnumerator PlaySpellCardAnimation(BattleCardUI cardUI, bool isPlayer)
+    {
+        CardData spellData = cardUI.GetData();
+
+        // 🎇 แสดงแจ้งเตือนเวทย์
+        StartCoroutine(ShowSpellUsageNotification(spellData, isPlayer));
+
+        // โชว์การ์ดบนสนามสักครู่ (เหมือนลงสนาม)
+        Canvas canvas = FindObjectOfType<Canvas>();
+        Vector3 originalPos = cardUI.transform.position;
+        Vector3 targetPos = isPlayer ? playerSpot.position : enemySpot.position;
+
+        if (canvas != null)
+        {
+            cardUI.transform.SetParent(canvas.transform, worldPositionStays: true);
+        }
+
+        // บิน ไปตรงกลาง
+        float animDuration = 0.4f;
+        float elapsed = 0f;
+        while (elapsed < animDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / animDuration;
+            cardUI.transform.position = Vector3.Lerp(originalPos, targetPos, t);
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(0.3f);
+
+        // 🔥 ทริกเกอร์ OnDeploy Effects สำหรับเวทย์
+        ResolveEffects(cardUI, EffectTrigger.OnDeploy, isPlayer);
+
+        yield return new WaitForSeconds(0.2f);
+
+        // ปล่อยเวทย์ลงไปสุสาน
         Destroy(cardUI.gameObject);
         if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
         UpdateUI();
+    }
+
+    /// <summary>บอทใช้เวทย์ พร้อมแสดงภาพและเอฟเฟกต์</summary>
+    IEnumerator BotCastSpell(BattleCardUI spellCard)
+    {
+        if (spellCard == null || spellCard.GetData() == null) yield break;
+
+        CardData spellData = spellCard.GetData();
+
+        // 🔍 ตรวจสอบว่าเวทย์นี้สามารถใช้ได้หรือไม่
+        if (!CanCastSpell(spellData, isPlayer: false))
+        {
+            Debug.Log($"⚠️ บอทไม่สามารถใช้เวทย์: {spellData.cardName} (ไม่มีเป้าหมาย)");
+            Destroy(spellCard.gameObject);
+            yield break; // ยกเลิก
+        }
+
+        Debug.Log($"🎇 บอทใช้เวทย์: {spellData.cardName}");
+
+        // 🎇 ลงสนามการ์ดเวทย์ก่อน
+        Canvas canvas = FindObjectOfType<Canvas>();
+        Vector3 originalPos = spellCard.transform.position;
+        Vector3 targetPos = enemySpot.position;
+
+        if (canvas != null)
+        {
+            spellCard.transform.SetParent(canvas.transform, worldPositionStays: true);
+        }
+
+        // แสดงแจ้งเตือนเวทย์
+        StartCoroutine(ShowSpellUsageNotification(spellData, isPlayer: false));
+
+        // บิน ไปตรงกลาง
+        float animDuration = 0.4f;
+        float elapsed = 0f;
+        while (elapsed < animDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / animDuration;
+            spellCard.transform.position = Vector3.Lerp(originalPos, targetPos, t);
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(0.3f);
+
+        // 🔥 ทริกเกอร์เอฟเฟกต์
+        ResolveEffects(spellCard, EffectTrigger.OnDeploy, isPlayer: false);
+
+        yield return new WaitForSeconds(0.2f);
+
+        // ปล่อยเวทย์ลงไปสุสาน
+        Destroy(spellCard.gameObject);
+        if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
+        UpdateUI();
+    }
+
+    /// <summary>แสดงแจ้งเตือนเวทย์ที่ถูกใช้</summary>
+    IEnumerator ShowSpellUsageNotification(CardData spellData, bool isPlayer)
+    {
+        // สร้างกล่องแสดงเวทย์แบบ popup
+        if (cardDetailView != null)
+        {
+            cardDetailView.Open(spellData);
+            
+            string casterName = isPlayer ? "คุณ" : "บอท";
+            string spellMsg = $"🎇 {casterName} ใช้เวทย์: {spellData.cardName}";
+            Debug.Log(spellMsg);
+
+            // แสดง popup 2-3 วินาที
+            yield return new WaitForSeconds(2f);
+            
+            // ปิด detail view โดยการคลิกอื่น หรือให้มันปิดเองตามระยะเวลา
+            // (ถ้า cardDetailView มีปุ่มปิด)
+        }
     }
 
     // --------------------------------------------------------
@@ -1327,6 +1509,10 @@ public class BattleManager : MonoBehaviour
         {
             Debug.Log($"💥 ไม่มีโล่ -> บอทรับดาเมจ {damage}");
             EnemyTakeDamage(damage);
+            
+            // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ)
+            ResolveEffects(attacker, EffectTrigger.OnStrikeHit, isPlayer: true);
+            
             yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
         }
 
@@ -1390,6 +1576,15 @@ public class BattleManager : MonoBehaviour
 
         // ลิสต์การ์ดในมือบอท (เฉพาะที่ยังไม่ลงสนาม)
         var handCards = enemyHandArea.GetComponentsInChildren<BattleCardUI>();
+
+        // 🎇 ลองใช้เวทย์ก่อน
+        var spellCard = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.Spell && enemyCurrentPP >= c.GetData().cost);
+        if (spellCard != null && CanCastSpell(spellCard.GetData(), isPlayer: false))
+        {
+            StartCoroutine(BotCastSpell(spellCard));
+            enemyCurrentPP -= spellCard.GetData().cost;
+            return; // ใช้เวทย์ได้แล้ว ไม่ลงสนามในเทิร์นนี้
+        }
 
         Transform freeMonSlot = GetFreeSlot(CardType.Monster, false);
         if (freeMonSlot != null)
@@ -1466,6 +1661,15 @@ public class BattleManager : MonoBehaviour
                 img.sprite = ui.GetData().artwork; // แสดงหน้าการ์ด
             }
             img.color = Color.gray;
+        }
+
+        // 🔥 อนุญาตให้คลิกดูรายละเอียดการ์ดบนสนามบอท
+        var cg = ui.GetComponent<CanvasGroup>();
+        if (cg)
+        {
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+            cg.alpha = 1f;
         }
 
         Debug.Log($"🤖 บอทลงการ์ด: {ui.GetData()?.cardName} (ห้ามตีเทิร์นนี้)");
@@ -2134,6 +2338,7 @@ public class BattleManager : MonoBehaviour
         
         // 🎴 อัพเดทจำนวนการ์ดในเด็ค
         UpdateDeckCountUI();
+        UpdateGraveyardCountUI();
     }
 
     // --------------------------------------------------------
@@ -2393,5 +2598,543 @@ public class BattleManager : MonoBehaviour
             enemyDeckCountText.text = enemyDeckList.Count.ToString();
         }
     }
-}
 
+    // ========================================================
+    // 🔥 EFFECT RESOLUTION SYSTEM
+    // ========================================================
+    
+    /// <summary>วน effects ทั้งหมดของการ์ดตามเงื่อนไข trigger ที่กำหนด</summary>
+    void ResolveEffects(BattleCardUI sourceCard, EffectTrigger triggerType, bool isPlayer)
+    {
+        if (sourceCard == null) return;
+        var cardData = sourceCard.GetData();
+        if (cardData == null || cardData.effects == null || cardData.effects.Count == 0) return;
+
+        foreach (var effect in cardData.effects)
+        {
+            if (effect.trigger == triggerType)
+            {
+                ApplyEffect(sourceCard, effect, isPlayer);
+            }
+        }
+    }
+
+    /// <summary>ทำการแอคชันตามประเภท effect ที่กำหนด</summary>
+    void ApplyEffect(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        Debug.Log($"🔥 Apply Effect: {sourceCard.GetData().cardName} | Trigger: {effect.trigger} | Action: {effect.action} | Target: {effect.targetType}");
+
+        switch (effect.action)
+        {
+            case ActionType.Destroy:
+                ApplyDestroy(effect, isPlayer);
+                break;
+            case ActionType.HealHP:
+                ApplyHeal(sourceCard, effect, isPlayer);
+                break;
+            case ActionType.SummonToken:
+                ApplySummonToken(sourceCard, effect, isPlayer);
+                break;
+            case ActionType.RevealHand:
+                ApplyRevealHand(effect, isPlayer);
+                break;
+            case ActionType.DiscardDeck:
+                ApplyDiscardDeck(effect, isPlayer);
+                break;
+            case ActionType.DisableAttack:
+                ApplyDisableAttack(effect, isPlayer);
+                break;
+            case ActionType.DisableAbility:
+                ApplyDisableAbility(effect, isPlayer);
+                break;
+            case ActionType.ModifyStat:
+                ApplyModifyStat(effect, isPlayer);
+                break;
+            default:
+                Debug.LogWarning($"⚠️ Action type {effect.action} not implemented yet");
+                break;
+        }
+    }
+
+    // --- Effect Implementations ---
+
+    void ApplyDestroy(CardEffect effect, bool isPlayer)
+    {
+        List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
+        
+        foreach (var target in targets)
+        {
+            if (target != null && target.GetData() != null)
+            {
+                Debug.Log($"💥 Destroy: {target.GetData().cardName}");
+                DestroyCardToGraveyard(target);
+            }
+        }
+    }
+
+    void ApplyHeal(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        int healAmount = sourceCard.GetData().atk;
+        
+        if (effect.targetType == TargetType.Self)
+        {
+            if (isPlayer)
+            {
+                currentHP = Mathf.Min(currentHP + healAmount, maxHP);
+                ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
+                Debug.Log($"💚 Heal Player: {healAmount}");
+            }
+        }
+        else if (effect.targetType == TargetType.EnemyPlayer && !isPlayer)
+        {
+            enemyCurrentHP = Mathf.Min(enemyCurrentHP + healAmount, enemyMaxHP);
+            ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
+            Debug.Log($"💚 Heal Enemy: {healAmount}");
+        }
+        
+        UpdateUI();
+    }
+
+    void ApplySummonToken(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        Debug.LogWarning($"⚠️ SummonToken: ต้องสร้าง CardData ของ Token ก่อน");
+    }
+
+    void ApplyRevealHand(CardEffect effect, bool isPlayer)
+    {
+        if (effect.targetType == TargetType.EnemyHand && !isPlayer)
+        {
+            if (enemyHandArea != null && enemyHandArea.childCount > 0)
+            {
+                var firstCard = enemyHandArea.GetChild(0).GetComponent<BattleCardUI>();
+                if (firstCard != null && cardDetailView != null)
+                {
+                    cardDetailView.Open(firstCard.GetData());
+                    Debug.Log($"👁️ Reveal Enemy Hand: {firstCard.GetData().cardName}");
+                }
+            }
+        }
+    }
+
+    void ApplyDiscardDeck(CardEffect effect, bool isPlayer)
+    {
+        int discardCount = effect.value > 0 ? effect.value : 1;
+        
+        if (effect.targetType == TargetType.EnemyDeck && !isPlayer)
+        {
+            for (int i = 0; i < discardCount && enemyDeckList.Count > 0; i++)
+            {
+                CardData discardedCard = enemyDeckList[0];
+                enemyDeckList.RemoveAt(0);
+                // ส่งลงสุสาน
+                SendToGraveyard(discardedCard, isPlayer: false);
+                UpdateGraveyardCountUI();
+                Debug.Log($"🗑️ Discard Enemy Deck Card: {discardedCard.cardName}");
+            }
+            UpdateDeckVisualization();
+        }
+        else if (effect.targetType == TargetType.EnemyHand && !isPlayer)
+        {
+            // Discard จากมือศัตรู (ผู้เล่น)
+            if (handArea != null && handArea.childCount > 0)
+            {
+                for (int i = 0; i < discardCount && handArea.childCount > 0; i++)
+                {
+                    var card = handArea.GetChild(0).GetComponent<BattleCardUI>();
+                    if (card != null && card.GetData() != null)
+                    {
+                        DestroyCardToGraveyard(card);
+                        Debug.Log($"🗑️ Discard Player Hand Card: {card.GetData().cardName}");
+                    }
+                }
+            }
+        }
+    }
+
+    void ApplyDisableAttack(CardEffect effect, bool isPlayer)
+    {
+        Debug.LogWarning($"⚠️ DisableAttack: ต้องสร้าง Debuff system ก่อน");
+    }
+
+    void ApplyDisableAbility(CardEffect effect, bool isPlayer)
+    {
+        Debug.LogWarning($"⚠️ DisableAbility: ต้องสร้าง Debuff system ก่อน");
+    }
+
+    void ApplyModifyStat(CardEffect effect, bool isPlayer)
+    {
+        List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
+        
+        foreach (var target in targets)
+        {
+            if (target != null && target.GetData() != null)
+            {
+                // 🔥 หากใช้ value ได้แสดงว่า value คือพลังที่ต้องลด
+                // ถ้า value = 0 หรือติดค่าตามจำนวนสุสาน ให้คำนวณจากสุสาน
+                int graveyardBoost = GetGraveyardCount(!isPlayer); // นับสุสานของฝ่ายตรงข้าม
+                
+                target.GetData().atk = Mathf.Max(0, target.GetData().atk - graveyardBoost);
+                target.GetData().cost = 0;
+                Debug.Log($"⚠️ ModifyStat: {target.GetData().cardName} ATK->{target.GetData().atk} (Graveyard boost: {graveyardBoost}) Cost->0");
+            }
+        }
+    }
+
+    // --- Helper Functions ---
+
+    List<BattleCardUI> GetTargetCards(CardEffect effect, bool isPlayer)
+    {
+        List<BattleCardUI> targets = new List<BattleCardUI>();
+
+        switch (effect.targetType)
+        {
+            case TargetType.EnemyMonster:
+                if (!isPlayer && playerMonsterSlots != null)
+                {
+                    foreach (var slot in playerMonsterSlots)
+                    {
+                        if (slot != null && slot.childCount > 0)
+                        {
+                            var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                            if (card != null && MatchesCategory(card.GetData(), effect))
+                                targets.Add(card);
+                        }
+                    }
+                }
+                else if (isPlayer && enemyMonsterSlots != null)
+                {
+                    foreach (var slot in enemyMonsterSlots)
+                    {
+                        if (slot != null && slot.childCount > 0)
+                        {
+                            var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                            if (card != null && MatchesCategory(card.GetData(), effect))
+                                targets.Add(card);
+                        }
+                    }
+                }
+                break;
+
+            case TargetType.EnemyEquip:
+                if (!isPlayer && playerEquipSlots != null)
+                {
+                    foreach (var slot in playerEquipSlots)
+                    {
+                        if (slot != null && slot.childCount > 0)
+                        {
+                            var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                            if (card != null && MatchesCategory(card.GetData(), effect))
+                                targets.Add(card);
+                        }
+                    }
+                }
+                else if (isPlayer && enemyEquipSlots != null)
+                {
+                    foreach (var slot in enemyEquipSlots)
+                    {
+                        if (slot != null && slot.childCount > 0)
+                        {
+                            var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                            if (card != null && MatchesCategory(card.GetData(), effect))
+                                targets.Add(card);
+                        }
+                    }
+                }
+                break;
+        }
+
+        return targets;
+    }
+
+    /// <summary>เช็คว่าการ์ดใบนี้เป็นของผู้เล่นหรือบอทด้วยตำแหน่งที่วาง</summary>
+    bool IsCardOwnedByPlayer(BattleCardUI card)
+    {
+        if (card == null) return true;
+
+        Transform parent = card.transform.parent;
+
+        if (handArea != null && parent == handArea) return true;
+        if (enemyHandArea != null && parent == enemyHandArea) return false;
+
+        if (playerMonsterSlots != null)
+        {
+            foreach (var slot in playerMonsterSlots)
+                if (slot == parent) return true;
+        }
+
+        if (playerEquipSlots != null)
+        {
+            foreach (var slot in playerEquipSlots)
+                if (slot == parent) return true;
+        }
+
+        if (enemyMonsterSlots != null)
+        {
+            foreach (var slot in enemyMonsterSlots)
+                if (slot == parent) return false;
+        }
+
+        if (enemyEquipSlots != null)
+        {
+            foreach (var slot in enemyEquipSlots)
+                if (slot == parent) return false;
+        }
+
+        // ค่า default ให้เป็นผู้เล่นเพื่อไม่พลาดการคำนวณเอฟเฟ็กต์ฝั่งเรา
+        return true;
+    }
+
+    /// <summary>ทำลายการ์ดบนสนาม/มือ พร้อมส่งลงสุสาน และอัปเดตตัวนับ</summary>
+    void DestroyCardToGraveyard(BattleCardUI card)
+    {
+        if (card == null) return;
+        bool ownerIsPlayer = IsCardOwnedByPlayer(card);
+        SendToGraveyard(card.GetData(), ownerIsPlayer);
+        Destroy(card.gameObject);
+        UpdateGraveyardCountUI();
+    }
+
+    bool MatchesCategory(CardData cardData, CardEffect effect)
+    {
+        if (effect.targetMainCat == MainCategory.General && effect.targetSubCat == SubCategory.General)
+            return true;
+
+        if (effect.targetMainCat != MainCategory.General && cardData.mainCategory != effect.targetMainCat)
+            return false;
+
+        if (effect.targetSubCat != SubCategory.General && cardData.subCategory != effect.targetSubCat)
+            return false;
+
+        return true;
+    }
+
+    // ========================================================
+    // 🪦 GRAVEYARD SYSTEM
+    // ========================================================
+
+    /// <summary>ส่งการ์ดลงสุสาน</summary>
+    void SendToGraveyard(CardData cardData, bool isPlayer)
+    {
+        if (cardData == null) return;
+
+        if (isPlayer)
+        {
+            playerGraveyard.Add(cardData);
+            Debug.Log($"🪦 Player Graveyard +1: {cardData.cardName} (total: {playerGraveyard.Count})");
+        }
+        else
+        {
+            enemyGraveyard.Add(cardData);
+            Debug.Log($"🪦 Enemy Graveyard +1: {cardData.cardName} (total: {enemyGraveyard.Count})");
+        }
+
+        UpdateGraveyardCountUI();
+    }
+
+    /// <summary>ดึงการ์ดจากสุสาน (เพื่อเรียกกลับมา)</summary>
+    CardData RestoreFromGraveyard(int index, bool isPlayer)
+    {
+        if (isPlayer)
+        {
+            if (index >= 0 && index < playerGraveyard.Count)
+            {
+                CardData card = playerGraveyard[index];
+                playerGraveyard.RemoveAt(index);
+                Debug.Log($"✨ Restore from Player Graveyard: {card.cardName} (remaining: {playerGraveyard.Count})");
+                return card;
+            }
+        }
+        else
+        {
+            if (index >= 0 && index < enemyGraveyard.Count)
+            {
+                CardData card = enemyGraveyard[index];
+                enemyGraveyard.RemoveAt(index);
+                Debug.Log($"✨ Restore from Enemy Graveyard: {card.cardName} (remaining: {enemyGraveyard.Count})");
+                return card;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>นับจำนวนการ์ดในสุสาน</summary>
+    int GetGraveyardCount(bool isPlayer)
+    {
+        return isPlayer ? playerGraveyard.Count : enemyGraveyard.Count;
+    }
+
+    /// <summary>ดึงการ์ดใหม่ล่าสุดจากสุสาน (index สุดท้าย)</summary>
+    CardData GetLastGraveyardCard(bool isPlayer)
+    {
+        var graveyard = isPlayer ? playerGraveyard : enemyGraveyard;
+        if (graveyard.Count > 0)
+        {
+            return graveyard[graveyard.Count - 1];
+        }
+        return null;
+    }
+
+    // ========================================================
+    // 🪦 GRAVEYARD UI HELPERS (สำหรับปุ่มใน HUD)
+    // ========================================================
+
+    void UpdateGraveyardCountUI()
+    {
+        if (playerGraveyardCountText != null)
+            playerGraveyardCountText.text = playerGraveyard.Count.ToString();
+
+        if (enemyGraveyardCountText != null)
+            enemyGraveyardCountText.text = enemyGraveyard.Count.ToString();
+    }
+
+    public void TogglePlayerGraveyardPanel()
+    {
+        if (playerGraveyardPanel == null) return;
+        bool show = !playerGraveyardPanel.activeSelf;
+        playerGraveyardPanel.SetActive(show);
+        if (show) RefreshPlayerGraveyardUI();
+    }
+
+    public void ClosePlayerGraveyardPanel()
+    {
+        if (playerGraveyardPanel != null)
+            playerGraveyardPanel.SetActive(false);
+    }
+
+    public void ToggleEnemyGraveyardPanel()
+    {
+        if (enemyGraveyardPanel == null) return;
+        bool show = !enemyGraveyardPanel.activeSelf;
+        enemyGraveyardPanel.SetActive(show);
+        if (show) RefreshEnemyGraveyardUI();
+    }
+
+    public void CloseEnemyGraveyardPanel()
+    {
+        if (enemyGraveyardPanel != null)
+            enemyGraveyardPanel.SetActive(false);
+    }
+
+    /// <summary>ปิด graveyard panels ทั้งหมด (เรียกจาก background click หรือ ESC)</summary>
+    public void CloseAllGraveyardPanels()
+    {
+        ClosePlayerGraveyardPanel();
+        CloseEnemyGraveyardPanel();
+    }
+
+    public void RefreshPlayerGraveyardUI()
+    {
+        if (playerGraveyardCountText != null)
+            playerGraveyardCountText.text = playerGraveyard.Count.ToString();
+
+        ClearListRoot(playerGraveyardListRoot);
+        PopulateGraveyardList(playerGraveyardListRoot, playerGraveyard);
+    }
+
+    public void RefreshEnemyGraveyardUI()
+    {
+        if (enemyGraveyardCountText != null)
+            enemyGraveyardCountText.text = enemyGraveyard.Count.ToString();
+
+        ClearListRoot(enemyGraveyardListRoot);
+        PopulateGraveyardList(enemyGraveyardListRoot, enemyGraveyard);
+    }
+
+    void PopulateGraveyardList(Transform root, List<CardData> cards)
+    {
+        if (root == null || cards == null) return;
+
+        if (graveyardListItemPrefab != null)
+        {
+            // ใช้ prefab ที่กำหนด
+            foreach (var card in cards)
+            {
+                var item = Instantiate(graveyardListItemPrefab, root);
+                item.transform.localScale = Vector3.one * 0.75f;
+
+                var ui = item.GetComponent<BattleCardUI>();
+                if (ui != null)
+                {
+                    ui.Setup(card);
+                    
+                    // ตั้ง CanvasGroup ให้คลิกได้แน่นอน
+                    var cg = ui.GetComponent<CanvasGroup>();
+                    if (cg == null) cg = ui.gameObject.AddComponent<CanvasGroup>();
+                    cg.interactable = true;
+                    cg.blocksRaycasts = true;
+                    cg.alpha = 1f;
+
+                    // ตั้งค่า Image ของ Button ให้รับ raycast
+                    var img = item.GetComponent<Image>();
+                    if (img != null)
+                    {
+                        img.raycastTarget = true;
+                        Debug.Log($"📋 Image raycastTarget = {img.raycastTarget}");
+                    }
+                    
+                    CardData cardData = card; // capture ค่าสำหรับ lambda
+                    
+                    // ใช้ EventTrigger (PointerClick) แทน Button ที่อาจไม่ทำงาน
+                    var eventTrigger = item.GetComponent<EventTrigger>();
+                    if (eventTrigger == null) eventTrigger = item.AddComponent<EventTrigger>();
+                    
+                    // ล้างเหตุการณ์เก่า
+                    eventTrigger.triggers.Clear();
+                    
+                    // เพิ่ม PointerClick trigger
+                    EventTrigger.Entry entry = new EventTrigger.Entry();
+                    entry.eventID = EventTriggerType.PointerClick;
+                    entry.callback.AddListener((data) => {
+                        Debug.Log($"🖱️ คลิกการ์ดในสุสาน: {cardData.cardName}");
+                        if (cardDetailView != null)
+                        {
+                            Debug.Log($"🔓 เปิดรายละเอียด: {cardData.cardName}");
+                            cardDetailView.Open(cardData);
+                        }
+                        else
+                        {
+                            Debug.LogError("❌ CardDetailView ยังไม่ได้ตั้งค่าใน BattleManager!");
+                        }
+                    });
+                    eventTrigger.triggers.Add(entry);
+                    
+                    Debug.Log($"✅ สร้างการ์ดสุสาน: {cardData.cardName} พร้อม EventTrigger (PointerClick)");
+                }
+                else
+                {
+                    // Fallback: ถ้าไม่มี BattleCardUI ใช้ Text
+                    var text = item.GetComponent<TextMeshProUGUI>();
+                    if (text != null)
+                    {
+                        text.text = card.cardName;
+                        text.raycastTarget = false;
+                    }
+                }
+            }
+            return;
+        }
+
+        // Fallback: สร้าง Text แถวง่ายๆ
+        foreach (var card in cards)
+        {
+            var go = new GameObject("GraveyardItem");
+            go.transform.SetParent(root, false);
+
+            var text = go.AddComponent<TextMeshProUGUI>();
+            text.text = card.cardName;
+            text.fontSize = 24f;
+            text.alignment = TextAlignmentOptions.Left;
+            text.raycastTarget = false;
+        }
+    }
+
+    void ClearListRoot(Transform root)
+    {
+        if (root == null) return;
+        for (int i = root.childCount - 1; i >= 0; i--)
+        {
+            var child = root.GetChild(i);
+            if (child != null) Destroy(child.gameObject);
+        }
+    }
+}
