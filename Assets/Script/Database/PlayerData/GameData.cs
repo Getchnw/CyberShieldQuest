@@ -234,7 +234,8 @@ public class GameData
     public bool isNewGameStarted = false;
     // Daily Login
     public PlayerDailyLogin dailyLoginData = new PlayerDailyLogin();
-
+    // Daily Quest
+    public PlayerDailyQuestSystem dailyQuestData = new PlayerDailyQuestSystem();
     // Constructor (ตัวสร้างข้อมูลเริ่มต้น)
     public GameData()
     {
@@ -258,6 +259,7 @@ public class GameData
         isNewGameStarted = false;
         // Daily Login
         dailyLoginData = new PlayerDailyLogin();
+        dailyQuestData = new PlayerDailyQuestSystem();
     }
 }
 
@@ -393,5 +395,26 @@ public class PlayerDailyLogin
     {
         lastClaimedDate = "";
         currentStreak = 0;
+    }
+}
+
+[System.Serializable]
+public class PlayerQuestData
+{
+    public string questID;       // เก็บแค่ ID เพื่อไปดึงข้อมูลจาก ScriptableObject
+    public int currentAmount;    // สิ่งที่ต้องจำ (ทำไปเท่าไหร่แล้ว)
+    public bool isClaimed;       // สิ่งที่ต้องจำ (รับไปยัง)
+}
+
+[System.Serializable]
+public class PlayerDailyQuestSystem
+{
+    public string lastQuestDate; // วันที่ล่าสุดที่รีเซ็ตเควส (เช่น "2023-10-27")
+    public List<PlayerQuestData> activeQuests; // รายการเควสของวันนี้
+
+    public PlayerDailyQuestSystem()
+    {
+        lastQuestDate = "";
+        activeQuests = new List<PlayerQuestData>();
     }
 }

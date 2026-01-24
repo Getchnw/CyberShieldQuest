@@ -20,7 +20,7 @@ public struct DailyRewardItem
 }
 
 // 3. ตัวไฟล์ ScriptableObject ที่จะเก็บรายการทั้งหมด
-[CreateAssetMenu(fileName = "DailyRewardList", menuName = "GameData/DailyRewardList")]
+[CreateAssetMenu(fileName = "DailyRewardList", menuName = "Daily/DailyRewardList")]
 public class DailyRewardData : ScriptableObject
 {
     public DailyRewardItem[] rewards; // รายการรางวัลทั้ง 7 วัน

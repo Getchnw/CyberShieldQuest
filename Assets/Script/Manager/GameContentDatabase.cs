@@ -27,11 +27,12 @@ public class GameContentDatabase : MonoBehaviour
     [SerializeField] private List<MatchingQuestion> matchingQuestionsDatabase = new List<MatchingQuestion>();
     [SerializeField] private List<FillInBlankQuestion> fillInBlankQuestionsDatabase = new List<FillInBlankQuestion>();
     [SerializeField] private List<TrueFalseQuestion> trueFalseQuestionsDatabase = new List<TrueFalseQuestion>();
-    [SerializeField] private List<DailyRewardData> dailyRewardDatabase = new List<DailyRewardData>();
     [SerializeField] private List<TrueFalseDescription> trueFalseDescriptionDatabase = new List<TrueFalseDescription>();
     [SerializeField] private List<MatchingDescription> matchingDescriptionDatabase = new List<MatchingDescription>();
     [SerializeField] private List<FillInBlankDescription> fillInBlankDescriptionDatabase = new List<FillInBlankDescription>();
-
+    // ข้อมูล Daily Login & Daily Quest
+    [SerializeField] private List<DailyRewardData> dailyRewardDatabase = new List<DailyRewardData>();
+    [SerializeField] private List<DailyQuestsData> dailyQuestDatabase = new List<DailyQuestsData>();
     void Awake()
     {
         // --- โค้ด Singleton ---
@@ -577,6 +578,37 @@ public class GameContentDatabase : MonoBehaviour
             }
 #endif
         }
+
+        // ดึง Daily Quest Data
+        if (dailyQuestDatabase == null || dailyQuestDatabase.Count == 0)
+        {
+            var loadDailyQuestData = Resources.LoadAll<DailyQuestsData>("GameContent/DailyQuest");
+            if (loadDailyQuestData != null && loadDailyQuestData.Length > 0)
+            {
+                dailyQuestDatabase = new List<DailyQuestsData>(loadDailyQuestData);
+            }
+#if UNITY_EDITOR
+            try
+            {
+                string[] guids = UnityEditor.AssetDatabase.FindAssets("t:DailyQuestsData", new[] { "Assets/Script/Database" });
+                if (guids != null && guids.Length > 0)
+                {
+                    dailyQuestDatabase = new List<DailyQuestsData>();
+                    foreach (var g in guids)
+                    {
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+                        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<DailyQuestsData>(path);
+                        if (asset != null) dailyQuestDatabase.Add(asset);
+                    }
+                    Debug.Log($"Editor auto-loaded {dailyQuestDatabase.Count} DailyQuestData from Assets/Script/Database.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Auto-load DailyQuestData failed: {e.Message}");
+            }
+#endif
+        }
     }
 
     //ฟังก์ชันดึงข้อมูลตาม ID ต่างๆ
@@ -728,25 +760,18 @@ public class GameContentDatabase : MonoBehaviour
         return dailyRewardDatabase[0];
     }
 
-    // // ดึง Daily Reward ตามลำดับที่กำหนด
-    // public DailyRewardData GetDailyRewardDataByIndex(int index)
-    // {
-    //     if (dailyRewardDatabase == null || index < 0 || index >= dailyRewardDatabase.Count) return null;
-    //     return dailyRewardDatabase[index];
-    // }
+    // ดึง Daily Quest ทั้งหมด
+    public DailyQuestsData GetQuestByID(string id)
+    {
+        return dailyQuestDatabase.FirstOrDefault(q => q.questID == id);
+    }
 
-    // // ดึงรางวัลของวันที่กำหนด (จาก index)
-    // public DailyRewardItem GetDailyRewardItemByDay(int dayIndex)
-    // {
-    //     var dailyReward = GetDailyRewardData();
-    //     if (dailyReward == null || dailyReward.rewards == null) 
-    //         return default;
-
-    //     if (dayIndex < 0 || dayIndex >= dailyReward.rewards.Length)
-    //         return default;
-
-    //     return dailyReward.rewards[dayIndex];
-    // }
+    // 2. สุ่มเควส (ใช้ตอนขึ้นวันใหม่)
+    public List<DailyQuestsData> GetRandomQuests(int count)
+    {
+        // สับเปลี่ยนลำดับแล้วหยิบมาตามจำนวนที่ต้องการ (เช่น 3 อัน)
+        return dailyQuestDatabase.OrderBy(x => Random.value).Take(count).ToList();
+    }
 
     // ดึงคำอธิบายของ True/False ตาม ID story
     public List<TrueFalseDescription> GetTrueFalseDescriptionByID(string story_id)
@@ -767,5 +792,7 @@ public class GameContentDatabase : MonoBehaviour
         if (fillInBlankDescriptionDatabase == null) return null;
         return fillInBlankDescriptionDatabase.Where(FB => FB.FillInBlank.story.story_id == story_id).ToList();
     }
+
+
 }
 
