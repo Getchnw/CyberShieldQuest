@@ -133,7 +133,7 @@ public class GuidedTutorialController : MonoBehaviour
         if (GameManager.Instance != null && GameManager.Instance.CurrentGameData != null)
         {
             GameManager.Instance.CurrentGameData.tutorialData.hasSeenTutorial_Home = true;
-            GameManager.Instance.CurrentGameData.isNewGameStarted = true;
+            // GameManager.Instance.CurrentGameData.isNewGameStarted = true;
             GameManager.Instance.SaveCurrentGame();
         }
 

@@ -20,20 +20,20 @@ public class GuidedLineController : MonoBehaviour
     [Tooltip("เลือกประเภท: หน้าแรกเลือก Home / ปุ่ม Story เลือก Story")]
     [SerializeField] private TutorialType tutorialType = TutorialType.Home;
 
-    [Tooltip("ชื่อ Scene ที่จะไปต่อ (สำหรับ Story/Stage/Deck/Shop)")]
-    [SerializeField] private string nextSceneName; 
+    // [Tooltip("ชื่อ Scene ที่จะไปต่อ (สำหรับ Story/Stage/Deck/Shop)")]
+    // [SerializeField] private string nextSceneName;
 
     [Header("UI Objects (ห้ามลืมลากใส่!)")]
     [SerializeField] private GameObject tutorialPanel; // ตัวแม่ของหน้าต่างสอน
     [SerializeField] private List<GameObject> tutorialPages; // รูปภาพแต่ละหน้า
 
     [Header("UI Text")]
-    [SerializeField] private TextMeshProUGUI headerText;      
-    [SerializeField] private TextMeshProUGUI descriptionText; 
+    [SerializeField] private TextMeshProUGUI headerText;
+    [SerializeField] private TextMeshProUGUI descriptionText;
 
     [Header("Text Data")]
-    [TextArea(1, 3)] [SerializeField] private string[] pageTitles;       
-    [TextArea(3, 5)] [SerializeField] private string[] pageDescriptions; 
+    [TextArea(1, 3)][SerializeField] private string[] pageTitles;
+    [TextArea(3, 5)][SerializeField] private string[] pageDescriptions;
 
     [Header("Buttons")]
     [SerializeField] private Button nextButton;
@@ -47,8 +47,8 @@ public class GuidedLineController : MonoBehaviour
         // ถ้าเป็นหน้า Home: ให้เช็กและเด้งเองอัตโนมัติ
         if (tutorialType == TutorialType.Home)
         {
-             // เช็กว่ามี GameManager และยังไม่เคยดู Home Tutorial ใช่ไหม
-             if (GameManager.Instance != null && !GameManager.Instance.CurrentGameData.tutorialData.hasSeenTutorial_Home)
+            // เช็กว่ามี GameManager และยังไม่เคยดู Home Tutorial ใช่ไหม
+            if (GameManager.Instance != null && !GameManager.Instance.CurrentGameData.tutorialData.hasSeenTutorial_Home)
             {
                 StartTutorial();
             }
@@ -58,11 +58,17 @@ public class GuidedLineController : MonoBehaviour
                 if (tutorialPanel != null) tutorialPanel.SetActive(false);
             }
         }
+        else if (tutorialType == TutorialType.Story || tutorialType == TutorialType.Stage ||
+                 tutorialType == TutorialType.Deck || tutorialType == TutorialType.Shop)
+        {
+            SelectMode();
+        }
         else
         {
             // ถ้าเป็นโหมดอื่น (Story, Stage, etc.) ให้ปิดรอไว้ก่อน (รอคนกดปุ่ม)
             if (tutorialPanel != null) tutorialPanel.SetActive(false);
         }
+
 
         // เชื่อมปุ่ม Next/Back ให้ทำงาน
         if (nextButton != null) nextButton.onClick.AddListener(OnNextClick);
@@ -71,7 +77,7 @@ public class GuidedLineController : MonoBehaviour
 
     // --- ฟังก์ชันสำหรับปุ่มกด (เช่น ปุ่ม Story) ---
     // ลากฟังก์ชันนี้ไปใส่ใน On Click ของปุ่ม Story
-    public void ClickToEnterMode()
+    public void SelectMode()
     {
         bool hasSeen = false;
 
@@ -82,9 +88,9 @@ public class GuidedLineController : MonoBehaviour
             switch (tutorialType)
             {
                 case TutorialType.Story: hasSeen = data.hasSeenTutorial_Story; break;
-                case TutorialType.Shop:  hasSeen = data.hasSeenTutorial_Shop; break;
+                case TutorialType.Shop: hasSeen = data.hasSeenTutorial_Shop; break;
                 case TutorialType.Deck: hasSeen = data.hasSeenTutorial_Deck; break;
-                // case TutorialType.Stage: hasSeen = data.hasSeenTutorial_Stage; break;
+                    // case TutorialType.Stage: hasSeen = data.hasSeenTutorial_Stage; break;
             }
         }
 
@@ -92,12 +98,12 @@ public class GuidedLineController : MonoBehaviour
         if (hasSeen)
         {
             Debug.Log("เคยดูแล้ว -> เข้าเกมเลย");
-            GoToNextScene(); 
+            // GoToNextScene();
         }
         else
         {
             Debug.Log("ยังไม่เคยดู -> เปิด Tutorial");
-            StartTutorial(); 
+            StartTutorial();
         }
     }
 
@@ -163,38 +169,41 @@ public class GuidedLineController : MonoBehaviour
         if (GameManager.Instance != null)
         {
             var data = GameManager.Instance.CurrentGameData.tutorialData;
-            
+
             if (tutorialType == TutorialType.Home) data.hasSeenTutorial_Home = true;
             else if (tutorialType == TutorialType.Story) data.hasSeenTutorial_Story = true;
             else if (tutorialType == TutorialType.Shop) data.hasSeenTutorial_Shop = true;
             else if (tutorialType == TutorialType.Deck) data.hasSeenTutorial_Deck = true;
             // else if (tutorialType == TutorialType.Stage) data.hasSeenTutorial_Stage = true;
-            
+
             GameManager.Instance.SaveCurrentGame();
         }
 
         // 2. จบแล้วทำไงต่อ?
-        if (tutorialType == TutorialType.Home)
-        {
-            // หน้าแรกแค่ปิดหน้าต่าง
-            if (tutorialPanel != null) tutorialPanel.SetActive(false);
-        }
-        else
-        {
-            // โหมดอื่น (Story) จบแล้วให้เปลี่ยนฉาก
-            GoToNextScene();
-        }
+        if (tutorialPanel != null) tutorialPanel.SetActive(false);
+        
+
+        // if (tutorialType == TutorialType.Home)
+        // {
+        //     // หน้าแรกแค่ปิดหน้าต่าง
+        //     if (tutorialPanel != null) tutorialPanel.SetActive(false);
+        // }
+        // else
+        // {
+        //     // โหมดอื่น (Story) จบแล้วให้เปลี่ยนฉาก
+        //     GoToNextScene();
+        // }
     }
 
-    void GoToNextScene()
-    {
-        if (!string.IsNullOrEmpty(nextSceneName))
-        {
-            SceneManager.LoadScene(nextSceneName);
-        }
-        else
-        {
-            Debug.LogError("Error: คุณลืมใส่ชื่อ Scene ในช่อง Next Scene Name!");
-        }
-    }
+    // void GoToNextScene()
+    // {
+    //     if (!string.IsNullOrEmpty(nextSceneName))
+    //     {
+    //         SceneManager.LoadScene(nextSceneName);
+    //     }
+    //     else
+    //     {
+    //         Debug.LogError("Error: คุณลืมใส่ชื่อ Scene ในช่อง Next Scene Name!");
+    //     }
+    // }
 }
