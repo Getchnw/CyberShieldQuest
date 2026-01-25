@@ -33,4 +33,4 @@ MonoBehaviour:
     action: 1
     targetMainCat: 0
     targetSubCat: 1
-    value: 0
+    value: 1
