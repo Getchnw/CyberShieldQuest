@@ -366,7 +366,18 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
     }
     
-    // ฟังก์ชันรีเซ็ตตอนเริ่มเทิร์น (ให้โจมตีใหม่ได้)
+        /// <summary>ฮาイไลท์การ์ดสำหรับการเลือกเป้าหมาย</summary>
+        public void SetHighlight(bool highlight)
+        {
+            if (artworkImage)
+            {
+                // ฮาไลท์ = สีเหลือง, ปกติ = สีขาว
+                artworkImage.color = highlight ? new Color(1f, 1f, 0.5f) : Color.white;
+                Debug.Log($"🎯 SetHighlight({highlight}): {_cardData?.cardName} -> {(highlight ? "Yellow" : "White")}");
+            }
+        }
+    
+        // ฟังก์ชันรีเซ็ตตอนเริ่มเทิร์น (ให้โจมตีใหม่ได้)
     public void ResetAttackState()
     {
         hasAttacked = false;

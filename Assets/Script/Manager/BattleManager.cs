@@ -97,6 +97,11 @@ public class BattleManager : MonoBehaviour
     public Transform enemyGraveyardListRoot;       // Root สำหรับ spawn item สุสานบอท
     public GameObject graveyardListItemPrefab;     // Prefab รายการสุสาน (ถ้ามี)
 
+    [Header("--- Target Selection UI (สำหรับ Spell) ---")]
+    public GameObject targetSelectionPanel; // Panel ให้เลือกเป้าหมาย
+    public TextMeshProUGUI targetSelectionText; // ข้อความอธิบาย "เลือกเป้าหมาย"
+    public Button targetSelectionCancelButton; // ปุ่มยกเลิกการเลือก
+
     [Header("--- Mulligan UI ---")]
     public Button playerMulliganButton;
     public TextMeshProUGUI mulliganText;
@@ -139,6 +144,11 @@ public class BattleManager : MonoBehaviour
     // 🪦 Graveyard System (เก็บการ์ดที่ถูกทำลาย/discard)
     private List<CardData> playerGraveyard = new List<CardData>();
     private List<CardData> enemyGraveyard = new List<CardData>();
+
+    // 🎯 Target Selection System (สำหรับ Spell ที่ต้องเลือกเป้าหมาย)
+    private bool isSelectingTarget = false;
+    private List<BattleCardUI> availableTargets = new List<BattleCardUI>();
+    private System.Action<List<BattleCardUI>> onTargetSelected = null;
 
     void Awake()
     {
@@ -2636,7 +2646,7 @@ public class BattleManager : MonoBehaviour
     /// <summary>ทำการแอคชันตามประเภท effect ที่กำหนด</summary>
     void ApplyEffect(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
-        Debug.Log($"🔥 Apply Effect: {sourceCard.GetData().cardName} | Trigger: {effect.trigger} | Action: {effect.action} | Target: {effect.targetType}");
+        Debug.Log($"🔥 Apply Effect: {sourceCard.GetData().cardName} | Trigger: {effect.trigger} | Action: {effect.action} | Target: {effect.targetType} | Value: {effect.value} | MainCat: {effect.targetMainCat} | SubCat: {effect.targetSubCat}");
 
         switch (effect.action)
         {
@@ -2676,13 +2686,44 @@ public class BattleManager : MonoBehaviour
     {
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
         
-        foreach (var target in targets)
+        // 🔥 จำกัดจำนวนการ์ดที่จะทำลายตาม effect.value
+        int maxDestroy = effect.value > 0 ? effect.value : targets.Count;
+        
+        Debug.Log($"🎯 ApplyDestroy: พบเป้าหมาย {targets.Count} ใบ, ต้องเลือก {maxDestroy} ใบ");
+        
+        // 🔥 ถ้าต้องให้ผู้เล่นเลือก = เปิด Target Selection Panel
+        if (isPlayer && maxDestroy > 0 && targets.Count > 0)
         {
-            if (target != null && target.GetData() != null)
+            StartSelectingTarget(targets, maxDestroy, (selectedCards) => {
+                int destroyCount = 0;
+                foreach (var target in selectedCards)
+                {
+                    if (destroyCount >= maxDestroy) break;
+                    if (target != null && target.GetData() != null)
+                    {
+                        Debug.Log($"💥 Destroy ({destroyCount + 1}/{maxDestroy}): {target.GetData().cardName}");
+                        DestroyCardToGraveyard(target);
+                        destroyCount++;
+                    }
+                }
+                Debug.Log($"✅ ApplyDestroy: ผู้เล่นเลือกทำลาย {destroyCount} ใบ");
+            });
+        }
+        else
+        {
+            // 🤖 บอททำลายโดยอัตโนมัติ (หรือ maxDestroy = 0)
+            int destroyCount = 0;
+            foreach (var target in targets)
             {
-                Debug.Log($"💥 Destroy: {target.GetData().cardName}");
-                DestroyCardToGraveyard(target);
+                if (destroyCount >= maxDestroy) break;
+                if (target != null && target.GetData() != null)
+                {
+                    Debug.Log($"💥 Destroy ({destroyCount + 1}/{maxDestroy}): {target.GetData().cardName}");
+                    DestroyCardToGraveyard(target);
+                    destroyCount++;
+                }
             }
+            Debug.Log($"✅ ApplyDestroy: ทำลายการ์ด {destroyCount}/{targets.Count} ใบ (Max: {maxDestroy})");
         }
     }
 
@@ -2800,63 +2841,62 @@ public class BattleManager : MonoBehaviour
     {
         List<BattleCardUI> targets = new List<BattleCardUI>();
 
+        Debug.Log($"🎯 GetTargetCards: TargetType={effect.targetType}, isPlayer={isPlayer}, MainCat={effect.targetMainCat}, SubCat={effect.targetSubCat}");
+
         switch (effect.targetType)
         {
             case TargetType.EnemyMonster:
-                if (!isPlayer && playerMonsterSlots != null)
+                // isPlayer = true → เป้าหมายคือมอนสเตอร์ของศัตรู (บอท)
+                // isPlayer = false (บอท) → เป้าหมายคือมอนสเตอร์ของผู้เล่น
+                Transform[] targetMonsterSlots = isPlayer ? enemyMonsterSlots : playerMonsterSlots;
+                
+                if (targetMonsterSlots != null)
                 {
-                    foreach (var slot in playerMonsterSlots)
+                    foreach (var slot in targetMonsterSlots)
                     {
                         if (slot != null && slot.childCount > 0)
                         {
                             var card = slot.GetChild(0).GetComponent<BattleCardUI>();
-                            if (card != null && MatchesCategory(card.GetData(), effect))
-                                targets.Add(card);
-                        }
-                    }
-                }
-                else if (isPlayer && enemyMonsterSlots != null)
-                {
-                    foreach (var slot in enemyMonsterSlots)
-                    {
-                        if (slot != null && slot.childCount > 0)
-                        {
-                            var card = slot.GetChild(0).GetComponent<BattleCardUI>();
-                            if (card != null && MatchesCategory(card.GetData(), effect))
-                                targets.Add(card);
+                            if (card != null && card.GetData() != null)
+                            {
+                                Debug.Log($"🔍 ตรวจสอบการ์ด: {card.GetData().cardName} (Main={card.GetData().mainCategory}, Sub={card.GetData().subCategory})");
+                                if (MatchesCategory(card.GetData(), effect))
+                                {
+                                    targets.Add(card);
+                                    Debug.Log($"✅ เพิ่มการ์ดเป้าหมาย: {card.GetData().cardName}");
+                                }
+                            }
                         }
                     }
                 }
                 break;
 
             case TargetType.EnemyEquip:
-                if (!isPlayer && playerEquipSlots != null)
+                Transform[] targetEquipSlots = isPlayer ? enemyEquipSlots : playerEquipSlots;
+                
+                if (targetEquipSlots != null)
                 {
-                    foreach (var slot in playerEquipSlots)
+                    foreach (var slot in targetEquipSlots)
                     {
                         if (slot != null && slot.childCount > 0)
                         {
                             var card = slot.GetChild(0).GetComponent<BattleCardUI>();
-                            if (card != null && MatchesCategory(card.GetData(), effect))
-                                targets.Add(card);
-                        }
-                    }
-                }
-                else if (isPlayer && enemyEquipSlots != null)
-                {
-                    foreach (var slot in enemyEquipSlots)
-                    {
-                        if (slot != null && slot.childCount > 0)
-                        {
-                            var card = slot.GetChild(0).GetComponent<BattleCardUI>();
-                            if (card != null && MatchesCategory(card.GetData(), effect))
-                                targets.Add(card);
+                            if (card != null && card.GetData() != null)
+                            {
+                                Debug.Log($"🔍 ตรวจสอบการ์ด: {card.GetData().cardName} (Main={card.GetData().mainCategory}, Sub={card.GetData().subCategory})");
+                                if (MatchesCategory(card.GetData(), effect))
+                                {
+                                    targets.Add(card);
+                                    Debug.Log($"✅ เพิ่มการ์ดเป้าหมาย: {card.GetData().cardName}");
+                                }
+                            }
                         }
                     }
                 }
                 break;
         }
 
+        Debug.Log($"🎯 พบการ์ดเป้าหมาย {targets.Count} ใบ");
         return targets;
     }
 
@@ -2910,15 +2950,36 @@ public class BattleManager : MonoBehaviour
 
     bool MatchesCategory(CardData cardData, CardEffect effect)
     {
+        // 🔥 ถ้าเป็น General ทั้งคู่ = ทุกการ์ด
         if (effect.targetMainCat == MainCategory.General && effect.targetSubCat == SubCategory.General)
             return true;
 
+        // 🔥 ถ้าระบุ MainCategory ต้องตรงกัน
         if (effect.targetMainCat != MainCategory.General && cardData.mainCategory != effect.targetMainCat)
+        {
+            Debug.Log($"❌ MainCategory ไม่ตรง: card={cardData.mainCategory} vs effect={effect.targetMainCat}");
             return false;
+        }
 
-        if (effect.targetSubCat != SubCategory.General && cardData.subCategory != effect.targetSubCat)
-            return false;
+        // 🔥 ถ้าระบุ SubCategory ต้องตรงกัน (และ MainCategory ต้องตรงด้วย)
+        if (effect.targetSubCat != SubCategory.General)
+        {
+            // ตรวจสอบว่า SubCategory ตรงกัน
+            if (cardData.subCategory != effect.targetSubCat)
+            {
+                Debug.Log($"❌ SubCategory ไม่ตรง: card={cardData.subCategory} vs effect={effect.targetSubCat}");
+                return false;
+            }
+            
+            // ถ้าระบุ SubCategory แต่ MainCategory เป็น General = ยอมรับทุก MainCategory ที่มี SubCategory นี้
+            if (effect.targetMainCat == MainCategory.General)
+            {
+                Debug.Log($"✅ SubCategory ตรง ({cardData.subCategory}) ไม่สนใจ MainCategory");
+                return true;
+            }
+        }
 
+        Debug.Log($"✅ Category ตรง: Main={cardData.mainCategory}, Sub={cardData.subCategory}");
         return true;
     }
 
@@ -3149,5 +3210,103 @@ public class BattleManager : MonoBehaviour
             var child = root.GetChild(i);
             if (child != null) Destroy(child.gameObject);
         }
+    }
+
+    // ========================================================
+    // 🎯 TARGET SELECTION SYSTEM (สำหรับ Spell)
+    // ========================================================
+
+    /// <summary>เปิดระบบให้ผู้เล่นเลือกเป้าหมาย</summary>
+    void StartSelectingTarget(List<BattleCardUI> targets, int selectCount, System.Action<List<BattleCardUI>> onComplete)
+    {
+        isSelectingTarget = true;
+        availableTargets = new List<BattleCardUI>(targets);
+        
+        if (targetSelectionPanel == null)
+        {
+            Debug.LogError("❌ targetSelectionPanel ยังไม่ถูกตั้ง! ไม่สามารถเลือกเป้าหมายได้");
+            onComplete?.Invoke(new List<BattleCardUI>());
+            return;
+        }
+
+        // ตั้งค่า UI
+        if (targetSelectionText)
+            targetSelectionText.text = $"เลือกเป้าหมาย ({selectCount} ใบ)";
+
+        if (targetSelectionCancelButton)
+        {
+            // เวทต้องเลือกเป้าหมายให้จบ ห้ามยกเลิก
+            targetSelectionCancelButton.onClick.RemoveAllListeners();
+            targetSelectionCancelButton.interactable = false;
+            targetSelectionCancelButton.gameObject.SetActive(false);
+        }
+
+        // ฮาइไลท์การ์ดที่เลือกได้
+        foreach (var target in availableTargets)
+        {
+            if (target != null)
+            {
+                target.SetHighlight(true); // ฮาइไลท์
+                
+                // เพิ่ม Listener ให้คลิกได้
+                var btn = target.GetComponent<Button>();
+                if (btn == null) btn = target.gameObject.AddComponent<Button>();
+                
+                btn.onClick.RemoveAllListeners();
+                BattleCardUI selectedTarget = target;
+                btn.onClick.AddListener(() => OnTargetSelected(selectedTarget, selectCount, onComplete));
+                
+                Debug.Log($"✅ เลือกได้: {target.GetData().cardName}");
+            }
+        }
+
+        // เปิด Panel
+        targetSelectionPanel.SetActive(true);
+        Debug.Log($"🎯 เปิดระบบเลือกเป้าหมาย: {selectCount} ใบจาก {availableTargets.Count}");
+    }
+
+    /// <summary>เรียกเมื่อผู้เล่นเลือกเป้าหมาย</summary>
+    void OnTargetSelected(BattleCardUI target, int selectCount, System.Action<List<BattleCardUI>> onComplete)
+    {
+        if (target == null) return;
+
+        Debug.Log($"🎯 ผู้เล่นเลือก: {target.GetData().cardName}");
+
+        // สร้าง List สำหรับการส่งผลลัพธ์
+        var selectedTargets = new List<BattleCardUI> { target };
+
+        // ปลดฮาइไลท์
+        foreach (var t in availableTargets)
+        {
+            if (t != null) t.SetHighlight(false);
+        }
+
+        // ปิด Panel
+        isSelectingTarget = false;
+        targetSelectionPanel.SetActive(false);
+
+        // เรียก Callback
+        onComplete?.Invoke(selectedTargets);
+        Debug.Log($"✅ เสร็จการเลือกเป้าหมาย");
+    }
+
+    /// <summary>ยกเลิกการเลือกเป้าหมาย</summary>
+    void CancelTargetSelection()
+    {
+        // ป้องกันการยกเลิกระหว่างการใช้เวท
+        if (isSelectingTarget)
+        {
+            Debug.LogWarning("❌ ไม่สามารถยกเลิกการเลือกเป้าหมายขณะใช้เวท");
+            return;
+        }
+
+        // กรณีถูกเรียกใช้นอกระบบเวท: ปิด UI อย่างปลอดภัย
+        Debug.Log("❌ ยกเลิกการเลือกเป้าหมาย (นอกระบบเวท)");
+        foreach (var target in availableTargets)
+        {
+            if (target != null) target.SetHighlight(false);
+        }
+        targetSelectionPanel.SetActive(false);
+        availableTargets.Clear();
     }
 }
