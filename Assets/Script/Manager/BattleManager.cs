@@ -148,6 +148,7 @@ public class BattleManager : MonoBehaviour
     // 🎯 Target Selection System (สำหรับ Spell ที่ต้องเลือกเป้าหมาย)
     private bool isSelectingTarget = false;
     private List<BattleCardUI> availableTargets = new List<BattleCardUI>();
+    private List<BattleCardUI> selectedTargets = new List<BattleCardUI>();
     private System.Action<List<BattleCardUI>> onTargetSelected = null;
 
     void Awake()
@@ -1263,7 +1264,8 @@ public class BattleManager : MonoBehaviour
         cardUI.transform.localPosition = Vector3.zero;
         
         cardUI.isOnField = true;
-        cardUI.hasAttacked = true; 
+        cardUI.hasAttacked = true;
+        cardUI.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม 
         
         // 🔥 แก้: ตรวจสอบให้แน่ใจว่าการ์ดแสดงหน้าไม่ใช่หลัง
         var cardImage = cardUI.GetComponent<Image>();
@@ -1653,15 +1655,8 @@ public class BattleManager : MonoBehaviour
         ui.transform.localScale = Vector3.one;
 
         ui.isOnField = true;
-
-        // ปรับขนาดการ์ดและสถานะโจมตี
-        RectTransform rect = ui.GetComponent<RectTransform>();
-        if (rect != null)
-        {
-            rect.sizeDelta = new Vector2(140, 200);
-        }
-
         ui.hasAttacked = true; // summoning sickness
+        ui.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม
         var img = ui.GetComponent<Image>();
         if (img)
         {
@@ -2469,6 +2464,7 @@ public class BattleManager : MonoBehaviour
         newCard.isOnField = true;
         newCard.hasAttacked = true; // ลงแบบสังเวยต้องรอเทิร์นถัดไปถึงจะตีได้
         newCard.GetComponent<Image>().color = Color.white; // ไม่เป็นสีเทา
+        newCard.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม
 
         // ทำลายการ์ดเก่า
         Destroy(oldCard.gameObject);
@@ -2691,7 +2687,7 @@ public class BattleManager : MonoBehaviour
         
         Debug.Log($"🎯 ApplyDestroy: พบเป้าหมาย {targets.Count} ใบ, ต้องเลือก {maxDestroy} ใบ");
         
-        // 🔥 ถ้าต้องให้ผู้เล่นเลือก = เปิด Target Selection Panel
+        // 🔥 ผู้เล่นต้องเลือกเป้าหมายเสมอถ้ามีเป้าหมาย (แม้จำนวนเท่ากับค่าที่ต้องทำลาย)
         if (isPlayer && maxDestroy > 0 && targets.Count > 0)
         {
             StartSelectingTarget(targets, maxDestroy, (selectedCards) => {
@@ -3221,6 +3217,7 @@ public class BattleManager : MonoBehaviour
     {
         isSelectingTarget = true;
         availableTargets = new List<BattleCardUI>(targets);
+        selectedTargets.Clear();
         
         if (targetSelectionPanel == null)
         {
@@ -3231,7 +3228,7 @@ public class BattleManager : MonoBehaviour
 
         // ตั้งค่า UI
         if (targetSelectionText)
-            targetSelectionText.text = $"เลือกเป้าหมาย ({selectCount} ใบ)";
+            targetSelectionText.text = $"เลือกเป้าหมาย ({selectedTargets.Count}/{selectCount})";
 
         if (targetSelectionCancelButton)
         {
@@ -3254,7 +3251,7 @@ public class BattleManager : MonoBehaviour
                 
                 btn.onClick.RemoveAllListeners();
                 BattleCardUI selectedTarget = target;
-                btn.onClick.AddListener(() => OnTargetSelected(selectedTarget, selectCount, onComplete));
+                btn.onClick.AddListener(() => HandleTargetClick(selectedTarget, selectCount, onComplete));
                 
                 Debug.Log($"✅ เลือกได้: {target.GetData().cardName}");
             }
@@ -3265,31 +3262,82 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"🎯 เปิดระบบเลือกเป้าหมาย: {selectCount} ใบจาก {availableTargets.Count}");
     }
 
-    /// <summary>เรียกเมื่อผู้เล่นเลือกเป้าหมาย</summary>
-    void OnTargetSelected(BattleCardUI target, int selectCount, System.Action<List<BattleCardUI>> onComplete)
+    /// <summary>เลือกเป้าหมายเดียว หรือสะสมหลายใบตามจำนวน</summary>
+    void HandleTargetClick(BattleCardUI target, int selectCount, System.Action<List<BattleCardUI>> onComplete)
     {
         if (target == null) return;
 
-        Debug.Log($"🎯 ผู้เล่นเลือก: {target.GetData().cardName}");
-
-        // สร้าง List สำหรับการส่งผลลัพธ์
-        var selectedTargets = new List<BattleCardUI> { target };
-
-        // ปลดฮาइไลท์
-        foreach (var t in availableTargets)
+        // โหมดเลือก 1 ใบ (เช่น a01/a02/a03: เลือก 1 ทำลาย 3)
+        if (selectCount == 1)
         {
-            if (t != null) t.SetHighlight(false);
+            Debug.Log($"🎯 ผู้เล่นเลือก: {target.GetData().cardName}");
+            
+            // 🔥 ลบปุ่มทั้งหมดจากการ์ด
+            foreach (var t in availableTargets)
+            {
+                if (t != null)
+                {
+                    t.SetHighlight(false);
+                    var btn = t.GetComponent<Button>();
+                    if (btn != null)
+                    {
+                        btn.onClick.RemoveAllListeners();
+                        Destroy(btn);
+                    }
+                }
+            }
+
+            // ปิด Panel
+            isSelectingTarget = false;
+            targetSelectionPanel.SetActive(false);
+            availableTargets.Clear();
+
+            // ส่งเฉพาะใบที่เลือก
+            var result = new List<BattleCardUI> { target };
+            onComplete?.Invoke(result);
+            Debug.Log($"✅ เสร็จการเลือก 1 เป้าหมาย");
         }
+        else
+        {
+            // โหมดเลือกหลายใบ (รองรับสะสม)
+            if (!selectedTargets.Contains(target))
+            {
+                selectedTargets.Add(target);
+                Debug.Log($"🎯 ผู้เล่นเลือก: {target.GetData().cardName} ({selectedTargets.Count}/{selectCount})");
+            }
 
-        // ปิด Panel
-        isSelectingTarget = false;
-        targetSelectionPanel.SetActive(false);
+            // อัพเดทข้อความ
+            if (targetSelectionText)
+                targetSelectionText.text = $"เลือกเป้าหมาย ({selectedTargets.Count}/{selectCount})";
 
-        // เรียก Callback
-        onComplete?.Invoke(selectedTargets);
-        Debug.Log($"✅ เสร็จการเลือกเป้าหมาย");
+            // ครบจำนวน → ส่งผลลัพธ์
+            if (selectedTargets.Count >= selectCount)
+            {
+                // 🔥 ลบปุ่มทั้งหมดจากการ์ด
+                foreach (var t in availableTargets)
+                {
+                    if (t != null)
+                    {
+                        t.SetHighlight(false);
+                        var btn = t.GetComponent<Button>();
+                        if (btn != null)
+                        {
+                            btn.onClick.RemoveAllListeners();
+                            Destroy(btn);
+                        }
+                    }
+                }
+
+                isSelectingTarget = false;
+                targetSelectionPanel.SetActive(false);
+                availableTargets.Clear();
+
+                onComplete?.Invoke(new List<BattleCardUI>(selectedTargets));
+                selectedTargets.Clear();
+                Debug.Log($"✅ เสร็จการเลือก {selectCount} เป้าหมาย");
+            }
+        }
     }
-
     /// <summary>ยกเลิกการเลือกเป้าหมาย</summary>
     void CancelTargetSelection()
     {

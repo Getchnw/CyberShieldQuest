@@ -55,7 +55,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         RectTransform rectTransform = GetComponent<RectTransform>();
         if (rectTransform == null) rectTransform = gameObject.AddComponent<RectTransform>();
         
-        // กำหนดขนาดมาตรฐานการ์ด
+        // กำหนดขนาดมาตรฐานการ์ด (ขนาดในมือ)
         rectTransform.sizeDelta = new Vector2(140, 200); 
 
         if (artworkImage == null)
@@ -65,6 +65,26 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             
             artworkImage.color = Color.white;
             artworkImage.raycastTarget = true; 
+        }
+    }
+
+    /// <summary>ปรับขนาดการ์ดตามตำแหน่ง (ในมือ vs บนสนาม)</summary>
+    public void UpdateCardSize()
+    {
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        if (rectTransform == null) return;
+
+        if (isOnField)
+        {
+            // ขนาดบนสนาม: ใหญ่กว่า
+            rectTransform.sizeDelta = new Vector2(200, 280);
+            Debug.Log($"📏 {_cardData?.cardName}: ขนาดสนาม (200x280)");
+        }
+        else
+        {
+            // ขนาดในมือ: เล็กกว่า
+            rectTransform.sizeDelta = new Vector2(140, 200);
+            Debug.Log($"📏 {_cardData?.cardName}: ขนาดมือ (140x200)");
         }
     }
 
