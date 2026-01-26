@@ -32,12 +32,14 @@ MonoBehaviour:
   - trigger: 1
     targetType: 2
     action: 1
-    targetMainCat: 1
+    targetMainCat: 0
     targetSubCat: 0
-    value: 0
+    value: 1
+    destroyMode: 0
   - trigger: 1
     targetType: 0
     action: 9
     targetMainCat: 0
     targetSubCat: 0
     value: 0
+    destroyMode: 0

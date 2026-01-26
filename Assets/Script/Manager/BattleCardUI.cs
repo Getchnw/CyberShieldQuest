@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro; 
@@ -183,18 +184,25 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             return;
         if (isOnField) return;
 
-        // 1. เปิดการมองเห็นคืน
+        // เปิดให้ raycast อีกครั้ง แล้วรอ 1 เฟรมให้ OnDrop ทำงานก่อนค่อยตัดสินใจ
         canvasGroup.blocksRaycasts = true;
+        StartCoroutine(HandleEndDragAfterDrop());
+    }
 
-        // 2. ถ้าหลุดมือแล้วยังไม่มีที่อยู่ใหม่ (ไม่ได้ลง Slot) ให้เด้งกลับที่เดิม
+    IEnumerator HandleEndDragAfterDrop()
+    {
+        // รอ 1 เฟรมเผื่อ OnDrop ใน CardSlot จะ re-parent ให้เรียบร้อย
+        yield return null;
+
+        // ถ้ายังลอยอยู่ที่ root แสดงว่าไม่ได้ลงช่อง → เด้งกลับที่เดิม
         if (transform.parent == transform.root)
         {
             transform.SetParent(parentAfterDrag);
-            
-            // 🔥 ถ้ากลับไป handArea อย่า snap ศูนย -> ปล่อยให้ layout จัด
+
+            // ถ้ากลับมือ ปล่อยให้ Layout จัดตำแหน่ง
             if (parentAfterDrag != null && (parentAfterDrag.name == "HandArea" || parentAfterDrag.name == "handArea"))
             {
-                // ไม่ต้อง snap - ปล่อยให้ HorizontalLayoutGroup จัด
+                // ไม่ snap
             }
             else
             {
@@ -203,24 +211,23 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
         else
         {
-            // วางสำเร็จ → จัดตำแหน่งให้อยู่กลางช่อง
-            // 🔥 ถ้า parent ใหม่เป็น handArea อย่า snap
-            if (transform.parent.name == "HandArea" || transform.parent.name == "handArea")
+            // ถูกวางลงช่องแล้ว → snap กลางช่อง ยกเว้นอยู่ในมือ
+            if (transform.parent != null && (transform.parent.name == "HandArea" || transform.parent.name == "handArea"))
             {
-                // ไม่ต้อง snap
+                // ไม่ snap ในมือ
             }
             else
             {
                 transform.localPosition = Vector3.zero;
             }
         }
-        
-        // 🎈 หยุดอนิเมชั่นลอยในมือ
+
+        // หยุดอนิเมชั่นลอยถ้ายังอยู่ในมือ
         if (!isOnField)
         {
             floatTime = 0f;
             originalPosition = transform.localPosition;
-            isFloating = false; // 🔥 ปิดลอยในมือ
+            isFloating = false;
         }
     }
 

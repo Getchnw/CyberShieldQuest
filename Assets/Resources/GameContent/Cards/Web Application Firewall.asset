@@ -33,4 +33,5 @@ MonoBehaviour:
     action: 1
     targetMainCat: 2
     targetSubCat: 0
-    value: 0
+    value: 1
+    destroyMode: 0

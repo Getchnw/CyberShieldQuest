@@ -70,6 +70,22 @@ public class BattleManager : MonoBehaviour
     public TextMeshProUGUI resultDetailText;
     public Button resultConfirmButton;
 
+    [Header("--- Pause & Log ---")]
+    public GameObject pausePanel;
+    public Button pauseButton;
+    public Button resumeButton;
+    public Button quitBattleButton;
+    public Button logButton;
+    public Button logCloseButton;
+    public GameObject logPanel;
+    public TextMeshProUGUI logText;
+    public ScrollRect logScrollRect; // ScrollRect สำหรับเลื่อน Log
+
+    [Header("--- Log Panel Style ---")]
+    public bool autoStyleLogPanel = true;
+    [Range(0f, 1f)] public float logPanelOpacity = 0.35f; // ความโปร่งใสของพื้นหลัง
+    public Vector2 logPanelMargin = new Vector2(48f, 48f); // ระยะขอบรอบ ๆ ให้พอดีจอ
+
     [Header("--- Card Detail View ---")]
     public CardDetailView cardDetailView;
 
@@ -151,6 +167,10 @@ public class BattleManager : MonoBehaviour
     private List<BattleCardUI> selectedTargets = new List<BattleCardUI>();
     private System.Action<List<BattleCardUI>> onTargetSelected = null;
 
+    // 🔔 Battle Log
+    private readonly List<string> battleLog = new List<string>();
+    private const int battleLogLimit = 200;
+
     void Awake()
     {
         Instance = this;
@@ -171,12 +191,68 @@ public class BattleManager : MonoBehaviour
         {
             cardDetailView = FindObjectOfType<CardDetailView>(true); // true = รวม inactive objects
         }
+
+        // ผูกปุ่ม Pause / Resume / Quit / Log ถ้าตั้งใน Inspector
+        if (pauseButton)
+        {
+            pauseButton.onClick.RemoveAllListeners();
+            pauseButton.onClick.AddListener(OnPausePressed);
+        }
+
+        if (resumeButton)
+        {
+            resumeButton.onClick.RemoveAllListeners();
+            resumeButton.onClick.AddListener(OnResumePressed);
+        }
+
+        if (quitBattleButton)
+        {
+            quitBattleButton.onClick.RemoveAllListeners();
+            quitBattleButton.onClick.AddListener(OnQuitBattlePressed);
+        }
+
+        if (logButton)
+        {
+            logButton.onClick.RemoveAllListeners();
+            logButton.onClick.AddListener(OnToggleLogPanel);
+        }
+
+        // ผูกปุ่มปิด Log Panel
+        if (logCloseButton)
+        {
+            logCloseButton.onClick.RemoveAllListeners();
+            logCloseButton.onClick.AddListener(OnToggleLogPanel);
+        }
     }
 
     void Start()
     {
         state = BattleState.START;
+        // ตั้งค่าพาเนล pause/log ให้ปิดไว้ก่อน
+        if (pausePanel) pausePanel.SetActive(false);
+        if (logPanel) logPanel.SetActive(false);
+        SetupLogPanelAppearance();
+        UpdateLogText();
         StartCoroutine(SetupBattle());
+    }
+
+    void Update()
+    {
+        // กด ESC เพื่อสลับ Pause/Resume
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (pausePanel != null && pausePanel.activeSelf)
+            {
+                // หากเปิด Pause อยู่ ให้ Resume และปิด Log/Graveyard
+                OnResumePressed();
+                CloseAllGraveyardPanels();
+            }
+            else
+            {
+                // หากยังไม่ Pause ให้เปิด Pause
+                OnPausePressed();
+            }
+        }
     }
 
     IEnumerator SetupBattle()
@@ -1120,6 +1196,7 @@ public class BattleManager : MonoBehaviour
         if (deckList.Count <= 0)
         {
             Debug.Log("⚠️ Deck empty (player) -> Lose");
+            AddBattleLog("Player deck empty - LOSE");
             StartCoroutine(EndBattle(false));
             return;
         }
@@ -1139,6 +1216,8 @@ public class BattleManager : MonoBehaviour
         // กฎจั่ว: ถ้ามือ >= 5 จั่ว 1, ถ้ามือน้อยกว่า 5 จั่วให้ครบ 5
         int handCount = handArea != null ? handArea.GetComponentsInChildren<BattleCardUI>().Length : 0;
         int drawAmount = handCount >= 5 ? 1 : Mathf.Max(0, 5 - handCount);
+        
+        AddBattleLog($"\n=== PLAYER TURN {turnCount} START === HP:{currentHP}/{maxHP} | PP:{currentPP}/{maxPP} | Draw:{drawAmount}");
         DrawCard(drawAmount);
         UpdateUI();
     }
@@ -1276,6 +1355,9 @@ public class BattleManager : MonoBehaviour
         }
 
         if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
+
+        // บันทึก log
+        AddBattleLog($"Player plays {cardUI.GetData().cardName} ({cardUI.GetData().type}) cost {cost}");
         
         // 🔥 ทริกเกอร์ OnDeploy Effects
         ResolveEffects(cardUI, EffectTrigger.OnDeploy, isPlayer: true);
@@ -1297,6 +1379,7 @@ public class BattleManager : MonoBehaviour
         }
 
         currentPP -= cardUI.GetCost();
+        AddBattleLog($"Player casts {cardUI.GetData().cardName}");
 
         // 🎇 ลงสนามการ์ดเวทย์ก่อน (แสดงให้เห็นบนสนาม)
         StartCoroutine(PlaySpellCardAnimation(cardUI, isPlayer: true));
@@ -1377,7 +1460,8 @@ public class BattleManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
-        // ปล่อยเวทย์ลงไปสุสาน
+        // 🪦 ส่งเวทย์ลงสุสาน (Spell ใช้ไปแล้ว)
+        SendToGraveyard(spellData, isPlayer);
         Destroy(cardUI.gameObject);
         if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
         UpdateUI();
@@ -1399,6 +1483,7 @@ public class BattleManager : MonoBehaviour
         }
 
         Debug.Log($"🎇 บอทใช้เวทย์: {spellData.cardName}");
+        AddBattleLog($"Bot casts {spellData.cardName}");
 
         // 🎇 ลงสนามการ์ดเวทย์ก่อน
         Canvas canvas = FindObjectOfType<Canvas>();
@@ -1428,6 +1513,12 @@ public class BattleManager : MonoBehaviour
 
         // 🔥 ทริกเกอร์เอฟเฟกต์
         ResolveEffects(spellCard, EffectTrigger.OnDeploy, isPlayer: false);
+
+        yield return new WaitForSeconds(0.2f);
+
+        // 🪦 ส่งเวทย์ลงสุสาน (Spell ใช้ไปแล้ว)
+        SendToGraveyard(spellData, isPlayer: false);
+        Destroy(spellCard.gameObject);
 
         yield return new WaitForSeconds(0.2f);
 
@@ -1467,6 +1558,8 @@ public class BattleManager : MonoBehaviour
 
         attacker.hasAttacked = true;
         attacker.GetComponent<Image>().color = Color.gray;
+        
+        AddBattleLog($"Player attacks with {attacker.GetData().cardName} (ATK:{attacker.GetData().atk})");
 
         StartCoroutine(ProcessPlayerAttack(attacker));
     }
@@ -1484,6 +1577,7 @@ public class BattleManager : MonoBehaviour
         if (botShield != null)
         {
             Debug.Log($"🛡️ บอทกันด้วย {botShield.GetData().cardName} ({botShield.GetData().subCategory})");
+            AddBattleLog($"Bot blocks with {botShield.GetData().cardName} ({botShield.GetData().subCategory})");
             if(AudioManager.Instance) AudioManager.Instance.PlaySFX("Block");
 
             // 🔥 ตรวจสอบ null ก่อนเช็คประเภท
@@ -1502,15 +1596,17 @@ public class BattleManager : MonoBehaviour
             {
                 // ประเภทตรง → ทำลายทั้งคู่
                 ShowDamagePopupString("Double KO!", attacker.transform);
-                Destroy(attacker.gameObject);
-                Destroy(botShield.gameObject);
+                AddBattleLog($"  SubCategory match ({shieldData.subCategory}) - Both destroyed");
+                DestroyCardToGraveyard(attacker);
+                DestroyCardToGraveyard(botShield);
                 Debug.Log($"✅ บอทกันได้! ประเภทตรงกัน ({shieldData.subCategory}) - ทั้งคู่ทำลาย ไม่เสีย HP");
             }
             else
             {
                 // ประเภทต่างกัน → ทำลายเฉพาะโล่
+                AddBattleLog($"  SubCategory mismatch ({attackerData.subCategory} vs {shieldData.subCategory}) - Shield broken, {damage} damage passes");
                 ShowDamagePopupString("Shield Break!", botShield.transform);
-                Destroy(botShield.gameObject);
+                DestroyCardToGraveyard(botShield);
                 Debug.Log($"✅ บอทกันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก ไม่เสีย HP");
             }
 
@@ -1545,6 +1641,8 @@ public class BattleManager : MonoBehaviour
     IEnumerator EnemyTurn()
     {
         if (isEnding) yield break;
+        
+        AddBattleLog($"\n=== BOT TURN {turnCount} START === HP:{enemyCurrentHP}/{enemyMaxHP} | PP:{enemyCurrentPP}/{enemyMaxPP}");
 
         // เด็คหมด -> ผู้เล่นชนะ
         if (enemyDeckList.Count <= 0)
@@ -1814,14 +1912,14 @@ public class BattleManager : MonoBehaviour
         if (match)
         {
             ShowDamagePopupString("Double KO!", currentAttackerBot.transform);
-            Destroy(currentAttackerBot.gameObject);
-            Destroy(myShield.gameObject);
+            DestroyCardToGraveyard(currentAttackerBot);
+            DestroyCardToGraveyard(myShield);
             Debug.Log($"✅ กันได้! ประเภทตรงกัน ({attackerData.subCategory}) - ทั้งคู่ทำลาย ไม่เสีย HP");
         }
         else
         {
             ShowDamagePopupString("Shield Break!", myShield.transform);
-            Destroy(myShield.gameObject);
+            DestroyCardToGraveyard(myShield);
             
             // 🔥 ประเภทไม่ตรง → โล่แตก แต่ไม่เสีย HP (ปกป้องสำเร็จ)
             Debug.Log($"✅ กันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก แต่ไม่เสีย HP");
@@ -2013,9 +2111,12 @@ public class BattleManager : MonoBehaviour
         if (deckList.Count < n)
         {
             Debug.LogWarning("⚠️ Deck empty while drawing (player)");
+            AddBattleLog($"Player tried to draw {n} but only {deckList.Count} left - LOSE");
             StartCoroutine(EndBattle(false));
             yield break;
         }
+
+        AddBattleLog($"Player draws {n} card(s) | Deck: {deckList.Count}");
 
         Transform targetParent = parentOverride != null ? parentOverride : handArea;
         
@@ -2132,9 +2233,12 @@ public class BattleManager : MonoBehaviour
         if (enemyDeckList.Count < n)
         {
             Debug.LogWarning("⚠️ Deck empty while drawing (enemy)");
+            AddBattleLog($"Bot tried to draw {n} but only {enemyDeckList.Count} left - BOT LOSE");
             StartCoroutine(EndBattle(true));
             yield break;
         }
+
+        AddBattleLog($"Bot draws {n} card(s) | Deck: {enemyDeckList.Count}");
 
         for(int i=0;i<n;i++) 
         {
@@ -2245,6 +2349,7 @@ public class BattleManager : MonoBehaviour
     void PlayerTakeDamage(int d) 
     { 
         currentHP=Mathf.Max(0, currentHP-d); 
+        AddBattleLog($"Player takes {d} damage | HP: {currentHP + d} -> {currentHP}");
         
         // Safe Check
         if(playerSpot) ShowDamagePopupString($"-{d}", playerSpot);
@@ -2256,6 +2361,7 @@ public class BattleManager : MonoBehaviour
         if(currentHP<=0)
         {
             Debug.Log("LOSE (HP=0)");
+            AddBattleLog("Player HP reaches 0 - LOSE");
             StartCoroutine(EndBattle(false));
         } 
     }
@@ -2263,6 +2369,7 @@ public class BattleManager : MonoBehaviour
     void EnemyTakeDamage(int d) 
     { 
         enemyCurrentHP=Mathf.Max(0, enemyCurrentHP-d); 
+        AddBattleLog($"Bot takes {d} damage | HP: {enemyCurrentHP + d} -> {enemyCurrentHP}");
         
         if(enemySpot) ShowDamagePopupString($"-{d}", enemySpot);
         if(AudioManager.Instance)AudioManager.Instance.PlaySFX("Damage");
@@ -2272,6 +2379,7 @@ public class BattleManager : MonoBehaviour
         if(enemyCurrentHP<=0)
         {
             Debug.Log("WIN (enemy HP=0)");
+            AddBattleLog("Bot HP reaches 0 - WIN");
             StartCoroutine(EndBattle(true));
         } 
     }
@@ -2466,12 +2574,13 @@ public class BattleManager : MonoBehaviour
         newCard.GetComponent<Image>().color = Color.white; // ไม่เป็นสีเทา
         newCard.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม
 
-        // ทำลายการ์ดเก่า
-        Destroy(oldCard.gameObject);
+        // 🪦 ส่งการ์ดเก่าลงสุสาน
+        DestroyCardToGraveyard(oldCard);
 
         // เล่นเสียง
         if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
 
+        AddBattleLog($"Player sacrificed {oldData.cardName} to play {newData.cardName}");
         UpdateUI();
         Debug.Log($"✅ Sacrifice สำเร็จ!");
     }
@@ -2682,17 +2791,51 @@ public class BattleManager : MonoBehaviour
     {
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
         
-        // 🔥 จำกัดจำนวนการ์ดที่จะทำลายตาม effect.value
-        int maxDestroy = effect.value > 0 ? effect.value : targets.Count;
-        
-        Debug.Log($"🎯 ApplyDestroy: พบเป้าหมาย {targets.Count} ใบ, ต้องเลือก {maxDestroy} ใบ");
-        
-        // 🔥 ผู้เล่นต้องเลือกเป้าหมายเสมอถ้ามีเป้าหมาย (แม้จำนวนเท่ากับค่าที่ต้องทำลาย)
-        if (isPlayer && maxDestroy > 0 && targets.Count > 0)
+        // 🔥 ตรวจสอบโหมดการทำลาย
+        if (effect.destroyMode == DestroyMode.DestroyAll)
         {
-            StartSelectingTarget(targets, maxDestroy, (selectedCards) => {
+            // ⚡ โหมด DestroyAll: ทำลายทั้งหมดที่ตรงเงื่อนไข (MainCategory/SubCategory) ทันที โดยไม่รอให้เลือก
+            Debug.Log($"⚡ DestroyAll Mode: ทำลายการ์ด {targets.Count} ใบทันที (ตรงตามประเภท)");
+            foreach (var target in targets)
+            {
+                if (target != null && target.GetData() != null)
+                {
+                    Debug.Log($"💥 Destroy (DestroyAll): {target.GetData().cardName}");
+                    DestroyCardToGraveyard(target);
+                }
+            }
+            Debug.Log($"✅ ApplyDestroy (DestroyAll): ทำลายการ์ด {targets.Count} ใบ");
+        }
+        else
+        {
+            // 📋 โหมด SelectTarget: ให้ผู้เล่นเลือก หรือบอทเลือกอัตโนมัติ
+            int maxDestroy = effect.value > 0 ? effect.value : targets.Count;
+            
+            Debug.Log($"🎯 SelectTarget Mode: พบเป้าหมาย {targets.Count} ใบ, ต้องเลือก {maxDestroy} ใบ");
+            
+            // 🔥 ผู้เล่นต้องเลือกเป้าหมายเสมอถ้ามีเป้าหมาย
+            if (isPlayer && maxDestroy > 0 && targets.Count > 0)
+            {
+                StartSelectingTarget(targets, maxDestroy, (selectedCards) => {
+                    int destroyCount = 0;
+                    foreach (var target in selectedCards)
+                    {
+                        if (destroyCount >= maxDestroy) break;
+                        if (target != null && target.GetData() != null)
+                        {
+                            Debug.Log($"💥 Destroy ({destroyCount + 1}/{maxDestroy}): {target.GetData().cardName}");
+                            DestroyCardToGraveyard(target);
+                            destroyCount++;
+                        }
+                    }
+                    Debug.Log($"✅ ApplyDestroy (SelectTarget): ผู้เล่นเลือกทำลาย {destroyCount} ใบ");
+                });
+            }
+            else
+            {
+                // 🤖 บอททำลายโดยอัตโนมัติ
                 int destroyCount = 0;
-                foreach (var target in selectedCards)
+                foreach (var target in targets)
                 {
                     if (destroyCount >= maxDestroy) break;
                     if (target != null && target.GetData() != null)
@@ -2702,24 +2845,8 @@ public class BattleManager : MonoBehaviour
                         destroyCount++;
                     }
                 }
-                Debug.Log($"✅ ApplyDestroy: ผู้เล่นเลือกทำลาย {destroyCount} ใบ");
-            });
-        }
-        else
-        {
-            // 🤖 บอททำลายโดยอัตโนมัติ (หรือ maxDestroy = 0)
-            int destroyCount = 0;
-            foreach (var target in targets)
-            {
-                if (destroyCount >= maxDestroy) break;
-                if (target != null && target.GetData() != null)
-                {
-                    Debug.Log($"💥 Destroy ({destroyCount + 1}/{maxDestroy}): {target.GetData().cardName}");
-                    DestroyCardToGraveyard(target);
-                    destroyCount++;
-                }
+                Debug.Log($"✅ ApplyDestroy (SelectTarget - Bot): ทำลายการ์ด {destroyCount}/{targets.Count} ใบ (Max: {maxDestroy})");
             }
-            Debug.Log($"✅ ApplyDestroy: ทำลายการ์ด {destroyCount}/{targets.Count} ใบ (Max: {maxDestroy})");
         }
     }
 
@@ -2890,6 +3017,27 @@ public class BattleManager : MonoBehaviour
                     }
                 }
                 break;
+
+            case TargetType.AllGlobal:
+                // AllGlobal = ทำลายทั้งหมด Monster ที่ตรงเงื่อนไข (ไม่รวม Equip)
+                Transform[] mons = isPlayer ? enemyMonsterSlots : playerMonsterSlots;
+
+                if (mons != null)
+                {
+                    foreach (var slot in mons)
+                    {
+                        if (slot != null && slot.childCount > 0)
+                        {
+                            var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                            if (card != null && card.GetData() != null && MatchesCategory(card.GetData(), effect))
+                            {
+                                targets.Add(card);
+                                Debug.Log($"✅ เพิ่มการ์ดเป้าหมาย (AllGlobal/Monster): {card.GetData().cardName}");
+                            }
+                        }
+                    }
+                }
+                break;
         }
 
         Debug.Log($"🎯 พบการ์ดเป้าหมาย {targets.Count} ใบ");
@@ -2938,8 +3086,17 @@ public class BattleManager : MonoBehaviour
     void DestroyCardToGraveyard(BattleCardUI card)
     {
         if (card == null) return;
+        
+        var cardData = card.GetData();
+        if (cardData == null) return;
+        
         bool ownerIsPlayer = IsCardOwnedByPlayer(card);
-        SendToGraveyard(card.GetData(), ownerIsPlayer);
+        string cardType = (cardData.type == CardType.EquipSpell) ? "EQUIP" : "MONSTER";
+        
+        Debug.Log($"💥 DestroyCardToGraveyard: {cardData.cardName} ({cardType}) -> {(ownerIsPlayer ? "Player" : "Bot")} Graveyard");
+        AddBattleLog($"Card destroyed: {cardData.cardName} ({cardType})");
+        
+        SendToGraveyard(cardData, ownerIsPlayer);
         Destroy(card.gameObject);
         UpdateGraveyardCountUI();
     }
@@ -2991,12 +3148,16 @@ public class BattleManager : MonoBehaviour
         if (isPlayer)
         {
             playerGraveyard.Add(cardData);
-            Debug.Log($"🪦 Player Graveyard +1: {cardData.cardName} (total: {playerGraveyard.Count})");
+            string cardType = (cardData.type == CardType.EquipSpell) ? "EQUIP" : "MONSTER";
+            Debug.Log($"🪦 Player Graveyard +1: {cardData.cardName} ({cardType}) | Total: {playerGraveyard.Count}");
+            AddBattleLog($"  {cardData.cardName} -> Player Graveyard");
         }
         else
         {
             enemyGraveyard.Add(cardData);
-            Debug.Log($"🪦 Enemy Graveyard +1: {cardData.cardName} (total: {enemyGraveyard.Count})");
+            string cardType = (cardData.type == CardType.EquipSpell) ? "EQUIP" : "MONSTER";
+            Debug.Log($"🪦 Bot Graveyard +1: {cardData.cardName} ({cardType}) | Total: {enemyGraveyard.Count}");
+            AddBattleLog($"  {cardData.cardName} -> Bot Graveyard");
         }
 
         UpdateGraveyardCountUI();
@@ -3093,12 +3254,137 @@ public class BattleManager : MonoBehaviour
         CloseEnemyGraveyardPanel();
     }
 
+    // จัดสไตล์ให้ Log Panel ดูโปร่งและพอดีจอพร้อม Scroll
+    void SetupLogPanelAppearance()
+    {
+        if (!autoStyleLogPanel || logPanel == null) return;
+
+        var rt = logPanel.GetComponent<RectTransform>();
+        if (rt != null)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(logPanelMargin.x, logPanelMargin.y);
+            rt.offsetMax = new Vector2(-logPanelMargin.x, -logPanelMargin.y);
+        }
+
+        // ตั้งค่าพื้นหลังโปร่ง
+        var bg = logPanel.GetComponent<Image>();
+        if (bg == null)
+        {
+            bg = logPanel.AddComponent<Image>();
+        }
+        bg.color = new Color(0f, 0f, 0f, Mathf.Clamp01(logPanelOpacity));
+        bg.raycastTarget = true;
+
+        // ตั้งค่า ScrollRect ถ้ายังไม่มี
+        if (logScrollRect == null)
+        {
+            logScrollRect = logPanel.GetComponent<ScrollRect>();
+        }
+
+        if (logScrollRect != null && logText != null)
+        {
+            // ตั้งค่า Content เป็น logText
+            var contentRT = logText.GetComponent<RectTransform>();
+            if (contentRT != null)
+            {
+                logScrollRect.content = contentRT;
+
+                // ตั้งค่า Content Layout
+                var layoutGroup = logText.GetComponent<VerticalLayoutGroup>();
+                if (layoutGroup == null)
+                {
+                    layoutGroup = logText.gameObject.AddComponent<VerticalLayoutGroup>();
+                }
+                layoutGroup.childAlignment = TextAnchor.UpperLeft;
+                layoutGroup.childControlWidth = true;
+                layoutGroup.childControlHeight = true;
+                layoutGroup.childForceExpandWidth = true;
+                layoutGroup.childForceExpandHeight = false;
+                layoutGroup.spacing = 2f;
+
+                // ตั้งค่า ContentSizeFitter
+                var fitter = logText.GetComponent<ContentSizeFitter>();
+                if (fitter == null)
+                {
+                    fitter = logText.gameObject.AddComponent<ContentSizeFitter>();
+                }
+                fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                // บังคับรีบิลด์เลย์เอาต์
+                LayoutRebuilder.ForceRebuildLayoutImmediate(contentRT);
+            }
+
+            // ตั้งค่า ScrollRect: เลื่อนแนวตั้งเท่านั้น
+            logScrollRect.horizontal = false;
+            logScrollRect.vertical = true;
+            logScrollRect.movementType = ScrollRect.MovementType.Clamped;
+            logScrollRect.elasticity = 0.1f;
+            logScrollRect.inertia = true;
+
+            Debug.Log("✅ Log Panel Scroll Setup Complete");
+        }
+    }
+
+    // --------------------------------------------------------
+    // ⏸️ PAUSE & LOG SYSTEM
+    // --------------------------------------------------------
+
+    void OnPausePressed()
+    {
+        if (isEnding) return;
+        if (pausePanel) pausePanel.SetActive(true);
+        Time.timeScale = 0f;
+    }
+
+    void OnResumePressed()
+    {
+        Time.timeScale = 1f;
+        if (pausePanel) pausePanel.SetActive(false);
+        if (logPanel) logPanel.SetActive(false);
+    }
+
+    void OnQuitBattlePressed()
+    {
+        Time.timeScale = 1f;
+        if (!string.IsNullOrEmpty(stageSceneName))
+        {
+            SceneManager.LoadScene(stageSceneName);
+        }
+    }
+
+    void OnToggleLogPanel()
+    {
+        if (logPanel == null) return;
+        bool show = !logPanel.activeSelf;
+        logPanel.SetActive(show);
+        if (show) UpdateLogText();
+    }
+
+    void AddBattleLog(string entry)
+    {
+        if (string.IsNullOrEmpty(entry)) return;
+        if (battleLog.Count >= battleLogLimit)
+            battleLog.RemoveAt(0);
+        battleLog.Add($"T{turnCount}: {entry}");
+        UpdateLogText();
+    }
+
+    void UpdateLogText()
+    {
+        if (logText == null) return;
+        logText.text = string.Join("\n", battleLog);
+    }
+
     public void RefreshPlayerGraveyardUI()
     {
         if (playerGraveyardCountText != null)
             playerGraveyardCountText.text = playerGraveyard.Count.ToString();
 
         ClearListRoot(playerGraveyardListRoot);
+        SetupGraveyardScroll(playerGraveyardPanel, playerGraveyardListRoot);
         PopulateGraveyardList(playerGraveyardListRoot, playerGraveyard);
     }
 
@@ -3108,20 +3394,98 @@ public class BattleManager : MonoBehaviour
             enemyGraveyardCountText.text = enemyGraveyard.Count.ToString();
 
         ClearListRoot(enemyGraveyardListRoot);
+        SetupGraveyardScroll(enemyGraveyardPanel, enemyGraveyardListRoot);
         PopulateGraveyardList(enemyGraveyardListRoot, enemyGraveyard);
+    }
+
+    void SetupGraveyardScroll(GameObject panel, Transform content)
+    {
+        if (panel == null || content == null) return;
+
+        // หา ScrollRect component
+        var scrollRect = panel.GetComponent<ScrollRect>();
+        if (scrollRect == null)
+        {
+            scrollRect = panel.AddComponent<ScrollRect>();
+        }
+
+        // ตั้งค่า content
+        scrollRect.content = content as RectTransform;
+        scrollRect.horizontal = false;
+        scrollRect.vertical = true;
+        scrollRect.movementType = ScrollRect.MovementType.Clamped;
+        scrollRect.scrollSensitivity = 20f;
+
+        // เพิ่ม Mask เพื่อซ่อนการ์ดที่ออกนอกขอบ
+        var mask = panel.GetComponent<Mask>();
+        if (mask == null)
+        {
+            mask = panel.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+        }
+
+        // ต้องมี Image component สำหรับ Mask
+        var img = panel.GetComponent<Image>();
+        if (img == null)
+        {
+            img = panel.AddComponent<Image>();
+            img.color = new Color(0, 0, 0, 0.8f); // พื้นหลังสีดำโปร่งใส
+        }
+
+        Debug.Log($"✅ Setup Scroll for {panel.name}");
     }
 
     void PopulateGraveyardList(Transform root, List<CardData> cards)
     {
-        if (root == null || cards == null) return;
+        if (root == null)
+        {
+            Debug.LogError("❌ Graveyard List Root ยังไม่ได้ assign ใน Inspector!");
+            return;
+        }
+        
+        if (cards == null) return;
+
+        Debug.Log($"🪦 PopulateGraveyardList: root={root.name}, cardCount={cards.Count}");
+
+        // ลบ VerticalLayoutGroup ถ้ามี
+        var oldLayout = root.GetComponent<VerticalLayoutGroup>();
+        if (oldLayout != null) DestroyImmediate(oldLayout);
+
+        // ใช้ GridLayoutGroup เพื่อให้มีการ์ดหลายใบต่อแถว
+        var gridLayout = root.GetComponent<GridLayoutGroup>();
+        if (gridLayout == null)
+        {
+            gridLayout = root.gameObject.AddComponent<GridLayoutGroup>();
+        }
+        
+        gridLayout.childAlignment = TextAnchor.UpperLeft;
+        gridLayout.spacing = new Vector2(8f, 8f); // ระยะห่างระหว่างการ์ด
+        gridLayout.cellSize = new Vector2(180f, 220f); // ขนาดของแต่ละช่อง
+        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; // จำกัดจำนวนคอลัมน์ต่อแถว
+        gridLayout.constraintCount = 6; // 6 การ์ดต่อแถว
+
+        var fitter = root.GetComponent<ContentSizeFitter>();
+        if (fitter == null)
+        {
+            fitter = root.gameObject.AddComponent<ContentSizeFitter>();
+        }
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         if (graveyardListItemPrefab != null)
         {
             // ใช้ prefab ที่กำหนด
+            // ปรับ scale อัตโนมัติเพื่อไม่ให้ล้นจอเมื่อมีการ์ดจำนวนมาก
+            float scaleFactor = 0.75f;
+            if (cards.Count > 18) scaleFactor = 0.55f;
+            else if (cards.Count > 12) scaleFactor = 0.65f;
+
+            int successCount = 0;
             foreach (var card in cards)
             {
                 var item = Instantiate(graveyardListItemPrefab, root);
-                item.transform.localScale = Vector3.one * 0.75f;
+                item.transform.localScale = Vector3.one * scaleFactor;
+                item.name = $"Graveyard_{card.cardName}";
 
                 var ui = item.GetComponent<BattleCardUI>();
                 if (ui != null)
@@ -3140,7 +3504,6 @@ public class BattleManager : MonoBehaviour
                     if (img != null)
                     {
                         img.raycastTarget = true;
-                        Debug.Log($"📋 Image raycastTarget = {img.raycastTarget}");
                     }
                     
                     CardData cardData = card; // capture ค่าสำหรับ lambda
@@ -3156,11 +3519,10 @@ public class BattleManager : MonoBehaviour
                     EventTrigger.Entry entry = new EventTrigger.Entry();
                     entry.eventID = EventTriggerType.PointerClick;
                     entry.callback.AddListener((data) => {
-                        Debug.Log($"🖱️ คลิกการ์ดในสุสาน: {cardData.cardName}");
                         if (cardDetailView != null)
                         {
-                            Debug.Log($"🔓 เปิดรายละเอียด: {cardData.cardName}");
                             cardDetailView.Open(cardData);
+                            Debug.Log($"🔓 เปิดรายละเอียด: {cardData.cardName}");
                         }
                         else
                         {
@@ -3169,33 +3531,36 @@ public class BattleManager : MonoBehaviour
                     });
                     eventTrigger.triggers.Add(entry);
                     
-                    Debug.Log($"✅ สร้างการ์ดสุสาน: {cardData.cardName} พร้อม EventTrigger (PointerClick)");
+                    successCount++;
                 }
                 else
                 {
-                    var text = item.GetComponentInChildren<TextMeshProUGUI>();
-                    if (text != null)
-                    {
-                        text.text = card.cardName;
-                        text.raycastTarget = false;
-                    }
+                    Debug.LogWarning($"⚠️ Graveyard item ไม่มี BattleCardUI component: {card.cardName}");
                 }
             }
+            Debug.Log($"✅ สร้างการ์ดสุสาน {successCount}/{cards.Count} ใบ");
+            
+            // รีเฟรชเลย์เอาต์เพื่อให้ ScrollRect ปรับขนาดทันที
+            LayoutRebuilder.ForceRebuildLayoutImmediate(root as RectTransform);
             return;
         }
 
-        // Fallback: สร้าง Text แถวง่ายๆ
+        // Fallback: สร้าง Text แถวง่ายๆ ถ้าไม่มี prefab
+        Debug.LogWarning("⚠️ graveyardListItemPrefab ไม่ได้ assign - ใช้ Fallback Text");
         foreach (var card in cards)
         {
             var go = new GameObject("GraveyardItem");
             go.transform.SetParent(root, false);
 
             var text = go.AddComponent<TextMeshProUGUI>();
-            text.text = card.cardName;
-            text.fontSize = 24f;
+            text.text = $"• {card.cardName} (ATK:{card.atk} HP:{card.hp})";
+            text.fontSize = 20f;
             text.alignment = TextAlignmentOptions.Left;
             text.raycastTarget = false;
         }
+
+        // รีเฟรชเลย์เอาต์เพื่อให้ ScrollRect ปรับขนาดทันที
+        LayoutRebuilder.ForceRebuildLayoutImmediate(root as RectTransform);
     }
 
     void ClearListRoot(Transform root)

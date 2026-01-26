@@ -32,3 +32,4 @@ MonoBehaviour:
     targetMainCat: 1
     targetSubCat: 0
     value: 0
+    destroyMode: 1
