@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3415201c518b0e4bb2ae92e0a90f46d, type: 3}
   m_Name: Quest4
   m_EditorClassIdentifier: 
-  questID: card_01
-  description: "\u0E22\u0E48\u0E2D\u0E22\u0E01\u0E32\u0E23\u0E4C\u0E14 1 \u0E04\u0E23\u0E31\u0E49\u0E07"
+  questID: card_scrap_1
+  description: "\u0E22\u0E48\u0E2D\u0E22\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E17\u0E35\u0E48\u0E21\u0E35\u0E2D\u0E22\u0E39\u0E48
+    1 \u0E43\u0E1A"
   targetAmount: 1
-  rewardGold: 500
+  rewardGold: 300
   icon: {fileID: 0}
   type: 3

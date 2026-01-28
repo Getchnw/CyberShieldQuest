@@ -24,6 +24,7 @@ public class DailyQuestManager : MonoBehaviour
         if (data.lastQuestDate != today)
         {
             // === วันใหม่: สุ่มเควสใหม่ ===
+            // ค้องใส่เลขที่หาร 4 ลงตัว
             List<DailyQuestsData> newQuests = GameContentDatabase.Instance.GetRandomQuests(4);
 
             data.activeQuests.Clear();

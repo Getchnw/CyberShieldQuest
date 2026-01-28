@@ -770,7 +770,46 @@ public class GameContentDatabase : MonoBehaviour
     public List<DailyQuestsData> GetRandomQuests(int count)
     {
         // สับเปลี่ยนลำดับแล้วหยิบมาตามจำนวนที่ต้องการ (เช่น 3 อัน)
-        return dailyQuestDatabase.OrderBy(x => Random.value).Take(count).ToList();
+        var list = new List<DailyQuestsData>();
+        int Num_random_Quest_Stage = 0;
+        int Num_random_Quest_Story = 0;
+        int Num_random_Quest_Gacha = 0;
+        int Num_random_Quest_Card = 0;
+
+        // แบ่งจำนวนสุ่มเควสให้เท่าๆกันในแต่ละประเภท
+        int count_per_type = count / 4;
+        while (list.Count < count)
+        {
+            // ข้อมูลเควสทั้งหมดในฐานข้อมูล
+            var shuffledQuests = dailyQuestDatabase.OrderBy(x => Random.value).ToList();
+            foreach (var quest in shuffledQuests)
+            {
+                if (list.Count >= count) break;
+
+                if (quest.type == QuestType.Stage && Num_random_Quest_Stage < count_per_type)
+                {
+                    list.Add(quest);
+                    Num_random_Quest_Stage++;
+                }
+                else if (quest.type == QuestType.Story && Num_random_Quest_Story < count_per_type)
+                {
+                    list.Add(quest);
+                    Num_random_Quest_Story++;
+                }
+                else if (quest.type == QuestType.Gacha && Num_random_Quest_Gacha < count_per_type)
+                {
+                    list.Add(quest);
+                    Num_random_Quest_Gacha++;
+                }
+                else if (quest.type == QuestType.Card && Num_random_Quest_Card < count_per_type)
+                {
+                    list.Add(quest);
+                    Num_random_Quest_Card++;
+                }
+            }
+        }
+
+        return list;
     }
 
     // ดึงคำอธิบายของ True/False ตาม ID story
