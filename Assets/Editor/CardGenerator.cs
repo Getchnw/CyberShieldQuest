@@ -28,7 +28,7 @@ public class CardGenerator
             "[Deploy] เมื่อการ์ดใบนี้ลงสนาม: คุณได้ดูการ์ดในมือของฝ่ายตรงข้ามทั้งหมด",
             "[A01: IDOR] (Read) มันเปลี่ยน ID ใน URL (เช่น user_id=123 เป็น 124) เพื่อ 'แอบดู' ข้อมูลคนอื่น",
             new List<CardEffect> { 
-                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyHand, action = ActionType.RevealHand } 
+                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyHand, action = ActionType.RevealHandMultiple, value = 0 } 
             });
 
         CreateCard("M_A01_02", "Profile Defacer", CardType.Monster, MainCategory.A01, SubCategory.IDOR, 3, 3,
@@ -87,6 +87,21 @@ public class CardGenerator
             new List<CardEffect> { 
                 new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyMonster, targetMainCat = MainCategory.A01, action = ActionType.Destroy },
                 new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.Self, action = ActionType.HealHP }
+            });
+
+        // 🔍 การ์ดเวทย์ดูมือ
+        CreateCard("S_A01_03", "Peek", CardType.Spell, MainCategory.A01, SubCategory.IDOR, 1, 0,
+            "ดูการ์ด 3 ใบบนมือของฝ่ายตรงข้าม",
+            "[A01: IDOR] มองลับฟ้า! มันดักจับข้อมูลที่ส่งกลับมา",
+            new List<CardEffect> { 
+                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyHand, action = ActionType.RevealHandMultiple, value = 3 }
+            });
+
+        CreateCard("S_A01_04", "Clairvoyance", CardType.Spell, MainCategory.A01, SubCategory.IDOR, 2, 0,
+            "ดูการ์ดทั้งหมดบนมือของฝ่ายตรงข้าม",
+            "[A01: IDOR] ทะลุทะลวง! มันดึงข้อมูลส่วนตัวจากฐานข้อมูลมาดูทั้งหมด",
+            new List<CardEffect> { 
+                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyHand, action = ActionType.RevealHandMultiple, value = 0 }
             });
 
         // --- 1.2 Path Traversal --- [cite: 397-455]

@@ -118,6 +118,12 @@ public class BattleManager : MonoBehaviour
     public TextMeshProUGUI targetSelectionText; // ข้อความอธิบาย "เลือกเป้าหมาย"
     public Button targetSelectionCancelButton; // ปุ่มยกเลิกการเลือก
 
+    [Header("--- Hand Reveal Panel (ดูการ์ดบนมือ) ---")]
+    public GameObject handRevealPanel; // Panel แสดงการ์ดบนมือที่ดูได้
+    public Transform handRevealListRoot; // Root สำหรับ spawn การ์ดที่ดู
+    public TextMeshProUGUI handRevealTitleText; // ชื่อ Panel (เช่น "การ์ดบนมือฝ่ายตรงข้าม")
+    public Button handRevealCloseButton; // ปุ่มปิด
+
     [Header("--- Mulligan UI ---")]
     public Button playerMulliganButton;
     public TextMeshProUGUI mulliganText;
@@ -223,14 +229,22 @@ public class BattleManager : MonoBehaviour
             logCloseButton.onClick.RemoveAllListeners();
             logCloseButton.onClick.AddListener(OnToggleLogPanel);
         }
+
+        // ผูกปุ่มปิด Hand Reveal Panel
+        if (handRevealCloseButton)
+        {
+            handRevealCloseButton.onClick.RemoveAllListeners();
+            handRevealCloseButton.onClick.AddListener(CloseHandRevealPanel);
+        }
     }
 
     void Start()
     {
         state = BattleState.START;
-        // ตั้งค่าพาเนล pause/log ให้ปิดไว้ก่อน
+        // ตั้งค่าพาเนล pause/log/handreveal ให้ปิดไว้ก่อน
         if (pausePanel) pausePanel.SetActive(false);
         if (logPanel) logPanel.SetActive(false);
+        if (handRevealPanel) handRevealPanel.SetActive(false);
         SetupLogPanelAppearance();
         UpdateLogText();
         StartCoroutine(SetupBattle());
@@ -1414,7 +1428,8 @@ public class BattleManager : MonoBehaviour
 
                 case ActionType.DiscardDeck:
                 case ActionType.RevealHand:
-                    // เทพอกพ is ok ก็ว่า ok (ต้องการ discard/reveal ได้)
+                case ActionType.RevealHandMultiple:
+                    // เทพอกพ/ดูมือ is ok ก็ว่า ok (ต้องการ discard/reveal ได้)
                     break;
 
                 // effect อื่นๆ ถือว่า OK
@@ -2767,6 +2782,9 @@ public class BattleManager : MonoBehaviour
             case ActionType.RevealHand:
                 ApplyRevealHand(effect, isPlayer);
                 break;
+            case ActionType.RevealHandMultiple:
+                ApplyRevealHandMultiple(effect, isPlayer);
+                break;
             case ActionType.DiscardDeck:
                 ApplyDiscardDeck(effect, isPlayer);
                 break;
@@ -2880,7 +2898,8 @@ public class BattleManager : MonoBehaviour
 
     void ApplyRevealHand(CardEffect effect, bool isPlayer)
     {
-        if (effect.targetType == TargetType.EnemyHand && !isPlayer)
+        // ผู้เล่นดูมือบอท
+        if (isPlayer && effect.targetType == TargetType.EnemyHand)
         {
             if (enemyHandArea != null && enemyHandArea.childCount > 0)
             {
@@ -2888,9 +2907,79 @@ public class BattleManager : MonoBehaviour
                 if (firstCard != null && cardDetailView != null)
                 {
                     cardDetailView.Open(firstCard.GetData());
-                    Debug.Log($"👁️ Reveal Enemy Hand: {firstCard.GetData().cardName}");
+                    Debug.Log($"👁️ Player Reveal Enemy Hand: {firstCard.GetData().cardName}");
+                    AddBattleLog($"Player revealed: {firstCard.GetData().cardName}");
                 }
             }
+        }
+        // บอทดูมือผู้เล่น
+        else if (!isPlayer && effect.targetType == TargetType.EnemyHand)
+        {
+            if (handArea != null && handArea.childCount > 0)
+            {
+                var firstCard = handArea.GetChild(0).GetComponent<BattleCardUI>();
+                if (firstCard != null && cardDetailView != null)
+                {
+                    cardDetailView.Open(firstCard.GetData());
+                    Debug.Log($"👁️ Bot Reveal Player Hand: {firstCard.GetData().cardName}");
+                    AddBattleLog($"Bot revealed: {firstCard.GetData().cardName}");
+                }
+            }
+        }
+    }
+
+    /// <summary>ดูการ์ดหลายใบบนมือของฝ่ายตรงข้าม</summary>
+    void ApplyRevealHandMultiple(CardEffect effect, bool isPlayer)
+    {
+        // กำหนดจำนวนการ์ดที่จะดู (ถ้าไม่ระบุ value ให้ดูทั้งหมด)
+        int revealCount = effect.value > 0 ? effect.value : 99;
+        
+        // เลือกมือของฝ่ายตรงข้าม
+        Transform targetHand = null;
+        string targetName = "";
+        
+        if (effect.targetType == TargetType.EnemyHand)
+        {
+            if (isPlayer)
+            {
+                // ผู้เล่นใช้ -> ดูมือบอท
+                targetHand = enemyHandArea;
+                targetName = "มือบอท";
+            }
+            else
+            {
+                // บอทใช้ -> ดูมือผู้เล่น
+                targetHand = handArea;
+                targetName = "มือผู้เล่น";
+            }
+        }
+
+        if (targetHand == null || targetHand.childCount == 0)
+        {
+            Debug.Log($"👁️ RevealHandMultiple: {targetName} ว่างเปล่า");
+            AddBattleLog($"Revealed {targetName} - Empty");
+            return;
+        }
+
+        // รวบรวมการ์ดที่จะแสดง
+        List<CardData> cardsToReveal = new List<CardData>();
+        int actualCount = Mathf.Min(revealCount, targetHand.childCount);
+        
+        for (int i = 0; i < actualCount; i++)
+        {
+            var cardUI = targetHand.GetChild(i).GetComponent<BattleCardUI>();
+            if (cardUI != null && cardUI.GetData() != null)
+            {
+                cardsToReveal.Add(cardUI.GetData());
+            }
+        }
+
+        // เปิด Panel แสดงการ์ด
+        if (cardsToReveal.Count > 0)
+        {
+            ShowHandRevealPanel(cardsToReveal, targetName);
+            Debug.Log($"👁️ RevealHandMultiple: แสดง {cardsToReveal.Count} ใบจาก{targetName}");
+            AddBattleLog($"Revealed {cardsToReveal.Count} cards from {targetName}");
         }
     }
 
@@ -3571,6 +3660,231 @@ public class BattleManager : MonoBehaviour
             var child = root.GetChild(i);
             if (child != null) Destroy(child.gameObject);
         }
+    }
+
+    // ========================================================
+    // 👁️ HAND REVEAL SYSTEM (ดูการ์ดบนมือฝ่ายตรงข้าม)
+    // ========================================================
+
+    /// <summary>เปิด Panel แสดงการ์ดบนมือที่ดูได้</summary>
+    void ShowHandRevealPanel(List<CardData> cards, string targetName)
+    {
+        if (handRevealPanel == null)
+        {
+            Debug.LogError("❌ handRevealPanel ยังไม่ถูกตั้ง!");
+            return;
+        }
+
+        if (cards == null || cards.Count == 0)
+        {
+            Debug.Log("⚠️ ไม่มีการ์ดที่จะแสดง");
+            return;
+        }
+
+        // ตั้งชื่อ Panel
+        if (handRevealTitleText != null)
+        {
+            handRevealTitleText.text = $"🔍 {targetName} ({cards.Count} ใบ)";
+        }
+
+        // ตั้งปุ่มปิด
+        if (handRevealCloseButton != null)
+        {
+            handRevealCloseButton.onClick.RemoveAllListeners();
+            handRevealCloseButton.onClick.AddListener(CloseHandRevealPanel);
+        }
+
+        // ล้างการ์ดเก่า
+        ClearListRoot(handRevealListRoot);
+
+        // Setup Scroll
+        SetupHandRevealScroll();
+
+        // สร้างการ์ดใหม่
+        PopulateHandRevealList(cards);
+
+        // เปิด Panel
+        handRevealPanel.SetActive(true);
+        Debug.Log($"✅ เปิด Hand Reveal Panel: {cards.Count} ใบ");
+    }
+
+    /// <summary>ปิด Panel แสดงการ์ดบนมือ</summary>
+    void CloseHandRevealPanel()
+    {
+        if (handRevealPanel != null)
+        {
+            handRevealPanel.SetActive(false);
+            Debug.Log("✅ ปิด Hand Reveal Panel");
+        }
+    }
+
+    /// <summary>ตั้งค่า ScrollRect สำหรับ Hand Reveal Panel</summary>
+    void SetupHandRevealScroll()
+    {
+        if (handRevealPanel == null || handRevealListRoot == null) return;
+
+        // หา ScrollRect component
+        var scrollRect = handRevealPanel.GetComponent<ScrollRect>();
+        if (scrollRect == null)
+        {
+            scrollRect = handRevealPanel.AddComponent<ScrollRect>();
+        }
+
+        // ตั้งค่า content
+        scrollRect.content = handRevealListRoot as RectTransform;
+        scrollRect.horizontal = false;
+        scrollRect.vertical = true;
+        scrollRect.movementType = ScrollRect.MovementType.Clamped;
+        scrollRect.scrollSensitivity = 20f;
+
+        // เพิ่ม Mask เพื่อซ่อนการ์ดที่ออกนอกขอบ
+        var mask = handRevealPanel.GetComponent<Mask>();
+        if (mask == null)
+        {
+            mask = handRevealPanel.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+        }
+
+        // ต้องมี Image component สำหรับ Mask
+        var img = handRevealPanel.GetComponent<Image>();
+        if (img == null)
+        {
+            img = handRevealPanel.AddComponent<Image>();
+            img.color = new Color(0, 0, 0, 0.9f); // พื้นหลังสีดำโปร่งใส
+        }
+
+        Debug.Log($"✅ Setup Scroll for Hand Reveal Panel");
+    }
+
+    /// <summary>สร้างการ์ดและแสดงใน Hand Reveal Panel</summary>
+    void PopulateHandRevealList(List<CardData> cards)
+    {
+        if (handRevealListRoot == null)
+        {
+            Debug.LogError("❌ handRevealListRoot ยังไม่ได้ assign ใน Inspector!");
+            return;
+        }
+
+        if (cards == null || cards.Count == 0) return;
+
+        Debug.Log($"👁️ PopulateHandRevealList: root={handRevealListRoot.name}, cardCount={cards.Count}");
+
+        // ใช้ GridLayoutGroup เพื่อให้มีการ์ดหลายใบต่อแถว
+        var gridLayout = handRevealListRoot.GetComponent<GridLayoutGroup>();
+        if (gridLayout == null)
+        {
+            gridLayout = handRevealListRoot.gameObject.AddComponent<GridLayoutGroup>();
+        }
+
+        gridLayout.childAlignment = TextAnchor.UpperCenter;
+        gridLayout.spacing = new Vector2(10f, 10f);
+        gridLayout.cellSize = new Vector2(200f, 280f);
+        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        gridLayout.constraintCount = 8; // 8 การ์ดต่อแถว
+
+        var fitter = handRevealListRoot.GetComponent<ContentSizeFitter>();
+        if (fitter == null)
+        {
+            fitter = handRevealListRoot.gameObject.AddComponent<ContentSizeFitter>();
+        }
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        if (cardPrefab != null)
+        {
+            // สร้างการ์ดจาก prefab
+            float scaleFactor = 1.0f;
+            if (cards.Count > 10) scaleFactor = 0.85f;
+
+            int successCount = 0;
+            foreach (var card in cards)
+            {
+                var item = Instantiate(cardPrefab, handRevealListRoot);
+                item.transform.localScale = Vector3.one * scaleFactor;
+                item.name = $"Revealed_{card.cardName}";
+
+                var ui = item.GetComponent<BattleCardUI>();
+                if (ui != null)
+                {
+                    ui.Setup(card);
+
+                    // 🔥 แสดงรูปการ์ด
+                    var img = item.GetComponent<Image>();
+                    if (img != null)
+                    {
+                        if (card.artwork != null)
+                        {
+                            img.sprite = card.artwork;
+                            img.color = Color.white; // ไม่โปร่งใส
+                        }
+                        img.raycastTarget = true;
+                    }
+                    
+                    // ตั้ง CanvasGroup ให้คลิกได้ (แต่ไม่ให้ลากได้)
+                    var cg = ui.GetComponent<CanvasGroup>();
+                    if (cg == null) cg = ui.gameObject.AddComponent<CanvasGroup>();
+                    cg.interactable = true;
+                    cg.blocksRaycasts = true;
+                    cg.alpha = 1f;
+
+                    CardData cardData = card; // capture ค่าสำหรับ lambda
+
+                    // ใช้ EventTrigger (PointerClick) เพื่อดูรายละเอียด
+                    var eventTrigger = item.GetComponent<EventTrigger>();
+                    if (eventTrigger == null) eventTrigger = item.AddComponent<EventTrigger>();
+
+                    // ล้างเหตุการณ์เก่า
+                    eventTrigger.triggers.Clear();
+
+                    // เพิ่ม PointerClick trigger
+                    EventTrigger.Entry entry = new EventTrigger.Entry();
+                    entry.eventID = EventTriggerType.PointerClick;
+                    entry.callback.AddListener((data) => {
+                        if (cardDetailView != null)
+                        {
+                            cardDetailView.Open(cardData);
+                            Debug.Log($"🔓 เปิดรายละเอียดการ์ดบนมือ: {cardData.cardName}");
+                        }
+                        else
+                        {
+                            Debug.LogError("❌ CardDetailView ยังไม่ได้ตั้งค่าใน BattleManager!");
+                        }
+                    });
+                    eventTrigger.triggers.Add(entry);
+                    
+                    // 🔥 ยืนยันว่า EventTrigger ทำงาน
+                    Debug.Log($"✅ Card setup: {card.cardName} | Image: {(img != null && img.sprite != null ? "OK" : "MISSING")} | EventTrigger: OK");
+
+                    successCount++;
+                }
+                else
+                {
+                    Debug.LogWarning($"⚠️ Hand Reveal item ไม่มี BattleCardUI component: {card.cardName}");
+                }
+            }
+            Debug.Log($"✅ สร้างการ์ด Hand Reveal {successCount}/{cards.Count} ใบ");
+
+            // รีเฟรชเลย์เอาต์เพื่อให้ ScrollRect ปรับขนาดทันที
+            LayoutRebuilder.ForceRebuildLayoutImmediate(handRevealListRoot as RectTransform);
+            return;
+        }
+
+        // Fallback: สร้าง Text แถวง่ายๆ ถ้าไม่มี prefab
+        Debug.LogWarning("⚠️ cardPrefab ไม่ได้ assign - ใช้ Fallback Text");
+        foreach (var card in cards)
+        {
+            var go = new GameObject("HandRevealItem");
+            go.transform.SetParent(handRevealListRoot, false);
+
+            var text = go.AddComponent<TextMeshProUGUI>();
+            text.text = $"• {card.cardName} (ATK:{card.atk} Cost:{card.cost})";
+            text.fontSize = 22f;
+            text.alignment = TextAlignmentOptions.Left;
+            text.raycastTarget = false;
+        }
+
+        // รีเฟรชเลย์เอาต์
+        LayoutRebuilder.ForceRebuildLayoutImmediate(handRevealListRoot as RectTransform);
     }
 
     // ========================================================

@@ -30,7 +30,8 @@ MonoBehaviour:
   effects:
   - trigger: 1
     targetType: 4
-    action: 4
+    action: 5
     targetMainCat: 0
     targetSubCat: 0
     value: 0
+    destroyMode: 0
