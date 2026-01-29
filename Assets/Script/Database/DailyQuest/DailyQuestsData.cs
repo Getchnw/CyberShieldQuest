@@ -17,6 +17,8 @@ public class DailyQuestsData : ScriptableObject
 
     //ประเภทเควส เอาไว้เช็คเงื่อนไข
     public QuestType type;
+
+    public string conditionKey;
 }
 
 public enum QuestType

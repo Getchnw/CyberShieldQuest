@@ -19,3 +19,4 @@ MonoBehaviour:
   rewardGold: 500
   icon: {fileID: 0}
   type: 0
+  conditionKey: play_1

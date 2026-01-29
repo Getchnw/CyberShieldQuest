@@ -50,6 +50,7 @@ public class QuestItemUI : MonoBehaviour
             // กรณีขอยังไม่รับ
             claimButton.interactable = isComplete; // กดได้เมื่อทำครบ
             claimButton.GetComponentInChildren<TextMeshProUGUI>().text = isComplete ? "Claim" : "Locked";
+            claimButton.onClick.AddListener(OnClaimClicked);
         }
     }
 
@@ -57,5 +58,6 @@ public class QuestItemUI : MonoBehaviour
     {
         // เรียก Manager ให้แจกรางวัล
         DailyQuestManager.Instance.ClaimReward(mySaveData.questID);
+        RefreshUI();
     }
 }

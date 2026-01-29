@@ -67,7 +67,7 @@ public class DailyQuestManager : MonoBehaviour
     }
 
     // ฟังก์ชันอัปเดตภารกิจ (เรียกจากที่อื่น)
-    public void UpdateProgress(QuestType type, int amount)
+    public void UpdateProgress(QuestType type, int amount, string conditionKey = "")
     {
         var activeQuests = GameManager.Instance.CurrentGameData.dailyQuestData.activeQuests;
         bool isChanged = false;
@@ -76,8 +76,11 @@ public class DailyQuestManager : MonoBehaviour
         {
             DailyQuestsData def = GameContentDatabase.Instance.GetQuestByID(savedQ.questID);
 
+            if (def.type != type) continue;
+            bool isMatchkey = (def.conditionKey == conditionKey) || string.IsNullOrEmpty(def.conditionKey) || string.IsNullOrEmpty(def.conditionKey);
+            if (!isMatchkey) continue;
             // เช็คว่าประเภทตรงกัน และยังไม่เต็ม
-            if (def.type == type && savedQ.currentAmount < def.targetAmount && !savedQ.isClaimed)
+            if (isMatchkey && savedQ.currentAmount < def.targetAmount && !savedQ.isClaimed)
             {
                 savedQ.currentAmount += amount;
                 if (savedQ.currentAmount > def.targetAmount) savedQ.currentAmount = def.targetAmount;

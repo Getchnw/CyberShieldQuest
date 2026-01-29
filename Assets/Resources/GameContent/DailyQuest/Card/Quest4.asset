@@ -19,3 +19,4 @@ MonoBehaviour:
   rewardGold: 300
   icon: {fileID: 0}
   type: 3
+  conditionKey: scrap
