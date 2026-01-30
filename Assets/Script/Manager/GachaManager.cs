@@ -17,43 +17,43 @@ public class GachaManager : MonoBehaviour
     public int legendaryRate = 2;
 
     [Header("UI References")]
-    public TextMeshProUGUI goldText;    
-    public GameObject resultPanel;      
-    public Transform resultGrid;        
+    public TextMeshProUGUI goldText;
+    public GameObject resultPanel;
+    public Transform resultGrid;
     public GameObject cardDisplayPrefab;
-    public Button closeResultButton; 
+    public Button closeResultButton;
 
     [Header("Banner UI")]
-    public TextMeshProUGUI currentBannerNameText; 
-    public Button pullOneButton;   
+    public TextMeshProUGUI currentBannerNameText;
+    public Button pullOneButton;
     public Button pullTenButton;
-    public Image bannerImageDisplay;  
-    public Sprite[] bannerSprites;    
+    public Image bannerImageDisplay;
+    public Sprite[] bannerSprites;
 
     [Header("Banner Selection Buttons")]
-    public Button[] bannerSelectButtons; 
+    public Button[] bannerSelectButtons;
 
     private List<CardData> allCards;
-    private MainCategory currentTargetCategory = MainCategory.A01; 
+    private MainCategory currentTargetCategory = MainCategory.A01;
 
     void Start()
     {
         allCards = Resources.LoadAll<CardData>("GameContent/Cards").ToList();
-        
+
         if (closeResultButton != null) closeResultButton.onClick.AddListener(CloseResult);
 
         UpdateBannerButtonsVisual();
-        SelectBanner(1); 
+        SelectBanner(1);
         UpdateUI();
-        
-        if(resultPanel != null) resultPanel.SetActive(false);
+
+        if (resultPanel != null) resultPanel.SetActive(false);
     }
 
     void Update() { UpdateUI(); }
 
     void UpdateUI()
     {
-        if(GameManager.Instance != null && GameManager.Instance.CurrentGameData != null && goldText != null)
+        if (GameManager.Instance != null && GameManager.Instance.CurrentGameData != null && goldText != null)
         {
             goldText.text = $"{GameManager.Instance.CurrentGameData.profile.gold}";
         }
@@ -86,7 +86,7 @@ public class GachaManager : MonoBehaviour
         }
 
         // กรณี Test Mode (หรือหาข้อมูลไม่เจอ) ให้ล็อคไว้ก่อนเพื่อความปลอดภัย
-        return false; 
+        return false;
     }
 
     // =========================================================
@@ -109,7 +109,7 @@ public class GachaManager : MonoBehaviour
 
         // เช็คล็อค
         bool isUnlocked = CheckUnlockStatus(categoryIndex);
-        
+
         // คุมปุ่มสุ่ม (ซ่อนปุ่มถ้ายังไม่ปลดล็อค)
         if (pullOneButton != null) pullOneButton.gameObject.SetActive(isUnlocked);
         if (pullTenButton != null) pullTenButton.gameObject.SetActive(isUnlocked);
@@ -118,15 +118,15 @@ public class GachaManager : MonoBehaviour
         if (currentBannerNameText != null)
         {
             currentBannerNameText.text = $"Banner: {currentTargetCategory}";
-            
+
             if (!isUnlocked)
             {
                 currentBannerNameText.text += " <color=red> ( LOCKED )</color>";
-                if(bannerImageDisplay != null) bannerImageDisplay.color = Color.gray; 
+                if (bannerImageDisplay != null) bannerImageDisplay.color = Color.gray;
             }
             else
             {
-                if(bannerImageDisplay != null) bannerImageDisplay.color = Color.white;
+                if (bannerImageDisplay != null) bannerImageDisplay.color = Color.white;
             }
         }
     }
@@ -137,9 +137,9 @@ public class GachaManager : MonoBehaviour
 
         for (int i = 0; i < bannerSelectButtons.Length; i++)
         {
-            int categoryIndex = i + 1; 
+            int categoryIndex = i + 1;
             bool isUnlocked = CheckUnlockStatus(categoryIndex);
-            
+
             Button btn = bannerSelectButtons[i];
             if (btn == null) continue;
 
@@ -153,9 +153,9 @@ public class GachaManager : MonoBehaviour
                 colors.normalColor = new Color(0.4f, 0.4f, 0.4f, 1f); // สีเทาเข้ม
             }
             btn.colors = colors;
-            
+
             // บังคับเปลี่ยนสีรูปปุ่มทันที
-            if(btn.image != null) btn.image.color = colors.normalColor;
+            if (btn.image != null) btn.image.color = colors.normalColor;
         }
     }
 
@@ -174,7 +174,7 @@ public class GachaManager : MonoBehaviour
     public void PullOne()
     {
         Debug.Log("🔵 PullOne() called");
-        
+
         // เช็คเงื่อนไขอีกรอบกันเหนียว (เผื่อแฮกปุ่ม)
         int catIndex = GetCategoryIndex(currentTargetCategory);
         if (!CheckUnlockStatus(catIndex))
@@ -191,13 +191,15 @@ public class GachaManager : MonoBehaviour
 
         int currentGold = GameManager.Instance.CurrentGameData.profile.gold;
         Debug.Log($"💰 Current Gold: {currentGold}, Cost: {costPerPull}");
-        
+
         if (currentGold >= costPerPull)
         {
             GameManager.Instance.DecreaseGold(costPerPull);
             CardData pulledCard = RandomCard(currentTargetCategory);
             GameManager.Instance.AddCardToInventory(pulledCard.card_id, 1);
             GameManager.Instance.SaveCurrentGame();
+            // เช็คQuest ที่เกี่ยวข้อง (ถ้ามี)
+            UpdateDailyQuest(catIndex, 1);
             Debug.Log($"✅ Pulled: {pulledCard.cardName}");
             ShowResult(new List<CardData> { pulledCard });
         }
@@ -207,7 +209,7 @@ public class GachaManager : MonoBehaviour
     public void PullTen()
     {
         Debug.Log("🔵 PullTen() called");
-        
+
         int catIndex = GetCategoryIndex(currentTargetCategory);
         if (!CheckUnlockStatus(catIndex))
         {
@@ -236,6 +238,8 @@ public class GachaManager : MonoBehaviour
                 GameManager.Instance.AddCardToInventory(c.card_id, 1);
             }
             GameManager.Instance.SaveCurrentGame();
+            // เช็คQuest ที่เกี่ยวข้อง (ถ้ามี)
+            UpdateDailyQuest(catIndex, 10);
             Debug.Log($"✅ Pulled {pulledList.Count} cards");
             ShowResult(pulledList);
         }
@@ -265,27 +269,27 @@ public class GachaManager : MonoBehaviour
     // =========================================================
     void ShowResult(List<CardData> cards)
     {
-        if(resultPanel != null) resultPanel.SetActive(true);
-        if(resultGrid != null)
+        if (resultPanel != null) resultPanel.SetActive(true);
+        if (resultGrid != null)
         {
-            foreach(Transform child in resultGrid) Destroy(child.gameObject);
+            foreach (Transform child in resultGrid) Destroy(child.gameObject);
             StartCoroutine(SpawnCardsRoutine(cards));
         }
     }
 
     IEnumerator SpawnCardsRoutine(List<CardData> cards)
     {
-        yield return null; 
-        foreach(var card in cards)
+        yield return null;
+        foreach (var card in cards)
         {
             GameObject obj = Instantiate(cardDisplayPrefab, resultGrid);
             var slot = obj.GetComponent<CardUISlot>();
-            if(slot != null) slot.Setup(card, -1, null, null); 
+            if (slot != null) slot.Setup(card, -1, null, null);
 
             // Animation
             obj.transform.localScale = Vector3.zero;
             float timer = 0;
-            while(timer < 0.3f)
+            while (timer < 0.3f)
             {
                 timer += Time.deltaTime;
                 float t = timer / 0.3f;
@@ -298,8 +302,25 @@ public class GachaManager : MonoBehaviour
         }
     }
 
-    public void CloseResult() 
-    { 
-        if(resultPanel != null) resultPanel.SetActive(false); 
+    public void CloseResult()
+    {
+        if (resultPanel != null) resultPanel.SetActive(false);
+    }
+
+    void UpdateDailyQuest(int categoryIndex, int amount)
+    {
+        // Debug.Log("cat index", categoryIndex);
+        string questKey = "";
+
+        // ตรงนี้อาจจะยังต้อง if/switch บ้าง แต่สั้นกว่าเดิมเยอะ
+        // หรือถ้าตั้งชื่อ Scene ให้ตรงกับ Key ก็แทบไม่ต้อง if เลย
+        if (categoryIndex == 1) questKey = "A01";
+        else if (categoryIndex == 2) questKey = "A02";
+        else if (categoryIndex == 3) questKey = "A03";
+        // Debug.Log("quest key", questKey);
+        // 2. ตะโกนบอก Manager ทีเดียวจบ!
+        // "เฮ้! มีคนเล่น Story จบ 1 ครั้งนะ รหัสคือ A01"
+        DailyQuestManager.Instance.UpdateProgress(QuestType.Gacha, amount, questKey);
+
     }
 }

@@ -19,3 +19,4 @@ MonoBehaviour:
   rewardGold: 1000
   icon: {fileID: 0}
   type: 0
+  conditionKey: damage_50

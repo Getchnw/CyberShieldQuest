@@ -77,6 +77,7 @@ public class StoryEventController : MonoBehaviour
             Debug.Log("Chapter Completed!");
             dialoguePanel.SetActive(false);
             quizController.gameObject.SetActive(false);
+            UpdateDailyQuest();
             // (คุณอาจจะโหลด Scene กลับหน้า Chapter Select ที่นี่)
             SceneManager.LoadScene("Template_select_chapter_story");
             return;
@@ -245,8 +246,27 @@ public class StoryEventController : MonoBehaviour
         Debug.Log("Quiz จบแล้ว! กำลังไป Event ถัดไป");
         // 2. เลื่อนไป Event ถัดไป
         currentEventIndex++;
-
         // 3. โหลด Event ถัดไป (ซึ่งอาจจะเป็น Dialogue ฉากจบบท)
         LoadCurrentEvent();
     }
+
+    void UpdateDailyQuest()
+    {
+        // 1. แปลง Story ID เป็น Key ที่ Manager เข้าใจ
+        var Storyid = GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId;
+        string questKey = "";
+
+        // ตรงนี้อาจจะยังต้อง if/switch บ้าง แต่สั้นกว่าเดิมเยอะ
+        // หรือถ้าตั้งชื่อ Scene ให้ตรงกับ Key ก็แทบไม่ต้อง if เลย
+        if (Storyid == "A01") questKey = "A01";
+        else if (Storyid == "A02") questKey = "A02";
+        else if (Storyid == "A03") questKey = "A03";
+
+        // 2. ตะโกนบอก Manager ทีเดียวจบ!
+        // "เฮ้! มีคนเล่น Story จบ 1 ครั้งนะ รหัสคือ A01"
+        DailyQuestManager.Instance.UpdateProgress(QuestType.Story, 1, questKey);
+
+    }
+
+
 }

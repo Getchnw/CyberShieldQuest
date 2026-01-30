@@ -7,9 +7,9 @@ using UnityEngine.UI;
 public class CollectionManager : MonoBehaviour
 {
     [Header("UI References")]
-    public Transform contentGrid;        
-    public TextMeshProUGUI scrapText;    
-    public GameObject cardPrefab;        
+    public Transform contentGrid;
+    public TextMeshProUGUI scrapText;
+    public GameObject cardPrefab;
 
     [Header("Popup References")]
     public CollectionDetailView detailPopup; // 🔥 ลาก Popup ใหม่มาใส่
@@ -53,7 +53,7 @@ public class CollectionManager : MonoBehaviour
             // เมื่อกดการ์ด -> เปิด Popup ใหม่
             slot.Setup(card, owned, OnCardClicked, null);
 
-            if (owned <= 0) slot.cardImage.color = Color.gray; 
+            if (owned <= 0) slot.cardImage.color = Color.gray;
         }
     }
 
@@ -90,10 +90,13 @@ public class CollectionManager : MonoBehaviour
             GameManager.Instance.CurrentGameData.profile.scrap -= cost;
             GameManager.Instance.AddCardToInventory(card.card_id, 1);
             GameManager.Instance.SaveCurrentGame();
-            
+
+            // แจ้งให้ DailyQuestManager รู้ว่ามีการ Craft แล้ว
+            DailyQuestManager.Instance.UpdateProgress(QuestType.Card, 1, "craft");
+
             // อัปเดตหน้าจอ (ทั้ง Grid และ Popup)
-            RefreshUI(); 
-            detailPopup.RefreshView(); 
+            RefreshUI();
+            detailPopup.RefreshView();
         }
     }
 
@@ -107,6 +110,8 @@ public class CollectionManager : MonoBehaviour
             GameManager.Instance.AddCardToInventory(card.card_id, -1);
             GameManager.Instance.SaveCurrentGame();
 
+            // แจ้งให้ DailyQuestManager รู้ว่ามีการ Dismantle แล้ว
+            DailyQuestManager.Instance.UpdateProgress(QuestType.Card, 1, "scrap");
             RefreshUI();
             detailPopup.RefreshView();
         }
@@ -115,7 +120,7 @@ public class CollectionManager : MonoBehaviour
     void ConfirmAction(string message, System.Action action)
     {
         Debug.Log($"🔵 ConfirmAction: {message}");
-        
+
         if (confirmPopup != null)
         {
             Debug.Log("✅ Opening confirmation popup");
@@ -127,4 +132,5 @@ public class CollectionManager : MonoBehaviour
             action?.Invoke();
         }
     }
+
 }
