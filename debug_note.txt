@@ -1,0 +1,6 @@
+// แก้ไข: เพิ่ม debug log ก่อน Setup ใน DrawEnemyCard
+
+cardData = enemyDeckList[0];
+Debug.Log($"🔍 DrawEnemyCard: cardData from deck, cardName={cardData.cardName}, atk={cardData.atk}, hp={cardData.hp}");
+
+// แล้วเรียก ui.Setup(cardData);

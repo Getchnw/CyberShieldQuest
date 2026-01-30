@@ -148,6 +148,9 @@ public class BattleManager : MonoBehaviour
     private BattleCardUI currentAttackerBot; 
     private bool playerHasMadeChoice = false; 
     private List<CardData> enemyDeckList = new List<CardData>();
+    private Dictionary<string, CardData> cardLookupCache = null;
+    private Dictionary<string, CardData> cardNameLookupCache = null;
+    private int lastDestroyedAtkSum = 0;
     
     // 🔥 Sacrifice System
     private bool sacrificeConfirmed = false;
@@ -1284,6 +1287,7 @@ public class BattleManager : MonoBehaviour
             if (lookup.TryGetValue(id, out CardData card))
             {
                 loadedDeck.Add(card);
+                Debug.Log($"🎴 LoadDeck: id={id}, cardName={card.cardName}, atk={card.atk}, hp={card.hp}");
             }
             else
             {
@@ -1300,6 +1304,91 @@ public class BattleManager : MonoBehaviour
         deckList = loadedDeck;
         Debug.Log($"✅ โหลดเด็คผู้เล่นสำเร็จ: {selectedDeck.deck_name} (index {selectedIndex}) จำนวน {deckList.Count} ใบ");
         return true;
+    }
+
+    CardData GetCardDataById(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return null;
+
+        if (cardLookupCache == null || cardLookupCache.Count == 0)
+        {
+            CardData[] allCards = Resources.LoadAll<CardData>("GameContent/Cards");
+            if (allCards == null || allCards.Length == 0)
+            {
+                Debug.LogWarning("⚠️ ไม่พบการ์ดใน Resources/GameContent/Cards สำหรับ lookup");
+                return null;
+            }
+
+            cardLookupCache = allCards.ToDictionary(c => c.card_id, c => c);
+            cardNameLookupCache = allCards
+                .Where(c => !string.IsNullOrEmpty(c.cardName))
+                .ToDictionary(c => c.cardName, c => c);
+        }
+
+        if (cardLookupCache.TryGetValue(id, out CardData card))
+        {
+            return card;
+        }
+
+        return null;
+    }
+
+    CardData GetCardDataByName(string cardName)
+    {
+        if (string.IsNullOrEmpty(cardName)) return null;
+
+        if (cardNameLookupCache == null || cardNameLookupCache.Count == 0)
+        {
+            CardData[] allCards = Resources.LoadAll<CardData>("GameContent/Cards");
+            if (allCards == null || allCards.Length == 0)
+            {
+                Debug.LogWarning("⚠️ ไม่พบการ์ดใน Resources/GameContent/Cards สำหรับ lookup");
+                return null;
+            }
+
+            cardLookupCache = allCards.ToDictionary(c => c.card_id, c => c);
+            cardNameLookupCache = allCards
+                .Where(c => !string.IsNullOrEmpty(c.cardName))
+                .ToDictionary(c => c.cardName, c => c);
+        }
+
+        if (cardNameLookupCache.TryGetValue(cardName, out CardData card))
+        {
+            return card;
+        }
+
+        return null;
+    }
+
+    CardData ResolveCardData(CardData data)
+    {
+        if (data == null) return null;
+
+        // ถ้า stats เป็น 0 ให้ลองดึงจาก Resources ด้วย card_id
+        if (data.atk == 0 && data.hp == 0)
+        {
+            Debug.LogWarning($"⚠️ ResolveCardData: stats=0 for cardName={data.cardName}, card_id={data.card_id}");
+
+            if (!string.IsNullOrEmpty(data.card_id))
+            {
+                var resolved = GetCardDataById(data.card_id);
+                if (resolved != null) return resolved;
+            }
+
+            if (!string.IsNullOrEmpty(data.cardName))
+            {
+                var resolvedByName = GetCardDataByName(data.cardName);
+                if (resolvedByName != null) return resolvedByName;
+            }
+        }
+
+        return data;
+    }
+
+    CardData ResolveCardData(BattleCardUI ui)
+    {
+        if (ui == null) return null;
+        return ResolveCardData(ui.GetData());
     }
 
     public void OnEndTurnButton()
@@ -1330,7 +1419,7 @@ public class BattleManager : MonoBehaviour
         }
 
         Transform freeSlot = GetFreeSlot(data.type, true);
-        if (freeSlot != null) PayCostAndSummon(cardUI, freeSlot, data.cost);
+        if (freeSlot != null) StartCoroutine(PayCostAndSummon(cardUI, freeSlot, data.cost));
     }
 
     public void TrySummonCard(BattleCardUI cardUI, CardSlot targetSlot)
@@ -1347,10 +1436,10 @@ public class BattleManager : MonoBehaviour
         if (targetSlot.transform.childCount > 0) return;
         if (currentPP < data.cost) return;
 
-        PayCostAndSummon(cardUI, targetSlot.transform, data.cost);
+        StartCoroutine(PayCostAndSummon(cardUI, targetSlot.transform, data.cost));
     }
 
-    void PayCostAndSummon(BattleCardUI cardUI, Transform parentSlot, int cost)
+    IEnumerator PayCostAndSummon(BattleCardUI cardUI, Transform parentSlot, int cost)
     {
         currentPP -= cost;
         cardUI.transform.SetParent(parentSlot);
@@ -1370,11 +1459,13 @@ public class BattleManager : MonoBehaviour
 
         if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
 
-        // บันทึก log
-        AddBattleLog($"Player plays {cardUI.GetData().cardName} ({cardUI.GetData().type}) cost {cost}");
+        // บันทึก log พร้อมแสดง ATK/HP
+        CardData playedCard = cardUI.GetData();
+        AddBattleLog($"Player plays {playedCard.cardName} ({playedCard.type}) ATK:{playedCard.atk} HP:{playedCard.hp} cost {cost}");
+        Debug.Log($"🔥 PlayCard Debug: cardName={playedCard.cardName}, atk={playedCard.atk}, hp={playedCard.hp}");
         
-        // 🔥 ทริกเกอร์ OnDeploy Effects
-        ResolveEffects(cardUI, EffectTrigger.OnDeploy, isPlayer: true);
+        // 🔥 ทริกเกอร์ OnDeploy Effects (รอให้เสร็จก่อนไป)
+        yield return StartCoroutine(ResolveEffects(cardUI, EffectTrigger.OnDeploy, isPlayer: true));
         
         UpdateUI();
     }
@@ -1470,8 +1561,8 @@ public class BattleManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.3f);
 
-        // 🔥 ทริกเกอร์ OnDeploy Effects สำหรับเวทย์
-        ResolveEffects(cardUI, EffectTrigger.OnDeploy, isPlayer);
+        // 🔥 ทริกเกอร์ OnDeploy Effects สำหรับเวทย์ (รอให้เสร็จก่อน)
+        yield return StartCoroutine(ResolveEffects(cardUI, EffectTrigger.OnDeploy, isPlayer));
 
         yield return new WaitForSeconds(0.2f);
 
@@ -1526,8 +1617,8 @@ public class BattleManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.3f);
 
-        // 🔥 ทริกเกอร์เอฟเฟกต์
-        ResolveEffects(spellCard, EffectTrigger.OnDeploy, isPlayer: false);
+        // 🔥 ทริกเกอร์เอฟเฟกต์ (รอให้เสร็จก่อน)
+        yield return StartCoroutine(ResolveEffects(spellCard, EffectTrigger.OnDeploy, isPlayer: false));
 
         yield return new WaitForSeconds(0.2f);
 
@@ -1633,8 +1724,8 @@ public class BattleManager : MonoBehaviour
             Debug.Log($"💥 ไม่มีโล่ -> บอทรับดาเมจ {damage}");
             EnemyTakeDamage(damage);
             
-            // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ)
-            ResolveEffects(attacker, EffectTrigger.OnStrikeHit, isPlayer: true);
+            // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ) (รอให้เสร็จก่อน)
+            yield return StartCoroutine(ResolveEffects(attacker, EffectTrigger.OnStrikeHit, isPlayer: true));
             
             yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
         }
@@ -2595,6 +2686,9 @@ public class BattleManager : MonoBehaviour
         // เล่นเสียง
         if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
 
+        // 🔥 ทริกเกอร์ OnDeploy สำหรับการ์ดที่สังเวย (เหมือนการลงปกติ)
+        StartCoroutine(ResolveEffects(newCard, EffectTrigger.OnDeploy, isPlayer: true));
+
         AddBattleLog($"Player sacrificed {oldData.cardName} to play {newData.cardName}");
         UpdateUI();
         Debug.Log($"✅ Sacrifice สำเร็จ!");
@@ -2747,67 +2841,91 @@ public class BattleManager : MonoBehaviour
     // 🔥 EFFECT RESOLUTION SYSTEM
     // ========================================================
     
-    /// <summary>วน effects ทั้งหมดของการ์ดตามเงื่อนไข trigger ที่กำหนด</summary>
-    void ResolveEffects(BattleCardUI sourceCard, EffectTrigger triggerType, bool isPlayer)
+    /// <summary>วน effects ทั้งหมดของการ์ดตามเงื่อนไข trigger ที่กำหนด (รอให้แต่ละ effect เสร็จก่อนไปยัง effect ถัดไป)</summary>
+    IEnumerator ResolveEffects(BattleCardUI sourceCard, EffectTrigger triggerType, bool isPlayer)
     {
-        if (sourceCard == null) return;
+        if (sourceCard == null) yield break;
         var cardData = sourceCard.GetData();
-        if (cardData == null || cardData.effects == null || cardData.effects.Count == 0) return;
+        if (cardData == null || cardData.effects == null || cardData.effects.Count == 0) yield break;
 
         foreach (var effect in cardData.effects)
         {
             if (effect.trigger == triggerType)
             {
-                ApplyEffect(sourceCard, effect, isPlayer);
+                // 🔥 รอให้ ApplyEffect เสร็จก่อนไปยัง effect ถัดไป (สำหรับ Destroy ที่มี async target selection)
+                yield return StartCoroutine(ApplyEffect(sourceCard, effect, isPlayer));
             }
         }
     }
 
-    /// <summary>ทำการแอคชันตามประเภท effect ที่กำหนด</summary>
-    void ApplyEffect(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    /// <summary>ทำการแอคชันตามประเภท effect ที่กำหนด (เป็น coroutine เพื่อรองรับ async operations)</summary>
+    IEnumerator ApplyEffect(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         Debug.Log($"🔥 Apply Effect: {sourceCard.GetData().cardName} | Trigger: {effect.trigger} | Action: {effect.action} | Target: {effect.targetType} | Value: {effect.value} | MainCat: {effect.targetMainCat} | SubCat: {effect.targetSubCat}");
 
         switch (effect.action)
         {
             case ActionType.Destroy:
-                ApplyDestroy(effect, isPlayer);
+                yield return StartCoroutine(ApplyDestroy(effect, isPlayer));
                 break;
             case ActionType.HealHP:
-                ApplyHeal(sourceCard, effect, isPlayer);
+                yield return StartCoroutine(ApplyHeal(sourceCard, effect, isPlayer));
                 break;
             case ActionType.SummonToken:
                 ApplySummonToken(sourceCard, effect, isPlayer);
-                break;
+                yield break;
             case ActionType.RevealHand:
                 ApplyRevealHand(effect, isPlayer);
-                break;
+                yield break;
             case ActionType.RevealHandMultiple:
                 ApplyRevealHandMultiple(effect, isPlayer);
-                break;
+                yield break;
             case ActionType.DiscardDeck:
                 ApplyDiscardDeck(effect, isPlayer);
-                break;
+                yield break;
             case ActionType.DisableAttack:
                 ApplyDisableAttack(effect, isPlayer);
-                break;
+                yield break;
             case ActionType.DisableAbility:
                 ApplyDisableAbility(effect, isPlayer);
-                break;
+                yield break;
             case ActionType.ModifyStat:
                 ApplyModifyStat(effect, isPlayer);
-                break;
+                yield break;
             default:
                 Debug.LogWarning($"⚠️ Action type {effect.action} not implemented yet");
-                break;
+                yield break;
         }
     }
 
     // --- Effect Implementations ---
 
-    void ApplyDestroy(CardEffect effect, bool isPlayer)
+    /// <summary>รอให้ผู้เล่นเลือกเป้าหมาย (Coroutine wrapper สำหรับ async target selection)</summary>
+    IEnumerator WaitForTargetSelection(List<BattleCardUI> targets, int selectCount)
+    {
+        List<BattleCardUI> result = new List<BattleCardUI>();
+        bool completed = false;
+
+        // เรียก StartSelectingTarget กับ callback ที่เซ็ต completed เป็น true
+        StartSelectingTarget(targets, selectCount, (selectedCards) => {
+            result = selectedCards;
+            completed = true;
+        });
+
+        // รอจนกว่า callback จะเรียก
+        while (!completed)
+        {
+            yield return null;
+        }
+
+        // ส่งกลับ result ให้ caller (ผ่านทาง selectedTargets)
+        selectedTargets = result;
+    }
+
+    IEnumerator ApplyDestroy(CardEffect effect, bool isPlayer)
     {
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
+        int destroyedAtkSum = 0;
         
         // 🔥 ตรวจสอบโหมดการทำลาย
         if (effect.destroyMode == DestroyMode.DestroyAll)
@@ -2819,6 +2937,8 @@ public class BattleManager : MonoBehaviour
                 if (target != null && target.GetData() != null)
                 {
                     Debug.Log($"💥 Destroy (DestroyAll): {target.GetData().cardName}");
+                    var targetData = ResolveCardData(target);
+                    if (targetData != null) destroyedAtkSum += targetData.atk;
                     DestroyCardToGraveyard(target);
                 }
             }
@@ -2834,20 +2954,23 @@ public class BattleManager : MonoBehaviour
             // 🔥 ผู้เล่นต้องเลือกเป้าหมายเสมอถ้ามีเป้าหมาย
             if (isPlayer && maxDestroy > 0 && targets.Count > 0)
             {
-                StartSelectingTarget(targets, maxDestroy, (selectedCards) => {
-                    int destroyCount = 0;
-                    foreach (var target in selectedCards)
+                // 🔥 รอให้ผู้เล่นเลือกเป้าหมาย ก่อนไปยัง effect ถัดไป
+                yield return StartCoroutine(WaitForTargetSelection(targets, maxDestroy));
+                
+                int destroyCount = 0;
+                foreach (var target in selectedTargets)
+                {
+                    if (destroyCount >= maxDestroy) break;
+                    if (target != null && target.GetData() != null)
                     {
-                        if (destroyCount >= maxDestroy) break;
-                        if (target != null && target.GetData() != null)
-                        {
-                            Debug.Log($"💥 Destroy ({destroyCount + 1}/{maxDestroy}): {target.GetData().cardName}");
-                            DestroyCardToGraveyard(target);
-                            destroyCount++;
-                        }
+                        Debug.Log($"💥 Destroy ({destroyCount + 1}/{maxDestroy}): {target.GetData().cardName}");
+                        var targetData = ResolveCardData(target);
+                        if (targetData != null) destroyedAtkSum += targetData.atk;
+                        DestroyCardToGraveyard(target);
+                        destroyCount++;
                     }
-                    Debug.Log($"✅ ApplyDestroy (SelectTarget): ผู้เล่นเลือกทำลาย {destroyCount} ใบ");
-                });
+                }
+                Debug.Log($"✅ ApplyDestroy (SelectTarget): ผู้เล่นเลือกทำลาย {destroyCount} ใบ");
             }
             else
             {
@@ -2859,6 +2982,8 @@ public class BattleManager : MonoBehaviour
                     if (target != null && target.GetData() != null)
                     {
                         Debug.Log($"💥 Destroy ({destroyCount + 1}/{maxDestroy}): {target.GetData().cardName}");
+                        var targetData = ResolveCardData(target);
+                        if (targetData != null) destroyedAtkSum += targetData.atk;
                         DestroyCardToGraveyard(target);
                         destroyCount++;
                     }
@@ -2866,29 +2991,97 @@ public class BattleManager : MonoBehaviour
                 Debug.Log($"✅ ApplyDestroy (SelectTarget - Bot): ทำลายการ์ด {destroyCount}/{targets.Count} ใบ (Max: {maxDestroy})");
             }
         }
+
+        // เก็บค่า ATK ของเป้าหมายที่ถูกทำลายเพื่อใช้ในการ Heal
+        lastDestroyedAtkSum = destroyedAtkSum;
     }
 
-    void ApplyHeal(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    IEnumerator ApplyHeal(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
-        int healAmount = sourceCard.GetData().atk;
+        if (sourceCard == null)
+        {
+            Debug.LogError("❌ ApplyHeal: sourceCard เป็น null!");
+            yield break;
+        }
+
+        CardData cardData = ResolveCardData(sourceCard);
+        if (cardData == null)
+        {
+            Debug.LogError("❌ ApplyHeal: CardData เป็น null!");
+            yield break;
+        }
+        
+        Debug.Log($"🔍 ApplyHeal: sourceCard.name={sourceCard.name}, cardName={cardData.cardName}, cardData.atk={cardData.atk}, cardData.hp={cardData.hp}");
+        
+        int atkValue = cardData.atk;
+        int hpValue = cardData.hp;
+        
+        Debug.Log($"🔍 atkValue={atkValue}, hpValue={hpValue}, effect.value={effect.value}");
+        
+        int healAmount = effect.value;
+        
+        if (healAmount <= 0)
+        {
+            if (lastDestroyedAtkSum > 0)
+            {
+                healAmount = lastDestroyedAtkSum;
+                lastDestroyedAtkSum = 0; // ใช้ครั้งเดียว
+            }
+            else if (atkValue > 0)
+            {
+                healAmount = atkValue;
+            }
+            else if (hpValue > 0)
+            {
+                healAmount = hpValue;
+            }
+            else
+            {
+                healAmount = 0; // ไม่มีข้อมูลให้ใช้
+            }
+        }
+        
+        Debug.Log($"🔍 Final healAmount={healAmount}");
         
         if (effect.targetType == TargetType.Self)
         {
             if (isPlayer)
             {
+                int hpBefore = currentHP;
                 currentHP = Mathf.Min(currentHP + healAmount, maxHP);
                 ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
-                Debug.Log($"💚 Heal Player: {healAmount}");
+                Debug.Log($"💚 Heal Player: {healAmount} (HP: {hpBefore} -> {currentHP}/{maxHP})");
+                AddBattleLog($"Player healed {healAmount} HP ({hpBefore} -> {currentHP})");
+            }
+            else // Bot heals itself
+            {
+                int hpBefore = enemyCurrentHP;
+                enemyCurrentHP = Mathf.Min(enemyCurrentHP + healAmount, enemyMaxHP);
+                ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
+                Debug.Log($"💚 Heal Enemy: {healAmount} (HP: {hpBefore} -> {enemyCurrentHP}/{enemyMaxHP})");
+                AddBattleLog($"Enemy healed {healAmount} HP ({hpBefore} -> {enemyCurrentHP})");
             }
         }
-        else if (effect.targetType == TargetType.EnemyPlayer && !isPlayer)
+        else if (effect.targetType == TargetType.EnemyPlayer)
         {
-            enemyCurrentHP = Mathf.Min(enemyCurrentHP + healAmount, enemyMaxHP);
-            ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
-            Debug.Log($"💚 Heal Enemy: {healAmount}");
+            if (isPlayer) // Player heals enemy
+            {
+                enemyCurrentHP = Mathf.Min(enemyCurrentHP + healAmount, enemyMaxHP);
+                ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
+                Debug.Log($"💚 Player heals Enemy: {healAmount}");
+                AddBattleLog($"Player healed Enemy {healAmount} HP");
+            }
+            else // Bot heals player
+            {
+                currentHP = Mathf.Min(currentHP + healAmount, maxHP);
+                ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
+                Debug.Log($"💚 Enemy heals Player: {healAmount}");
+                AddBattleLog($"Enemy healed Player {healAmount} HP");
+            }
         }
         
         UpdateUI();
+        yield break;
     }
 
     void ApplySummonToken(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
