@@ -40,6 +40,10 @@ public class CardSlot : MonoBehaviour, IDropHandler
                     var newType = card.GetData().type;
                     var targetType = targetCard.GetData().type;
 
+                    // 🔥 Token ให้นับเป็น Monster เพื่อให้สังเวยได้
+                    if (newType == CardType.Token) newType = CardType.Monster;
+                    if (targetType == CardType.Token) targetType = CardType.Monster;
+
                     // ป้องกันลากการ์ดคนละประเภทลงช่องผิด
                     if (newType != allowedType || targetType != allowedType || newType != targetType)
                     {

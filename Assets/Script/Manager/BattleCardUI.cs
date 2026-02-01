@@ -332,7 +332,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         // 2. อยู่บนสนาม
         if (isOnField && BattleManager.Instance != null)
         {
-            if (BattleManager.Instance.state == BattleState.PLAYERTURN && _cardData.type == CardType.Monster)
+            if (BattleManager.Instance.state == BattleState.PLAYERTURN
+                && (_cardData.type == CardType.Monster || _cardData.type == CardType.Token))
             {
                 if (!hasAttacked)
                 {

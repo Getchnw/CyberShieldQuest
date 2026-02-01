@@ -1799,30 +1799,123 @@ public class BattleManager : MonoBehaviour
         {
             StartCoroutine(BotCastSpell(spellCard));
             enemyCurrentPP -= spellCard.GetData().cost;
-            return; // ใช้เวทย์ได้แล้ว ไม่ลงสนามในเทิร์นนี้
+            // 🔥 ลบ return ออก เพื่อให้บอทสามารถเล่นการ์ดอื่นต่อได้หลังใช้เวทย์
         }
 
+        // 🔥 ลอง Monster (สามารถ Sacrifice ได้ถ้าช่องเต็ม)
         Transform freeMonSlot = GetFreeSlot(CardType.Monster, false);
-        if (freeMonSlot != null)
+        var bestMonster = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.Monster && enemyCurrentPP >= c.GetData().cost);
+        
+        if (bestMonster != null)
         {
-            var cardUi = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.Monster && enemyCurrentPP >= c.GetData().cost);
-            if (cardUi != null)
+            if (freeMonSlot != null)
             {
-                StartCoroutine(AnimateBotPlayCard(cardUi, freeMonSlot));
-                enemyCurrentPP -= cardUi.GetData().cost;
+                // มีช่องว่าง → ลงปกติ
+                StartCoroutine(AnimateBotPlayCard(bestMonster, freeMonSlot));
+                enemyCurrentPP -= bestMonster.GetData().cost;
+            }
+            else
+            {
+                // ไม่มีช่องว่าง → ลอง Sacrifice
+                BotTrySacrifice(bestMonster, CardType.Monster);
             }
         }
 
+        // 🔥 ลอง EquipSpell (สามารถ Sacrifice ได้ถ้าช่องเต็ม)
         Transform freeEqSlot = GetFreeSlot(CardType.EquipSpell, false);
-        if (freeEqSlot != null)
+        var bestEquip = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.EquipSpell && enemyCurrentPP >= c.GetData().cost);
+        
+        if (bestEquip != null)
         {
-            var cardUi = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.EquipSpell && enemyCurrentPP >= c.GetData().cost);
-            if (cardUi != null)
+            if (freeEqSlot != null)
             {
-                StartCoroutine(AnimateBotPlayCard(cardUi, freeEqSlot));
-                enemyCurrentPP -= cardUi.GetData().cost;
+                // มีช่องว่าง → ลงปกติ
+                StartCoroutine(AnimateBotPlayCard(bestEquip, freeEqSlot));
+                enemyCurrentPP -= bestEquip.GetData().cost;
+            }
+            else
+            {
+                // ไม่มีช่องว่าง → ลอง Sacrifice
+                BotTrySacrifice(bestEquip, CardType.EquipSpell);
             }
         }
+    }
+
+    // 🔥 บอทลองสังเวยการ์ดเก่าเพื่อลงการ์ดใหม่
+    void BotTrySacrifice(BattleCardUI newCard, CardType cardType)
+    {
+        if (newCard == null || newCard.GetData() == null) return;
+
+        Transform[] slots = (cardType == CardType.Monster) ? enemyMonsterSlots : enemyEquipSlots;
+        if (slots == null || slots.Length == 0) return;
+
+        CardData newData = newCard.GetData();
+        int costDiff = 0;
+        BattleCardUI weakestCard = null;
+        Transform weakestSlot = null;
+
+        // หาการ์ดที่อ่อนแอที่สุดบนสนาม
+        foreach (var slot in slots)
+        {
+            if (slot.childCount > 0)
+            {
+                var oldCard = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (oldCard != null && oldCard.GetData() != null)
+                {
+                    CardData oldData = oldCard.GetData();
+                    
+                    // บอทจะสังเวยถ้า:
+                    // 1. การ์ดใหม่แรงกว่า (ATK+HP มากกว่า)
+                    // 2. หรือ cost ต่างกันไม่เกิน 2 PP
+                    int newPower = newData.atk + newData.hp;
+                    int oldPower = oldData.atk + oldData.hp;
+                    int diff = newData.cost - oldData.cost;
+                    
+                    if (newPower > oldPower && diff <= 2 && enemyCurrentPP >= Mathf.Max(0, diff))
+                    {
+                        if (weakestCard == null || oldPower < (weakestCard.GetData().atk + weakestCard.GetData().hp))
+                        {
+                            weakestCard = oldCard;
+                            weakestSlot = slot;
+                            costDiff = diff;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ถ้าพบการ์ดที่จะสังเวยได้
+        if (weakestCard != null && weakestSlot != null)
+        {
+            int costToPay = Mathf.Max(0, costDiff);
+            if (enemyCurrentPP >= costToPay)
+            {
+                Debug.Log($"🤖 บอทสังเวย {weakestCard.GetData().cardName} เพื่อลง {newData.cardName} (cost diff: {costToPay})");
+                StartCoroutine(BotPerformSacrifice(newCard, weakestCard, weakestSlot, costToPay));
+            }
+        }
+    }
+
+    // 🔥 บอททำการสังเวย
+    IEnumerator BotPerformSacrifice(BattleCardUI newCard, BattleCardUI oldCard, Transform targetSlot, int costToPay)
+    {
+        CardData newData = newCard.GetData();
+        CardData oldData = oldCard.GetData();
+
+        // จ่าย PP
+        enemyCurrentPP -= costToPay;
+        Debug.Log($"🤖 บอท Sacrifice: {oldData.cardName} → {newData.cardName}, Cost: {costToPay}, PP: {enemyCurrentPP}");
+
+        // ทำลายการ์ดเก่า
+        DestroyCardToGraveyard(oldCard);
+        
+        yield return new WaitForSeconds(0.2f);
+
+        // ลงการ์ดใหม่
+        yield return StartCoroutine(AnimateBotPlayCard(newCard, targetSlot));
+
+        AddBattleLog($"Bot sacrificed {oldData.cardName} to play {newData.cardName}");
+        UpdateUI();
     }
 
     IEnumerator AnimateBotPlayCard(BattleCardUI ui, Transform slot)
@@ -1882,6 +1975,13 @@ public class BattleManager : MonoBehaviour
         }
 
         Debug.Log($"🤖 บอทลงการ์ด: {ui.GetData()?.cardName} (ห้ามตีเทิร์นนี้)");
+
+        // 🔥 ทริกเกอร์ OnDeploy Effects สำหรับบอท (เหมือนผู้เล่น)
+        if (ui != null && ui.GetData() != null)
+        {
+            yield return StartCoroutine(ResolveEffects(ui, EffectTrigger.OnDeploy, isPlayer: false));
+            Debug.Log($"✅ บอททริกเกอร์ OnDeploy effects: {ui.GetData().cardName}");
+        }
 
         // ตรวจสอบจำนวนการ์ดหลังลง
         int handAfter = enemyHandArea != null ? enemyHandArea.childCount : 0;
@@ -2143,19 +2243,115 @@ public class BattleManager : MonoBehaviour
         return null;
     }
 
+    // 🔥 ตรวจสอบว่าการ์ดอยู่ในพื้นที่ผู้เล่นหรือไม่
+    public bool IsCardInPlayerArea(BattleCardUI card)
+    {
+        if (card == null || card.transform.parent == null) return false;
+        Transform parent = card.transform.parent;
+        
+        // เช็คว่าอยู่ใน Monster Slots ของผู้เล่น
+        if (playerMonsterSlots != null)
+        {
+            foreach (var slot in playerMonsterSlots)
+            {
+                if (parent == slot) return true;
+            }
+        }
+        
+        // เช็คว่าอยู่ใน Equip Slots ของผู้เล่น
+        if (playerEquipSlots != null)
+        {
+            foreach (var slot in playerEquipSlots)
+            {
+                if (parent == slot) return true;
+            }
+        }
+        
+        return false;
+    }
+
     BattleCardUI GetBestEnemyEquip(SubCategory cat)
     {
-        // 🔥 เลือกโล่ตัวแรกที่มี (ไม่สนใจ subCategory)
-        // OnPlayerSelectBlocker จะจัดการตรรมชาติการป้องกัน (ตรง = ทำลายทั้งคู่, ต่างกัน = ทำลายแค่โล่)
+        // 🧠 บอทตัดสินใจว่าจะกันหรือไม่
+        if (!ShouldBotBlock(cat))
+        {
+            Debug.Log($"🤖 บอทตัดสินใจปล่อยให้โจมตีเข้า!");
+            return null; // ไม่กัน
+        }
+
+        // 🔥 หาโล่ที่ตรงประเภทก่อน (กันได้ดีที่สุด)
         foreach (Transform slot in enemyEquipSlots)
         {
             if (slot.childCount > 0)
             {
                 var s = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (s != null && s.GetData() != null) return s;
+                if (s != null && s.GetData() != null && s.GetData().subCategory == cat)
+                {
+                    Debug.Log($"🛡️ บอทเลือกกันด้วย {s.GetData().cardName} (ประเภทตรง)");
+                    return s;
+                }
+            }
+        }
+
+        // ถ้าไม่มีโล่ตรงประเภท เลือกโล่ตัวแรกที่มี
+        foreach (Transform slot in enemyEquipSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                var s = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (s != null && s.GetData() != null)
+                {
+                    Debug.Log($"🛡️ บอทเลือกกันด้วย {s.GetData().cardName} (ประเภทต่าง)");
+                    return s;
+                }
             }
         }
         return null;
+    }
+
+    /// <summary>
+    /// 🧠 ตัดสินใจว่าบอทจะกันหรือไม่ (มีกลยุทธ์)
+    /// </summary>
+    bool ShouldBotBlock(SubCategory attackerCategory)
+    {
+        // คำนวณเปอร์เซ็นต์ HP ของบอท
+        float hpPercent = (float)enemyCurrentHP / enemyMaxHP;
+        
+        // 1. HP ต่ำมาก (< 30%) → กันแน่นอน (100%)
+        if (hpPercent < 0.3f)
+        {
+            Debug.Log($"🩸 HP ต่ำมาก ({hpPercent:P0}) → กันแน่นอน!");
+            return true;
+        }
+        
+        // 2. HP ปานกลาง (30-60%) → กัน 70% ของเวลา
+        if (hpPercent < 0.6f)
+        {
+            bool shouldBlock = Random.value < 0.7f;
+            Debug.Log($"⚠️ HP ปานกลาง ({hpPercent:P0}) → กัน {(shouldBlock ? "✓" : "✗")}");
+            return shouldBlock;
+        }
+        
+        // 3. HP สูง (> 60%) → กันเฉพาะบางครั้ง (40%)
+        // แต่ถ้ามีโล่ที่ตรงประเภท เพิ่มโอกาสเป็น 60%
+        bool hasMatchingShield = false;
+        foreach (Transform slot in enemyEquipSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                var s = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (s != null && s.GetData() != null && s.GetData().subCategory == attackerCategory)
+                {
+                    hasMatchingShield = true;
+                    break;
+                }
+            }
+        }
+        
+        float blockChance = hasMatchingShield ? 0.6f : 0.4f;
+        bool willBlock = Random.value < blockChance;
+        Debug.Log($"💚 HP สูง ({hpPercent:P0}) → โอกาสกัน {blockChance:P0} → {(willBlock ? "กัน ✓" : "ปล่อยเข้า ✗")}");
+        return willBlock;
     }
 
     bool HasEquipInSlots(Transform[] slots)
@@ -2871,6 +3067,9 @@ public class BattleManager : MonoBehaviour
             case ActionType.HealHP:
                 yield return StartCoroutine(ApplyHeal(sourceCard, effect, isPlayer));
                 break;
+            case ActionType.DrawCard:
+                ApplyDrawCard(effect, isPlayer);
+                yield break;
             case ActionType.SummonToken:
                 ApplySummonToken(sourceCard, effect, isPlayer);
                 yield break;
@@ -3086,7 +3285,116 @@ public class BattleManager : MonoBehaviour
 
     void ApplySummonToken(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
-        Debug.LogWarning($"⚠️ SummonToken: ต้องสร้าง CardData ของ Token ก่อน");
+        if (string.IsNullOrEmpty(effect.tokenCardId))
+        {
+            Debug.LogWarning($"⚠️ SummonToken: ไม่ได้ระบุ tokenCardId ในเอฟเฟกต์");
+            return;
+        }
+
+        // หา CardData ของ Token จาก ID
+        CardData tokenData = GetCardDataById(effect.tokenCardId);
+        if (tokenData == null)
+        {
+            Debug.LogWarning($"⚠️ SummonToken: ไม่พบ Token card ด้วย ID: {effect.tokenCardId}");
+            return;
+        }
+
+        Debug.Log($"🔍 Token Data: {tokenData.cardName}, ATK={tokenData.atk}, HP={tokenData.hp}, Type={tokenData.type}");
+
+        // 🔥 ตรวจสอบว่าต้องการสร้าง Token ฝั่งไหน
+        bool summonOnPlayerSide = isPlayer; // Default: สร้างฝั่งเดียวกับผู้เล่นการ์ด
+        
+        if (effect.targetType == TargetType.EnemyPlayer
+            || effect.targetType == TargetType.EnemyMonster
+            || effect.targetType == TargetType.EnemyEquip
+            || effect.targetType == TargetType.EnemyHand
+            || effect.targetType == TargetType.EnemyDeck
+            || effect.targetType == TargetType.AllGlobal)
+        {
+            summonOnPlayerSide = !isPlayer; // สร้างฝั่งตรงข้าม
+        }
+        else if (effect.targetType == TargetType.Self)
+        {
+            summonOnPlayerSide = isPlayer; // สร้างฝั่งตัวเอง
+        }
+        
+        Debug.Log($"🎯 SummonToken: sourceCard from {(isPlayer ? "Player" : "Bot")}, targetType={effect.targetType}, will summon on {(summonOnPlayerSide ? "Player" : "Bot")} side");
+
+        // จำนวน token ที่จะ summon (ใช้ effect.value ถ้าระบุ, ไม่ให้ 1)
+        int tokenCount = effect.value > 0 ? effect.value : 1;
+
+        // หาตำแหน่ง monster slot ที่ว่าง
+        int summoned = 0;
+
+        for (int i = 0; i < tokenCount; i++)
+        {
+            Transform freeSlot = GetFreeSlot(CardType.Monster, summonOnPlayerSide);
+            if (freeSlot == null)
+            {
+                Debug.LogWarning($"⚠️ SummonToken: ไม่มี slot ว่างสำหรับ token {i + 1}/{tokenCount}");
+                break;
+            }
+
+            // สร้าง BattleCardUI สำหรับ Token
+            if (cardPrefab == null)
+            {
+                Debug.LogError("❌ cardPrefab ยังไม่ถูกตั้งค่า!");
+                break;
+            }
+
+            // สร้าง Token โดยไม่มี parent ก่อน
+            GameObject cardObj = Instantiate(cardPrefab);
+            BattleCardUI tokenUI = cardObj.GetComponent<BattleCardUI>();
+            if (tokenUI == null)
+            {
+                Debug.LogError("❌ cardPrefab ไม่มี BattleCardUI component!");
+                Destroy(cardObj);
+                break;
+            }
+
+            // 🔥 สำคัญที่สุด: ต้อง Setup ก่อนแล้วค่อย SetParent
+            tokenUI.Setup(tokenData);
+            Debug.Log($"✅ Token Setup สำเร็จ: name={tokenUI.GetData()?.cardName}, atk={tokenUI.GetData()?.atk}, hp={tokenUI.GetData()?.hp}");
+            
+            // ตั้งตำแหน่ง - SetParent หลัง Setup
+            tokenUI.transform.SetParent(freeSlot, false);
+            tokenUI.transform.localPosition = Vector3.zero;
+            tokenUI.transform.localScale = Vector3.one;
+            
+            tokenUI.isOnField = true; // ✅ Token อยู่บนสนาม
+            tokenUI.hasAttacked = true; // Summoning Sickness
+            tokenUI.UpdateCardSize(); // ปรับขนาดการ์ด
+
+            // ตั้งสีเป็นเทา (Summoning Sickness)
+            var img = tokenUI.GetComponent<Image>();
+            if (img != null)
+            {
+                if (tokenData.artwork != null)
+                    img.sprite = tokenData.artwork;
+                img.color = Color.gray;
+                img.raycastTarget = true; // 🔥 ให้คลิกได้
+            }
+
+            // อนุญาตให้ interact
+            var cg = tokenUI.GetComponent<CanvasGroup>();
+            if (cg)
+            {
+                cg.interactable = true;
+                cg.blocksRaycasts = true;
+                cg.alpha = 1f;
+            }
+
+            summoned++;
+            
+            Debug.Log($"🎯 Token สร้างสำเร็จ: {tokenData.cardName} (Slot: {freeSlot.name}) - GetData()={tokenUI.GetData()?.cardName}, isOnField={tokenUI.isOnField}, hasAttacked={tokenUI.hasAttacked}, onPlayerSide={summonOnPlayerSide}");
+            AddBattleLog($"{(summonOnPlayerSide ? "Player" : "Bot")} summons {tokenData.cardName} (Token)");
+        }
+
+        if (summoned > 0)
+        {
+            UpdateUI();
+            Debug.Log($"✅ Token สร้างเสร็จ {summoned}/{tokenCount} ตัว บนฝั่ง {(summonOnPlayerSide ? "Player" : "Bot")}");
+        }
     }
 
     void ApplyRevealHand(CardEffect effect, bool isPlayer)
@@ -3238,6 +3546,38 @@ public class BattleManager : MonoBehaviour
                 Debug.Log($"⚠️ ModifyStat: {target.GetData().cardName} ATK->{target.GetData().atk} (Graveyard boost: {graveyardBoost}) Cost->0");
             }
         }
+    }
+
+    void ApplyDrawCard(CardEffect effect, bool isPlayer)
+    {
+        int drawCount = effect.value > 0 ? effect.value : 1;
+
+        // ค่า default: ฝั่งผู้ใช้การ์ด
+        bool drawForPlayer = isPlayer;
+
+        if (effect.targetType == TargetType.EnemyPlayer
+            || effect.targetType == TargetType.EnemyHand
+            || effect.targetType == TargetType.EnemyDeck)
+        {
+            drawForPlayer = !isPlayer;
+        }
+        else if (effect.targetType == TargetType.Self)
+        {
+            drawForPlayer = isPlayer;
+        }
+
+        if (drawForPlayer)
+        {
+            DrawCard(drawCount);
+            AddBattleLog($"Player draws {drawCount} card(s) (effect)");
+        }
+        else
+        {
+            StartCoroutine(DrawEnemyCard(drawCount));
+            AddBattleLog($"Bot draws {drawCount} card(s) (effect)");
+        }
+
+        UpdateUI();
     }
 
     // --- Helper Functions ---
