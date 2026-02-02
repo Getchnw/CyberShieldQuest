@@ -1674,11 +1674,104 @@ public class BattleManager : MonoBehaviour
     {
         Vector3 startPos = attacker.transform.position;
         int damage = attacker.GetData().atk;
+
+        // 🔥 ทริกเกอร์ OnStrike Effects (ก่อนเช็คการกัน)
+        yield return StartCoroutine(ResolveEffects(attacker, EffectTrigger.OnStrike, isPlayer: true));
+
+        // ถ้าการ์ดถูกทำลายระหว่าง OnStrike ให้หยุด
+        if (attacker == null || attacker.GetData() == null) yield break;
+        
+        // 🚀 ตรวจสอบว่าการ์ดนี้ข้ามการกันได้หรือไม่
+        bool canBypass = attacker.canBypassIntercept;
+        
+        // 🔥 ถ้าข้ามการกันได้ โจมตีตรงไปที่ผู้เล่นโดยตรง
+        if (canBypass)
+        {
+            Debug.Log($"🚀 {attacker.GetData().cardName} bypasses intercept - direct damage!");
+            AddBattleLog($"{attacker.GetData().cardName} bypasses intercept - {damage} direct damage");
+            
+            // พุ่งไป
+            yield return StartCoroutine(MoveToTarget(attacker.transform, enemySpot.position, 0.3f));
+            
+            EnemyTakeDamage(damage);
+            
+            // ทริกเกอร์ OnStrikeHit
+            yield return StartCoroutine(ResolveEffects(attacker, EffectTrigger.OnStrikeHit, isPlayer: true));
+            
+            // รีเซ็ต bypass status หลังโจมตี
+            attacker.canBypassIntercept = false;
+            attacker.bypassCostThreshold = 0;
+            
+            yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
+            
+            if (enemyCurrentHP <= 0)
+            {
+                Debug.Log("🎉 ศัตรูตายแล้ว -> Win!");
+                StartCoroutine(EndBattle(true));
+            }
+            
+            UpdateUI();
+            yield break;
+        }
         
         // พุ่งไป (เร็วขึ้น 0.3 วินาที)
         yield return StartCoroutine(MoveToTarget(attacker.transform, enemySpot.position, 0.3f));
 
-        BattleCardUI botShield = GetBestEnemyEquip(attacker.GetData().subCategory);
+        // 🛡️ เช็คว่ามีการ์ดที่ต้องกันบังคับหรือไม่
+        bool hasMustIntercept = HasMustInterceptCard(false); // defenderIsPlayer = false (บอท)
+        
+        BattleCardUI botShield = null;
+        
+        if (hasMustIntercept)
+        {
+            // หาการ์ดที่ mustIntercept = true
+            botShield = GetMustInterceptCard(false);
+            if (botShield != null)
+            {
+                Debug.Log($"🛡️ {botShield.GetData().cardName} is forced to intercept!");
+                AddBattleLog($"{botShield.GetData().cardName} is forced to intercept");
+                
+                // รีเซ็ต mustIntercept หลังการกัน
+                botShield.mustIntercept = false;
+            }
+        }
+        else
+        {
+            // ✅ ให้ผู้เล่นเลือกโล่ฝั่งบอทว่าจะออกมากัน (ถ้ามี)
+            List<BattleCardUI> selectableShields = new List<BattleCardUI>();
+            foreach (Transform slot in enemyEquipSlots)
+            {
+                if (slot.childCount > 0)
+                {
+                    var s = slot.GetChild(0).GetComponent<BattleCardUI>();
+                    if (s != null && s.GetData() != null && !s.cannotIntercept)
+                    {
+                        // ตรวจสอบว่าผู้โจมตี canBypassIntercept นี้ข้ามกันได้หรือไม่
+                        if (!CanAttackerBypassShield(attacker, s))
+                        {
+                            selectableShields.Add(s);
+                        }
+                    }
+                }
+            }
+
+            if (selectableShields.Count > 0)
+            {
+                // ✅ บอทเลือกกันเอง (ไม่ให้ผู้เล่นเลือกแทน)
+                var attackerData = attacker != null ? attacker.GetData() : null;
+                if (attackerData != null)
+                {
+                    // เลือกโล่ที่ประเภทตรงก่อนเพื่อทำลายมอนสเตอร์ผู้เล่น
+                    botShield = selectableShields.FirstOrDefault(s => s != null && s.GetData() != null && s.GetData().subCategory == attackerData.subCategory);
+                }
+
+                // ถ้าไม่มีประเภทตรง ให้เลือกโล่ตัวแรกที่ใช้ได้
+                if (botShield == null)
+                {
+                    botShield = selectableShields.FirstOrDefault(s => s != null && s.GetData() != null);
+                }
+            }
+        }
 
         if (botShield != null)
         {
@@ -2012,16 +2105,94 @@ public class BattleManager : MonoBehaviour
                     // กัน Error: ถ้าลืมลาก PlayerSpot ให้วิ่งไปที่ (0,0,0)
                     Vector3 targetPos = (playerSpot != null) ? playerSpot.position : Vector3.zero;
 
-                    // 1. พุ่งมา (เร็วขึ้น 0.3 วินาที)
-                    yield return StartCoroutine(MoveToTarget(monster.transform, targetPos, 0.3f));
-
                     Debug.Log($"🚨 บอทใช้ {monster.GetData().cardName} โจมตี!");
 
-                    // 2. เช็คโล่
+                    // 🔥 ทริกเกอร์ OnStrike Effects (ก่อนเช็คการกัน)
+                    yield return StartCoroutine(ResolveEffects(monster, EffectTrigger.OnStrike, isPlayer: false));
+
+                    // ถ้าการ์ดถูกทำลายระหว่าง OnStrike ให้ข้าม
+                    if (monster == null || monster.GetData() == null) continue;
+
+                    // 🚀 ตรวจสอบว่าบอทสามารถข้ามการกันได้หรือไม่
+                    bool canBypass = monster.canBypassIntercept;
+                    
+                    // 1. พุ่งมา (เร็วขึ้น 0.3 วินาที)
+                    yield return StartCoroutine(MoveToTarget(monster.transform, targetPos, 0.3f));
+                    
+                    // 🔥 ถ้าบอทข้ามการกันได้ โจมตีตรงไปที่ผู้เล่นโดยตรง
+                    if (canBypass)
+                    {
+                        Debug.Log($"🚀 Bot {monster.GetData().cardName} bypasses intercept - direct damage!");
+                        AddBattleLog($"Bot {monster.GetData().cardName} bypasses intercept - direct damage");
+                        
+                        yield return new WaitForSeconds(0.2f);
+                        PlayerTakeDamage(monster.GetData().atk);
+                        
+                        // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ - ข้ามการกัน)
+                        yield return StartCoroutine(ResolveEffects(monster, EffectTrigger.OnStrikeHit, isPlayer: false));
+                        
+                        // รีเซ็ต bypass status
+                        monster.canBypassIntercept = false;
+                        monster.bypassCostThreshold = 0;
+                        
+                        // ดึงกลับ
+                        if (monster != null && monster.gameObject != null && monster.transform != null)
+                        {
+                            yield return StartCoroutine(MoveToTarget(monster.transform, startPos, 0.25f));
+                            if (monster != null && monster.transform != null)
+                            {
+                                monster.transform.localPosition = Vector3.zero;
+                            }
+                        }
+                        
+                        if (state == BattleState.LOST) break;
+                        continue; // ไปยังมอนสเตอร์ตัวถัดไป
+                    }
+
+                    // 2. เช็คว่ามีการ์ดที่ต้องกันบังคับหรือไม่
+                    bool hasMustIntercept = HasMustInterceptCard(true); // defenderIsPlayer = true
                     bool playerHasShield = HasEquipInSlots(playerEquipSlots);
 
+                    // 🛡️ ถ้ามีการ์ดที่ต้องกันบังคับ ให้กันอัตโนมัติ
+                    if (hasMustIntercept)
+                    {
+                        BattleCardUI forcedShield = GetMustInterceptCard(true);
+                        if (forcedShield != null)
+                        {
+                            Debug.Log($"🛡️ {forcedShield.GetData().cardName} is forced to intercept bot's attack!");
+                            AddBattleLog($"{forcedShield.GetData().cardName} forced to block {monster.GetData().cardName}");
+                            
+                            // ประมวลผลการกัน
+                            CardData attackerData = monster.GetData();
+                            CardData shieldData = forcedShield.GetData();
+                            bool match = (attackerData.subCategory == shieldData.subCategory);
+                            
+                            if (match)
+                            {
+                                // ประเภทตรง → ทำลายทั้งคู่
+                                ShowDamagePopupString("Double KO!", monster.transform);
+                                AddBattleLog($"  SubCategory match ({shieldData.subCategory}) - Both destroyed");
+                                DestroyCardToGraveyard(monster);
+                                DestroyCardToGraveyard(forcedShield);
+                                Debug.Log($"✅ กันได้! ประเภทตรงกัน ({shieldData.subCategory}) - ทั้งคู่ทำลาย");
+                            }
+                            else
+                            {
+                                // ประเภทต่าง → โล่แตก แต่ผู้เล่นไม่เสีย HP
+                                ShowDamagePopupString("Shield Break!", forcedShield.transform);
+                                AddBattleLog($"  SubCategory mismatch ({attackerData.subCategory} vs {shieldData.subCategory}) - Shield broken");
+                                DestroyCardToGraveyard(forcedShield);
+                                Debug.Log($"✅ กันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก ไม่เสีย HP");
+                            }
+                            
+                            // รีเซ็ต mustIntercept
+                            forcedShield.mustIntercept = false;
+                            
+                            playerHasMadeChoice = true;
+                        }
+                    }
                     // ต้องมีโล่ และ มีปุ่ม ถึงจะหยุดถาม (ถ้าลืมลากปุ่ม จะตีเลยกันค้าง)
-                    if (playerHasShield && takeDamageButton != null)
+                    else if (playerHasShield && takeDamageButton != null)
                     {
                         state = BattleState.DEFENDER_CHOICE;
                         playerHasMadeChoice = false;
@@ -2036,10 +2207,16 @@ public class BattleManager : MonoBehaviour
                     else
                     {
                         // ตีเลย
-                        if(playerHasShield && takeDamageButton == null) Debug.LogError("⚠️ ลืมลากปุ่ม TakeDamageButton!");
+                        if(playerHasShield && takeDamageButton == null) Debug.LogError("⚠️ ลืกลากปุ่ม TakeDamageButton!");
                         
                         yield return new WaitForSeconds(0.2f);
-                        if(monster != null) PlayerTakeDamage(monster.GetData().atk);
+                        if(monster != null)
+                        {
+                            PlayerTakeDamage(monster.GetData().atk);
+                            
+                            // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ - ไม่ถูกกัน)
+                            yield return StartCoroutine(ResolveEffects(monster, EffectTrigger.OnStrikeHit, isPlayer: false));
+                        }
                     }
 
                     // 3. ดึงกลับ (เช็คว่าตัวยังอยู่ไหม ถ้าถูกทำลายในระหว่าง defend จะ skip)
@@ -2089,7 +2266,23 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
+        // 🛡️ ถ้ามีการ์ดที่ต้องกันบังคับ ให้กันอัตโนมัติแทนการข้าม
+        if (HasMustInterceptCard(true))
+        {
+            BattleCardUI forcedShield = GetMustInterceptCard(true);
+            if (forcedShield != null)
+            {
+                Debug.Log($"🛡️ {forcedShield.GetData().cardName} is forced to intercept (cannot skip)!");
+                OnPlayerSelectBlocker(forcedShield);
+                return;
+            }
+        }
+
         PlayerTakeDamage(currentAttackerBot.GetData().atk);
+        
+        // 🔥 ทริกเกอร์ OnStrikeHit Effects สำหรับบอท (หลังโจมตีสำเร็จ - ผู้เล่นไม่กัน)
+        StartCoroutine(ResolveEffects(currentAttackerBot, EffectTrigger.OnStrikeHit, isPlayer: false));
+        
         playerHasMadeChoice = true;
         if (takeDamageButton) takeDamageButton.SetActive(false);
     }
@@ -2106,6 +2299,53 @@ public class BattleManager : MonoBehaviour
             playerHasMadeChoice = true;
             if (takeDamageButton) takeDamageButton.SetActive(false);
             return;
+        }
+
+        // 🚫 เช็คว่าโล่ถูกปิดการกันหรือไม่
+        if (myShield.cannotIntercept)
+        {
+            Debug.LogWarning($"🚫 {myShield.GetData().cardName} ถูกปิดการกัน! ไม่สามารถใช้กันได้");
+            ShowDamagePopupString("Cannot Block!", myShield.transform);
+            return; // ไม่อนุญาตให้กัน
+        }
+        
+        // 🚫 ตรวจสอบ bypass intercept ของผู้โจมตี กับ cost ของโล่
+        if (currentAttackerBot.canBypassIntercept)
+        {
+            int costThreshold = currentAttackerBot.bypassCostThreshold;
+            int shieldCost = myShield.GetData().cost;
+            
+            // value = 0 → ไม่ข้ามไม่ได้เลย
+            if (costThreshold == 0)
+            {
+                Debug.LogWarning($"🚫 {currentAttackerBot.GetData().cardName} ไม่สามารถข้ามการกัน!");
+                ShowDamagePopupString("Cannot Bypass!", myShield.transform);
+                return;
+            }
+            
+            // value = -1 → ข้ามทั้งหมด (ไม่อนุญาตให้กัน)
+            if (costThreshold == -1)
+            {
+                Debug.LogWarning($"🚫 {myShield.GetData().cardName} มี bypass attack skill (all) ไม่ได้ใช้เป็นตัวกันได้!");
+                ShowDamagePopupString("Cannot Block!", myShield.transform);
+                return;
+            }
+            
+            // value > 0 → ข้ามได้เฉพาะ Equip ที่ cost < threshold
+            if (shieldCost < costThreshold)
+            {
+                Debug.LogWarning($"🚫 {myShield.GetData().cardName} (cost={shieldCost}) < threshold ({costThreshold}) ไม่สามารถกัน!");
+                ShowDamagePopupString($"Cost too low!", myShield.transform);
+                return;
+            }
+        }
+
+        // 🛡️ ถ้ามีการ์ดที่ต้องกันบังคับ ห้ามเลือกการ์ดอื่น
+        if (HasMustInterceptCard(true) && !myShield.mustIntercept)
+        {
+            Debug.LogWarning("🛡️ มีการ์ดที่ต้องกันบังคับอยู่ ต้องเลือกการ์ดที่มี mustIntercept เท่านั้น!");
+            ShowDamagePopupString("Must Block!", myShield.transform);
+            return; // ไม่อนุญาตให้กันด้วยใบอื่น
         }
 
         CardData attackerData = currentAttackerBot.GetData();
@@ -2129,6 +2369,13 @@ public class BattleManager : MonoBehaviour
             
             // 🔥 ประเภทไม่ตรง → โล่แตก แต่ไม่เสีย HP (ปกป้องสำเร็จ)
             Debug.Log($"✅ กันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก แต่ไม่เสีย HP");
+        }
+        
+        // 🛡️ รีเซ็ต mustIntercept หลังการกัน
+        if (myShield.mustIntercept)
+        {
+            myShield.mustIntercept = false;
+            Debug.Log($"🔄 Reset mustIntercept for {shieldData.cardName}");
         }
         
         // 🔥 เซ็ตแล้วหลัง logic กันค้าง
@@ -2279,13 +2526,13 @@ public class BattleManager : MonoBehaviour
             return null; // ไม่กัน
         }
 
-        // 🔥 หาโล่ที่ตรงประเภทก่อน (กันได้ดีที่สุด)
+        // 🔥 หาโล่ที่ตรงประเภทก่อน (กันได้ดีที่สุด) และไม่ถูกปิดการกัน และไม่มี bypass
         foreach (Transform slot in enemyEquipSlots)
         {
             if (slot.childCount > 0)
             {
                 var s = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (s != null && s.GetData() != null && s.GetData().subCategory == cat)
+                if (s != null && s.GetData() != null && !s.cannotIntercept && !s.canBypassIntercept && s.GetData().subCategory == cat)
                 {
                     Debug.Log($"🛡️ บอทเลือกกันด้วย {s.GetData().cardName} (ประเภทตรง)");
                     return s;
@@ -2293,13 +2540,13 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        // ถ้าไม่มีโล่ตรงประเภท เลือกโล่ตัวแรกที่มี
+        // ถ้าไม่มีโล่ตรงประเภท เลือกโล่ตัวแรกที่มี (และไม่ถูกปิดการกัน แลด bypass)
         foreach (Transform slot in enemyEquipSlots)
         {
             if (slot.childCount > 0)
             {
                 var s = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (s != null && s.GetData() != null)
+                if (s != null && s.GetData() != null && !s.cannotIntercept && !s.canBypassIntercept)
                 {
                     Debug.Log($"🛡️ บอทเลือกกันด้วย {s.GetData().cardName} (ประเภทต่าง)");
                     return s;
@@ -2362,6 +2609,7 @@ public class BattleManager : MonoBehaviour
 
     void ResetAllMonstersAttackState()
     {
+        // 🔥 รีเซ็ต Monster ผู้เล่น
         foreach (Transform slot in playerMonsterSlots)
         {
             if (slot.childCount > 0)
@@ -2369,6 +2617,7 @@ public class BattleManager : MonoBehaviour
                 var c = slot.GetChild(0).GetComponent<BattleCardUI>();
                 if (c) {
                     c.hasAttacked = false;
+                    c.canBypassIntercept = false; // รีเซ็ต Bypass ตอนเริ่มเทิร์น
                     // 🔥 แก้: ตรวจสอบ Image ก่อน และให้แน่ใจว่าแสดงหน้าการ์ด
                     var img = c.GetComponent<Image>();
                     if (img != null)
@@ -2383,11 +2632,25 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
+        
+        // 🔥 รีเซ็ต Equip ผู้เล่น
+        foreach (Transform slot in playerEquipSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                var c = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (c) {
+                    c.cannotIntercept = false; // รีเซ็ตการปิดการกัน (สำหรับ DisableIntercept)
+                    // mustIntercept จะรีเซ็ตหลังการกันสำเร็จ ไม่ต้องรีเซ็ตทุกเทิร์น
+                }
+            }
+        }
     }
 
     // 🔥 รีเซ็ตสถานะมอนสเตอร์บอท (เอาไว้ใช้ตอนเริ่มเทิร์นบอท)
     void ResetAllEnemyMonstersAttackState()
     {
+        // 🔥 รีเซ็ต Monster บอท
         foreach (Transform slot in enemyMonsterSlots)
         {
             if (slot.childCount > 0)
@@ -2395,7 +2658,20 @@ public class BattleManager : MonoBehaviour
                 var c = slot.GetChild(0).GetComponent<BattleCardUI>();
                 if (c) {
                     c.hasAttacked = false;
+                    c.canBypassIntercept = false; // รีเซ็ต Bypass
                     c.GetComponent<Image>().color = Color.white; // คืนสี
+                }
+            }
+        }
+        
+        // 🔥 รีเซ็ต Equip บอท
+        foreach (Transform slot in enemyEquipSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                var c = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (c) {
+                    c.cannotIntercept = false; // รีเซ็ตการปิดการกัน
                 }
             }
         }
@@ -3062,35 +3338,44 @@ public class BattleManager : MonoBehaviour
         switch (effect.action)
         {
             case ActionType.Destroy:
-                yield return StartCoroutine(ApplyDestroy(effect, isPlayer));
+                yield return StartCoroutine(ApplyDestroy(sourceCard, effect, isPlayer));
                 break;
             case ActionType.HealHP:
                 yield return StartCoroutine(ApplyHeal(sourceCard, effect, isPlayer));
                 break;
             case ActionType.DrawCard:
-                ApplyDrawCard(effect, isPlayer);
+                ApplyDrawCard(sourceCard, effect, isPlayer);
                 yield break;
             case ActionType.SummonToken:
                 ApplySummonToken(sourceCard, effect, isPlayer);
                 yield break;
             case ActionType.RevealHand:
-                ApplyRevealHand(effect, isPlayer);
+                ApplyRevealHand(sourceCard, effect, isPlayer);
                 yield break;
             case ActionType.RevealHandMultiple:
-                ApplyRevealHandMultiple(effect, isPlayer);
+                ApplyRevealHandMultiple(sourceCard, effect, isPlayer);
                 yield break;
             case ActionType.DiscardDeck:
-                ApplyDiscardDeck(effect, isPlayer);
+                ApplyDiscardDeck(sourceCard, effect, isPlayer);
                 yield break;
             case ActionType.DisableAttack:
-                ApplyDisableAttack(effect, isPlayer);
+                ApplyDisableAttack(sourceCard, effect, isPlayer);
                 yield break;
             case ActionType.DisableAbility:
-                ApplyDisableAbility(effect, isPlayer);
+                ApplyDisableAbility(sourceCard, effect, isPlayer);
                 yield break;
             case ActionType.ModifyStat:
-                ApplyModifyStat(effect, isPlayer);
+                ApplyModifyStat(sourceCard, effect, isPlayer);
                 yield break;
+            case ActionType.BypassIntercept:
+                ApplyBypassIntercept(sourceCard, effect, isPlayer);
+                yield break;
+            case ActionType.ForceIntercept:
+                yield return StartCoroutine(ApplyForceIntercept(sourceCard, effect, isPlayer));
+                break;
+            case ActionType.DisableIntercept:
+                yield return StartCoroutine(ApplyDisableIntercept(sourceCard, effect, isPlayer));
+                break;
             default:
                 Debug.LogWarning($"⚠️ Action type {effect.action} not implemented yet");
                 yield break;
@@ -3121,7 +3406,7 @@ public class BattleManager : MonoBehaviour
         selectedTargets = result;
     }
 
-    IEnumerator ApplyDestroy(CardEffect effect, bool isPlayer)
+    IEnumerator ApplyDestroy(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
         int destroyedAtkSum = 0;
@@ -3397,7 +3682,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    void ApplyRevealHand(CardEffect effect, bool isPlayer)
+    void ApplyRevealHand(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         // ผู้เล่นดูมือบอท
         if (isPlayer && effect.targetType == TargetType.EnemyHand)
@@ -3430,7 +3715,7 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>ดูการ์ดหลายใบบนมือของฝ่ายตรงข้าม</summary>
-    void ApplyRevealHandMultiple(CardEffect effect, bool isPlayer)
+    void ApplyRevealHandMultiple(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         // กำหนดจำนวนการ์ดที่จะดู (ถ้าไม่ระบุ value ให้ดูทั้งหมด)
         int revealCount = effect.value > 0 ? effect.value : 99;
@@ -3484,7 +3769,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    void ApplyDiscardDeck(CardEffect effect, bool isPlayer)
+    void ApplyDiscardDeck(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         int discardCount = effect.value > 0 ? effect.value : 1;
         
@@ -3519,17 +3804,17 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    void ApplyDisableAttack(CardEffect effect, bool isPlayer)
+    void ApplyDisableAttack(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         Debug.LogWarning($"⚠️ DisableAttack: ต้องสร้าง Debuff system ก่อน");
     }
 
-    void ApplyDisableAbility(CardEffect effect, bool isPlayer)
+    void ApplyDisableAbility(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         Debug.LogWarning($"⚠️ DisableAbility: ต้องสร้าง Debuff system ก่อน");
     }
 
-    void ApplyModifyStat(CardEffect effect, bool isPlayer)
+    void ApplyModifyStat(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
         
@@ -3548,7 +3833,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    void ApplyDrawCard(CardEffect effect, bool isPlayer)
+    void ApplyDrawCard(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         int drawCount = effect.value > 0 ? effect.value : 1;
 
@@ -3580,6 +3865,219 @@ public class BattleManager : MonoBehaviour
         UpdateUI();
     }
 
+    /// <summary>ให้การ์ด source สามารถข้ามการกัน (Bypass Intercept) ได้ โดย value = cost threshold
+    /// value = 0 → ไม่สามารถข้ามไม่ได้เลย
+    /// value = 3 → ข้ามได้เฉพาะ Equip ที่ cost < 3
+    /// value = -1 → ข้ามการกันทั้งหมด
+    /// สกิลนี้ติดตัวมอนสเตอร์ที่ใช้สกิลเท่านั้น ไม่ใช่ทั้งสนาม
+    /// </summary>
+    void ApplyBypassIntercept(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        if (sourceCard == null || sourceCard.GetData() == null)
+        {
+            Debug.LogError("❌ ApplyBypassIntercept: sourceCard เป็น null!");
+            return;
+        }
+
+        int costThreshold = effect.value;
+        
+        // ตั้ง bypass ให้กับ sourceCard เท่านั้น
+        sourceCard.canBypassIntercept = true;
+        sourceCard.bypassCostThreshold = costThreshold;
+        string thresholdText = costThreshold == -1 ? "all" : (costThreshold == 0 ? "nothing" : $"cost < {costThreshold}");
+        Debug.Log($"🚀 {sourceCard.GetData().cardName} gained Bypass Intercept ({thresholdText})!");
+        AddBattleLog($"{sourceCard.GetData().cardName} gained Bypass Intercept ({thresholdText})");
+    }
+
+    /// <summary>บังคับให้การ์ดต้องกันการโจมตี (Force Intercept)</summary>
+    IEnumerator ApplyForceIntercept(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
+        if (targets == null || targets.Count == 0) yield break;
+
+        int selectCount = effect.value;
+
+        // ถ้าไม่กำหนดจำนวน ให้บังคับทั้งหมดทันที (ไม่ต้องเลือก)
+        if (selectCount <= 0)
+        {
+            foreach (var target in targets)
+            {
+                if (target != null)
+                {
+                    target.mustIntercept = true;
+                    Debug.Log($"🛡️ {target.GetData().cardName} must intercept next attack!");
+                    AddBattleLog($"{target.GetData().cardName} must intercept (forced)");
+                }
+            }
+            yield break;
+        }
+
+        selectCount = Mathf.Clamp(selectCount, 1, targets.Count);
+
+        // ผู้เล่น: ให้เลือกเป้าหมาย (เช่น เลือก Equip ที่จะถูกบังคับกัน)
+        if (isPlayer && targets.Count > 0)
+        {
+            yield return StartCoroutine(WaitForTargetSelection(targets, selectCount));
+
+            foreach (var target in selectedTargets)
+            {
+                if (target != null)
+                {
+                    target.mustIntercept = true;
+                    Debug.Log($"🛡️ {target.GetData().cardName} must intercept next attack!");
+                    AddBattleLog($"{target.GetData().cardName} must intercept (forced)");
+                }
+            }
+
+            selectedTargets.Clear();
+            yield break;
+        }
+
+        // บอทหรือกรณีไม่ต้องเลือก: เลือกอัตโนมัติ
+        int applied = 0;
+        foreach (var target in targets)
+        {
+            if (target != null)
+            {
+                target.mustIntercept = true;
+                Debug.Log($"🛡️ {target.GetData().cardName} must intercept next attack!");
+                AddBattleLog($"{target.GetData().cardName} must intercept (forced)");
+                applied++;
+                if (applied >= selectCount) break;
+            }
+        }
+    }
+
+    /// <summary>ปิดการกัน (Disable Intercept) ของการ์ด Equip ฝ่ายตรงข้ามในเทิร์นนี้</summary>
+    IEnumerator ApplyDisableIntercept(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
+        if (targets == null || targets.Count == 0) yield break;
+
+        int selectCount = effect.value;
+
+        // ถ้าไม่กำหนดจำนวน ให้ปิดการกันทั้งหมดทันที (ไม่ต้องเลือก)
+        if (selectCount <= 0)
+        {
+            foreach (var target in targets)
+            {
+                if (target != null)
+                {
+                    target.cannotIntercept = true;
+                    Debug.Log($"🚫 {target.GetData().cardName} cannot intercept this turn!");
+                    AddBattleLog($"{target.GetData().cardName} cannot intercept (disabled)");
+                }
+            }
+            yield break;
+        }
+
+        selectCount = Mathf.Clamp(selectCount, 1, targets.Count);
+
+        // ผู้เล่น: ให้เลือกเป้าหมาย (เช่น เลือก Equip ที่จะถูกปิดการกัน)
+        if (isPlayer && targets.Count > 0)
+        {
+            yield return StartCoroutine(WaitForTargetSelection(targets, selectCount));
+
+            foreach (var target in selectedTargets)
+            {
+                if (target != null)
+                {
+                    target.cannotIntercept = true;
+                    Debug.Log($"🚫 {target.GetData().cardName} cannot intercept this turn!");
+                    AddBattleLog($"{target.GetData().cardName} cannot intercept (disabled)");
+                }
+            }
+
+            selectedTargets.Clear();
+            yield break;
+        }
+
+        // บอทหรือกรณีไม่ต้องเลือก: เลือกอัตโนมัติ
+        int applied = 0;
+        foreach (var target in targets)
+        {
+            if (target != null)
+            {
+                target.cannotIntercept = true;
+                Debug.Log($"🚫 {target.GetData().cardName} cannot intercept this turn!");
+                AddBattleLog($"{target.GetData().cardName} cannot intercept (disabled)");
+                applied++;
+                if (applied >= selectCount) break;
+            }
+        }
+    }
+
+    /// <summary>เช็คว่าฝั่งป้องกันมีการ์ดที่ต้องกันบังคับหรือไม่</summary>
+        /// <summary>หาการ์ดแรกที่มี mustIntercept = true</summary>
+        BattleCardUI GetMustInterceptCard(bool defenderIsPlayer)
+        {
+            Transform[] monsterSlots = defenderIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
+            Transform[] equipSlots = defenderIsPlayer ? playerEquipSlots : enemyEquipSlots;
+        
+            // หาจากมอนสเตอร์ก่อน
+            foreach (var slot in monsterSlots)
+            {
+                if (slot != null && slot.childCount > 0)
+                {
+                    var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                    if (card != null && card.mustIntercept)
+                    {
+                        return card;
+                    }
+                }
+            }
+        
+            // หาจากอุปกรณ์
+            foreach (var slot in equipSlots)
+            {
+                if (slot != null && slot.childCount > 0)
+                {
+                    var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                    if (card != null && card.mustIntercept)
+                    {
+                        return card;
+                    }
+                }
+            }
+        
+            return null;
+        }
+
+        /// <summary>เช็คว่าฝั่งป้องกันมีการ์ดที่ต้องกันบังคับหรือไม่</summary>
+    bool HasMustInterceptCard(bool defenderIsPlayer)
+    {
+        Transform[] monsterSlots = defenderIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
+        Transform[] equipSlots = defenderIsPlayer ? playerEquipSlots : enemyEquipSlots;
+        
+        // เช็คมอนสเตอร์
+        foreach (var slot in monsterSlots)
+        {
+            if (slot != null && slot.childCount > 0)
+            {
+                var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (card != null && card.mustIntercept)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        // เช็คอุปกรณ์
+        foreach (var slot in equipSlots)
+        {
+            if (slot != null && slot.childCount > 0)
+            {
+                var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (card != null && card.mustIntercept)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
     // --- Helper Functions ---
 
     List<BattleCardUI> GetTargetCards(CardEffect effect, bool isPlayer)
@@ -3590,6 +4088,44 @@ public class BattleManager : MonoBehaviour
 
         switch (effect.targetType)
         {
+            case TargetType.Self:
+                // Target ฝั่งตัวเอง (ทั้ง Monster และ Equip)
+                Transform[] selfMonsterSlots = isPlayer ? playerMonsterSlots : enemyMonsterSlots;
+                Transform[] selfEquipSlots = isPlayer ? playerEquipSlots : enemyEquipSlots;
+
+                if (selfMonsterSlots != null)
+                {
+                    foreach (var slot in selfMonsterSlots)
+                    {
+                        if (slot != null && slot.childCount > 0)
+                        {
+                            var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                            if (card != null && card.GetData() != null && MatchesCategory(card.GetData(), effect))
+                            {
+                                targets.Add(card);
+                                Debug.Log($"✅ เพิ่มการ์ดเป้าหมาย (Self/Monster): {card.GetData().cardName}");
+                            }
+                        }
+                    }
+                }
+
+                if (selfEquipSlots != null)
+                {
+                    foreach (var slot in selfEquipSlots)
+                    {
+                        if (slot != null && slot.childCount > 0)
+                        {
+                            var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                            if (card != null && card.GetData() != null && MatchesCategory(card.GetData(), effect))
+                            {
+                                targets.Add(card);
+                                Debug.Log($"✅ เพิ่มการ์ดเป้าหมาย (Self/Equip): {card.GetData().cardName}");
+                            }
+                        }
+                    }
+                }
+                break;
+
             case TargetType.EnemyMonster:
                 // isPlayer = true → เป้าหมายคือมอนสเตอร์ของศัตรู (บอท)
                 // isPlayer = false (บอท) → เป้าหมายคือมอนสเตอร์ของผู้เล่น
@@ -4425,7 +4961,7 @@ public class BattleManager : MonoBehaviour
     // ========================================================
 
     /// <summary>เปิดระบบให้ผู้เล่นเลือกเป้าหมาย</summary>
-    void StartSelectingTarget(List<BattleCardUI> targets, int selectCount, System.Action<List<BattleCardUI>> onComplete)
+    void StartSelectingTarget(List<BattleCardUI> targets, int selectCount, System.Action<List<BattleCardUI>> onComplete, bool allowCancel = false)
     {
         isSelectingTarget = true;
         availableTargets = new List<BattleCardUI>(targets);
@@ -4444,10 +4980,42 @@ public class BattleManager : MonoBehaviour
 
         if (targetSelectionCancelButton)
         {
-            // เวทต้องเลือกเป้าหมายให้จบ ห้ามยกเลิก
             targetSelectionCancelButton.onClick.RemoveAllListeners();
-            targetSelectionCancelButton.interactable = false;
-            targetSelectionCancelButton.gameObject.SetActive(false);
+
+            if (allowCancel)
+            {
+                targetSelectionCancelButton.interactable = true;
+                targetSelectionCancelButton.gameObject.SetActive(true);
+                targetSelectionCancelButton.onClick.AddListener(() =>
+                {
+                    foreach (var t in availableTargets)
+                    {
+                        if (t != null)
+                        {
+                            t.SetHighlight(false);
+                            var btn = t.GetComponent<Button>();
+                            if (btn != null)
+                            {
+                                btn.onClick.RemoveAllListeners();
+                                Destroy(btn);
+                            }
+                        }
+                    }
+
+                    isSelectingTarget = false;
+                    targetSelectionPanel.SetActive(false);
+                    availableTargets.Clear();
+
+                    onComplete?.Invoke(new List<BattleCardUI>());
+                    Debug.Log("❌ ยกเลิกการเลือกเป้าหมาย");
+                });
+            }
+            else
+            {
+                // เวทต้องเลือกเป้าหมายให้จบ ห้ามยกเลิก
+                targetSelectionCancelButton.interactable = false;
+                targetSelectionCancelButton.gameObject.SetActive(false);
+            }
         }
 
         // ฮาइไลท์การ์ดที่เลือกได้
@@ -4568,5 +5136,24 @@ public class BattleManager : MonoBehaviour
         }
         targetSelectionPanel.SetActive(false);
         availableTargets.Clear();
+    }
+
+    /// <summary>ตรวจสอบว่าผู้โจมตีสามารถข้ามการกันของโล่ได้หรือไม่</summary>
+    bool CanAttackerBypassShield(BattleCardUI attacker, BattleCardUI shield)
+    {
+        if (attacker == null || !attacker.canBypassIntercept) return false;
+        if (shield == null || shield.GetData() == null) return false;
+
+        int costThreshold = attacker.bypassCostThreshold;
+        int shieldCost = shield.GetData().cost;
+
+        // value = 0 → ไม่ข้ามไม่ได้เลย
+        if (costThreshold == 0) return false;
+
+        // value = -1 → ข้ามทั้งหมด
+        if (costThreshold == -1) return true;
+
+        // value > 0 → ข้ามได้เฉพาะ shield ที่ cost < threshold
+        return shieldCost < costThreshold;
     }
 }

@@ -19,6 +19,12 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public bool hasAttacked = false;
     private bool mulliganSelected = false;
     
+    // 🎯 Intercept System
+    public bool canBypassIntercept = false; // การ์ดนี้โจมตีข้ามการกันได้
+    public int bypassCostThreshold = 0; // ข้ามการกันได้เฉพาะ Equip ที่ cost < threshold (0 = ไม่ข้ามไม่ได้, -1 = ข้ามทั้งหมด)
+    public bool mustIntercept = false; // การ์ดนี้ต้องกันการโจมตีถัดไปบังคับ
+    public bool cannotIntercept = false; // การ์ดนี้ไม่สามารถกันการโจมตีได้ในเทิร์นนี้
+    
     // 🎈 ตัวแปรสำหรับอนิเมชั่นลอย
     private float floatTime = 0f;
     private Vector3 originalPosition = Vector3.zero;

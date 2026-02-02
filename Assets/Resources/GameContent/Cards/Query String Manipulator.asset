@@ -33,7 +33,9 @@ MonoBehaviour:
   effects:
   - trigger: 2
     targetType: 3
-    action: 3
+    action: 12
     targetMainCat: 0
     targetSubCat: 0
     value: 3
+    destroyMode: 0
+    tokenCardId: 
