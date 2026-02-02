@@ -12,13 +12,20 @@ public class StageManager : MonoBehaviour
         public string stageID;          // ID ภาษาอังกฤษ (ห้ามซ้ำ) เช่น L1_A01, L2_Mix1
         public Button stageButton;      // ปุ่มกดเลือกด่าน
         public GameObject lockIcon;     // รูปแม่กุญแจ
+        
+        // ⭐ Prefab ของดาวที่จะ instantiate บนปุ่ม
+        public Sprite starSprite;       // รูปดาว
+        [Range(0.15f, 1f)]
+        public float starSize = 0.4f;   // ขนาดดาว (เทียบกับปุ่ม) 0.15-1.0
 
         [Header("Popup Details (ข้อมูลแสดงในหน้าต่าง)")]
         public Sprite botSprite;        // รูปบอท
         public int botLevel;            // เลเวลบอท
         [TextArea] 
         public string deckDescription;  // คำบรรยายเด็คบอท
-        public List<string> starConditions; // เงื่อนไขดาว 3 ข้อ
+        
+        // ⭐ เปลี่ยนเป็น StarCondition แทน string
+        public List<StarCondition> starConditions; // เงื่อนไขดาว 3 ข้อ
 
         [Header("Unlock Conditions (เงื่อนไขการปลดล็อค)")]
         // 1. ต้องเรียนจบบทไหนบ้าง (1=A01, 2=A02, 3=A03)
@@ -29,6 +36,80 @@ public class StageManager : MonoBehaviour
 
         [Header("Battle Settings (ส่งไปฉากต่อสู้)")]
         public List<MainCategory> botDecks; // บอทจะใช้การ์ดหมวดไหนบ้าง
+        
+        private Transform starsContainer; // Container สำหรับเก็บดาว
+        
+        /// <summary>
+        /// ตรวจสอบเงื่อนไขดาวจาก BattleStatistics
+        /// </summary>
+        public int CalculateStarsEarned(BattleStatistics stats)
+        {
+            if (stats == null || starConditions == null) return 0;
+            
+            int stars = 0;
+            foreach (var condition in starConditions)
+            {
+                if (condition.CheckCondition(stats))
+                    stars++;
+            }
+            return stars;
+        }
+        
+        /// <summary>
+        /// อัปเดตการแสดงดาวบนปุ่ม
+        /// </summary>
+        public void UpdateStarDisplay(int starsEarned)
+        {
+            if (stageButton == null || starSprite == null) return;
+
+            RectTransform buttonRect = stageButton.GetComponent<RectTransform>();
+            if (buttonRect == null) return;
+
+            // เปลี่ยนสีปุ่มตามสถานะ
+            Image buttonImage = stageButton.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                if (starsEarned > 0)
+                {
+                    // ทำไปแล้ว = เหลือง/ทอง
+                    buttonImage.color = new Color(1f, 0.84f, 0f); // สีทอง
+                }
+                else
+                {
+                    // ยังไม่ทำ = สีปกติ (รักษาสีเดิม)
+                    buttonImage.color = Color.white;
+                }
+            }
+
+            // ลบดาวเก่าทั้งหมด
+            foreach (Transform child in buttonRect)
+            {
+                if (child.name.StartsWith("Star_"))
+                    Object.Destroy(child.gameObject);
+            }
+
+            // สร้างดาวใหม่ตามจำนวน
+            float buttonWidth = buttonRect.rect.width;
+            float starWidth = buttonWidth * starSize;
+            
+            for (int i = 0; i < starsEarned && i < 3; i++)
+            {
+                GameObject starGO = new GameObject($"Star_{i}");
+                starGO.transform.SetParent(buttonRect);
+                starGO.transform.localScale = Vector3.one;
+
+                Image starImage = starGO.AddComponent<Image>();
+                starImage.sprite = starSprite;
+                starImage.raycastTarget = false; // ป้องกันการบล็อก click
+                
+                RectTransform starRect = starGO.GetComponent<RectTransform>();
+                starRect.anchorMin = new Vector2(1, 1);
+                starRect.anchorMax = new Vector2(1, 1);
+                starRect.pivot = new Vector2(1, 1);
+                starRect.sizeDelta = new Vector2(starWidth, starWidth);
+                starRect.anchoredPosition = new Vector3(-(i * (starWidth + 2)) - 5, -5, 0);
+            }
+        }
     }
 
     [Header("Manager Settings")]
@@ -82,6 +163,19 @@ public class StageManager : MonoBehaviour
             
             // เปลี่ยนสีปุ่ม (ขาว=เล่นได้, เทา=ล็อค)
             stage.stageButton.image.color = isUnlocked ? Color.white : Color.gray;
+
+            // ⭐ อัปเดตดาว
+            var progress = GameManager.Instance.GetStageProgress(stage.stageID);
+            if (progress != null)
+            {
+                Debug.Log($"Stage {stage.stageID}: {progress.starsEarned}/3 Stars");
+                stage.UpdateStarDisplay(progress.starsEarned);
+            }
+            else
+            {
+                Debug.Log($"⚪ Stage {stage.stageID}: ยังไม่เล่น");
+                stage.UpdateStarDisplay(0); // ยังไม่เคยเล่น = 0 ดาว
+            }
 
             // --- จัดการ Event การกดปุ่ม ---
             stage.stageButton.onClick.RemoveAllListeners(); // ล้างคำสั่งเก่าออกก่อน

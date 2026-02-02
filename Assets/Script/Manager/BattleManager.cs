@@ -180,6 +180,10 @@ public class BattleManager : MonoBehaviour
     private readonly List<string> battleLog = new List<string>();
     private const int battleLogLimit = 200;
 
+    // 📊 Battle Statistics Tracking
+    public BattleStatistics currentBattleStats = new BattleStatistics();
+    public static BattleStatistics LastBattleStats { get; private set; } // เก็บสถิติเกมล่าสุดสำหรับเข้าถึงจากภายนอก
+
     void Awake()
     {
         Instance = this;
@@ -244,6 +248,10 @@ public class BattleManager : MonoBehaviour
     void Start()
     {
         state = BattleState.START;
+        
+        // 📊 เริ่มต้นสถิติใหม่
+        currentBattleStats.Initialize();
+        
         // ตั้งค่าพาเนล pause/log/handreveal ให้ปิดไว้ก่อน
         if (pausePanel) pausePanel.SetActive(false);
         if (logPanel) logPanel.SetActive(false);
@@ -1221,6 +1229,9 @@ public class BattleManager : MonoBehaviour
         state = BattleState.PLAYERTURN;
         turnCount++;
         
+        // 📊 บันทึกสถิติ: จำนวนเทิร์น
+        currentBattleStats.turnsPlayed = turnCount;
+        
         maxPP = Mathf.Clamp(turnCount, 1, 10);
         currentPP = maxPP;
 
@@ -1442,6 +1453,11 @@ public class BattleManager : MonoBehaviour
     IEnumerator PayCostAndSummon(BattleCardUI cardUI, Transform parentSlot, int cost)
     {
         currentPP -= cost;
+        
+        // 📊 บันทึกสถิติ: PP ใช้ไป + การ์ดที่เล่น
+        currentBattleStats.totalPPSpent += cost;
+        currentBattleStats.RecordCardPlayed(cardUI.GetData());
+        
         cardUI.transform.SetParent(parentSlot);
         cardUI.transform.localPosition = Vector3.zero;
         
@@ -1484,6 +1500,12 @@ public class BattleManager : MonoBehaviour
         }
 
         currentPP -= cardUI.GetCost();
+        
+        // 📊 บันทึกสถิติ: PP ใช้ไป + การ์ดที่เล่น + Spell Cast
+        currentBattleStats.totalPPSpent += cardUI.GetCost();
+        currentBattleStats.RecordCardPlayed(cardUI.GetData());
+        currentBattleStats.spellsCast++;
+        
         AddBattleLog($"Player casts {cardUI.GetData().cardName}");
 
         // 🎇 ลงสนามการ์ดเวทย์ก่อน (แสดงให้เห็นบนสนาม)
@@ -1689,6 +1711,9 @@ public class BattleManager : MonoBehaviour
         {
             Debug.Log($"🚀 {attacker.GetData().cardName} bypasses intercept - direct damage!");
             AddBattleLog($"{attacker.GetData().cardName} bypasses intercept - {damage} direct damage");
+            
+            // 📊 บันทึกสถิติ: การข้ามการกัน
+            currentBattleStats.interceptionsBlocked++;
             
             // พุ่งไป
             yield return StartCoroutine(MoveToTarget(attacker.transform, enemySpot.position, 0.3f));
@@ -2353,6 +2378,9 @@ public class BattleManager : MonoBehaviour
         
         Debug.Log($"🛡️ ตรวจสอบการกัน: โจมตี={attackerData.cardName} ({attackerData.subCategory}), โล่={shieldData.cardName} ({shieldData.subCategory})");
         
+        // 📊 บันทึกสถิติ: การกันสำเร็จ
+        currentBattleStats.interceptionsSuccessful++;
+        
         bool match = (attackerData.subCategory == shieldData.subCategory);
 
         if (match)
@@ -2694,6 +2722,9 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
+        // 📊 บันทึกสถิติ: การ์ดที่จั่ว
+        currentBattleStats.cardsDrawn += n;
+
         AddBattleLog($"Player draws {n} card(s) | Deck: {deckList.Count}");
 
         Transform targetParent = parentOverride != null ? parentOverride : handArea;
@@ -2927,6 +2958,10 @@ public class BattleManager : MonoBehaviour
     void PlayerTakeDamage(int d) 
     { 
         currentHP=Mathf.Max(0, currentHP-d); 
+        
+        // 📊 บันทึกสถิติ: ดาเมจที่ได้รับ
+        currentBattleStats.totalDamageTaken += d;
+        
         AddBattleLog($"Player takes {d} damage | HP: {currentHP + d} -> {currentHP}");
         
         // Safe Check
@@ -2947,6 +2982,10 @@ public class BattleManager : MonoBehaviour
     void EnemyTakeDamage(int d) 
     { 
         enemyCurrentHP=Mathf.Max(0, enemyCurrentHP-d); 
+        
+        // 📊 บันทึกสถิติ: ดาเมจที่ทำให้ศัตรู
+        currentBattleStats.totalDamageDealt += d;
+        
         AddBattleLog($"Bot takes {d} damage | HP: {enemyCurrentHP + d} -> {enemyCurrentHP}");
         
         if(enemySpot) ShowDamagePopupString($"-{d}", enemySpot);
@@ -2968,6 +3007,51 @@ public class BattleManager : MonoBehaviour
 
         isEnding = true;
         state = playerWin ? BattleState.WON : BattleState.LOST;
+
+        // 📊 บันทึกสถิติสุดท้าย
+        int deckRemaining = deckList != null ? deckList.Count : 0;
+        int handSize = handArea != null ? handArea.childCount : 0;
+        currentBattleStats.Finalize(playerWin, currentHP, enemyCurrentHP, turnCount, deckRemaining, handSize);
+        
+        // เก็บสถิติไว้ให้เข้าถึงได้จากภายนอก
+        LastBattleStats = currentBattleStats;
+        
+        // 💾 บันทึกลงประวัติ
+        if (BattleHistory.Instance != null)
+        {
+            BattleHistory.Instance.AddBattleResult(currentBattleStats);
+            Debug.Log($"💾 Battle result saved to history (Total: {BattleHistory.Instance.GetTotalBattles()})");
+        }
+        
+        // ⭐ ตรวจสอบและบันทึกดาว (ถ้าชนะ และมี StageID)
+        if (playerWin)
+        {
+            string currentStageID = PlayerPrefs.GetString("CurrentStageID", "");
+            if (!string.IsNullOrEmpty(currentStageID))
+            {
+                int starsEarned = CalculateStarsForCurrentStage(currentBattleStats, currentStageID);
+                Debug.Log($"Earned {starsEarned}/3 stars for stage {currentStageID}");
+                Debug.Log($"[DEBUG] Stats - Victory: {currentBattleStats.victory}, Turns: {currentBattleStats.turnsPlayed}, Spells: {currentBattleStats.spellsCast}");
+                
+                // บันทึกลง GameManager
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.CompleteStage(currentStageID, starsEarned, currentBattleStats);
+                }
+            }
+        }
+        
+        // แสดงสถิติใน Console
+        Debug.Log("\n" + currentBattleStats.GetSummary());
+        
+        // เพิ่มสถิติใน Battle Log
+        AddBattleLog("\n=== BATTLE STATISTICS ===");
+        AddBattleLog($"Result: {(playerWin ? "VICTORY" : "DEFEAT")} | Turns: {turnCount}");
+        AddBattleLog($"Final HP: Player {currentHP}/{maxHP} | Enemy {enemyCurrentHP}/{enemyMaxHP}");
+        AddBattleLog($"Cards Played: {currentBattleStats.totalCardsPlayed} (M:{currentBattleStats.monsterCardsPlayed} S:{currentBattleStats.spellCardsPlayed} E:{currentBattleStats.equipCardsPlayed})");
+        AddBattleLog($"Damage: Dealt {currentBattleStats.totalDamageDealt} | Taken {currentBattleStats.totalDamageTaken}");
+        if (currentBattleStats.perfectVictory) AddBattleLog("🏆 Perfect Victory!");
+        if (currentBattleStats.quickVictory) AddBattleLog("⚡ Quick Victory!");
 
         if (turnText) turnText.text = playerWin ? "VICTORY" : "DEFEAT";
 
@@ -4251,6 +4335,24 @@ public class BattleManager : MonoBehaviour
         bool ownerIsPlayer = IsCardOwnedByPlayer(card);
         string cardType = (cardData.type == CardType.EquipSpell) ? "EQUIP" : "MONSTER";
         
+        // 📊 บันทึกสถิติ: การ์ดที่ถูกทำลาย
+        if (ownerIsPlayer)
+        {
+            currentBattleStats.playerCardsDestroyed++;
+            if (cardData.type == CardType.Monster)
+            {
+                currentBattleStats.playerMonstersLost++;
+            }
+        }
+        else
+        {
+            currentBattleStats.enemyCardsDestroyed++;
+            if (cardData.type == CardType.Monster)
+            {
+                currentBattleStats.monstersDefeated++;
+            }
+        }
+        
         Debug.Log($"💥 DestroyCardToGraveyard: {cardData.cardName} ({cardType}) -> {(ownerIsPlayer ? "Player" : "Bot")} Graveyard");
         AddBattleLog($"Card destroyed: {cardData.cardName} ({cardType})");
         
@@ -5136,6 +5238,40 @@ public class BattleManager : MonoBehaviour
         }
         targetSelectionPanel.SetActive(false);
         availableTargets.Clear();
+    }
+
+    /// <summary>
+    /// คำนวณดาวจาก BattleStatistics สำหรับ Stage ปัจจุบัน
+    /// </summary>
+    private int CalculateStarsForCurrentStage(BattleStatistics stats, string stageID)
+    {
+        // ค้นหา StageData จาก StageManager ที่อยู่ใน Scene Stage Selection
+        // เนื่องจากอยู่คนละ Scene ต้องใช้ข้อมูลที่เก็บไว้หรือ Load จาก Resources
+        
+        // วิธีที่ 1: ใช้ข้อมูลจาก GameManager (ถ้ามี)
+        // วิธีที่ 2: ใช้ค่าเริ่มต้น เช่น ชนะ = 1 ดาว, เงื่อนไขเพิ่มเติม = +1, +1
+        
+        // ตอนนี้ใช้วิธีง่ายๆ ก่อน: ให้ตรวจสอบ Achievement flags
+        int stars = 0;
+        
+        // ดาวที่ 1: ชนะ
+        if (stats.victory)
+            stars++;
+        
+        // ดาวที่ 2: เทิร์นน้อย (ต้องชนะภายใน 12 เทิร์น)
+        if (stats.victory && stats.turnsPlayed <= 12)
+            stars++;
+        
+        // ดาวที่ 3: ใช้ Spell อย่างน้อย 3 ครั้ง
+        if (stats.victory && stats.spellsCast >= 3)
+            stars++;
+        
+        Debug.Log($"[STARS] Condition 1 (Victory): {stats.victory}");
+        Debug.Log($"[STARS] Condition 2 (Turns <= 12): {(stats.victory && stats.turnsPlayed <= 12)} (Turns: {stats.turnsPlayed})");
+        Debug.Log($"[STARS] Condition 3 (Spells >= 3): {(stats.victory && stats.spellsCast >= 3)} (Spells: {stats.spellsCast})");
+        Debug.Log($"[STARS] Total: {stars}/3 Stars");
+        
+        return Mathf.Clamp(stars, 0, 3);
     }
 
     /// <summary>ตรวจสอบว่าผู้โจมตีสามารถข้ามการกันของโล่ได้หรือไม่</summary>

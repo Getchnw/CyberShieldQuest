@@ -457,21 +457,36 @@ public class GameManager : MonoBehaviour
             SaveCurrentGame();
         }
     }
-    /// บันทึกว่าผ่านด่าน Stage แล้ว
-    public void CompleteStage(int stageID, int starsEarned)
+    /// <summary>
+    /// บันทึกว่าผ่านด่าน Stage แล้ว และเก็บสถิติ
+    /// </summary>
+    public void CompleteStage(string stageID, int starsEarned, BattleStatistics stats = null)
     {
         if (CurrentGameData == null) return;
 
         var progressList = CurrentGameData.stageProgress;
-        PlayerStageProgress stageProgress = progressList.FirstOrDefault(s => s.stage_id == stageID);
+        PlayerStageProgress stageProgress = progressList.FirstOrDefault(s => s.stageID == stageID);
 
         if (stageProgress != null)
         {
             // 1. ถ้าเคยเล่นแล้ว: อัปเดตดาว (ถ้าทำได้ดีขึ้น)
-            stageProgress.is_completed = true;
-            if (starsEarned > stageProgress.stars_earned)
+            stageProgress.isCompleted = true;
+            stageProgress.playCount++;
+            stageProgress.lastPlayedDate = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            
+            if (starsEarned > stageProgress.starsEarned)
             {
-                stageProgress.stars_earned = starsEarned;
+                stageProgress.starsEarned = starsEarned;
+            }
+
+            // อัปเดต Records
+            if (stats != null)
+            {
+                if (stageProgress.bestTurns == 0 || stats.turnsPlayed < stageProgress.bestTurns)
+                    stageProgress.bestTurns = stats.turnsPlayed;
+                
+                if (stats.totalDamageDealt > stageProgress.highestDamage)
+                    stageProgress.highestDamage = stats.totalDamageDealt;
             }
         }
         else
@@ -479,25 +494,46 @@ public class GameManager : MonoBehaviour
             // 2. ถ้าเล่นครั้งแรก: สร้างข้อมูลใหม่
             progressList.Add(new PlayerStageProgress
             {
-                stage_id = stageID,
-                is_completed = true,
-                stars_earned = starsEarned
+                stageID = stageID,
+                isCompleted = true,
+                starsEarned = starsEarned,
+                playCount = 1,
+                lastPlayedDate = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                bestTurns = stats != null ? stats.turnsPlayed : 0,
+                highestDamage = stats != null ? stats.totalDamageDealt : 0
             });
         }
+
+        SaveCurrentGame(); // บันทึกทันที
     }
     
-    // เช็คว่าด่านนี้ผ่านแล้วหรือยัง
+    /// <summary>
+    /// เช็คว่าด่านนี้ผ่านแล้วหรือยัง
+    /// </summary>
     public bool IsStageCleared(string stageID)
     {
         if (CurrentGameData == null) return false;
         
-        // แปลง string เป็น int
-        if (int.TryParse(stageID, out int id))
-        {
-            var stage = CurrentGameData.stageProgress.FirstOrDefault(s => s.stage_id == id);
-            return stage != null && stage.is_completed;
-        }
-        return false;
+        var stage = CurrentGameData.stageProgress.FirstOrDefault(s => s.stageID == stageID);
+        return stage != null && stage.isCompleted;
+    }
+    
+    /// <summary>
+    /// ดึงข้อมูลความคืบหน้าของ Stage (สำหรับแสดง UI หรือ debug)
+    /// </summary>
+    public PlayerStageProgress GetStageProgress(string stageID)
+    {
+        if (CurrentGameData == null) return null;
+        return CurrentGameData.stageProgress.FirstOrDefault(s => s.stageID == stageID);
+    }
+
+    /// <summary>
+    /// ดึงจำนวนดาวรวมของผู้เล่น (ทุกด่าน)
+    /// </summary>
+    public int GetTotalStarsEarned()
+    {
+        if (CurrentGameData == null) return 0;
+        return CurrentGameData.stageProgress.Sum(s => s.starsEarned);
     }
     
     // คลิกขวาที่ชื่อสคริปต์ใน Inspector -> เลือก "DEV: Add 5000 Gold"

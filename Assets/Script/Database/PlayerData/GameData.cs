@@ -327,9 +327,13 @@ public class PlayerPostTest
 [System.Serializable]
 public class PlayerStageProgress
 {
-    public int stage_id;
-    public bool is_completed;
-    public int stars_earned;
+    public string stageID;        // เปลี่ยนเป็น string เพื่อให้ตรงกับ StageManager (L1_A01, L2_Mix1, ฯลฯ)
+    public bool isCompleted;      // ชนะหรือยัง
+    public int starsEarned;       // ได้กี่ดาว (0-3)
+    public int bestTurns;         // Record เทิร์นที่น้อยที่สุด
+    public int highestDamage;     // Record ดาเมจสูงสุด
+    public int playCount;         // เล่นกี่รอบแล้ว
+    public string lastPlayedDate; // วันที่เล่นล่าสุด
 }
 
 [System.Serializable]
