@@ -236,6 +236,9 @@ public class GameData
     public PlayerDailyLogin dailyLoginData = new PlayerDailyLogin();
     // Daily Quest
     public PlayerDailyQuestSystem dailyQuestData = new PlayerDailyQuestSystem();
+    public List<PlayerAchievementData> achievements = new List<PlayerAchievementData>();
+    public string currentTitle = "Novice";
+
     // Constructor (ตัวสร้างข้อมูลเริ่มต้น)
     public GameData()
     {
@@ -260,6 +263,9 @@ public class GameData
         // Daily Login
         dailyLoginData = new PlayerDailyLogin();
         dailyQuestData = new PlayerDailyQuestSystem();
+        // Achievement Data
+        achievements = new List<PlayerAchievementData>();
+        currentTitle = "Novice";
     }
 }
 
@@ -324,10 +330,11 @@ public class PlayerPostTest
     public bool hasSucessPost_A03 = false;
 }
 
-[System.Serializable]
+[System.Serializable
+]
 public class PlayerStageProgress
 {
-    public int stage_id;
+    public string stage_id;
     public bool is_completed;
     public int stars_earned;
 }
@@ -417,4 +424,12 @@ public class PlayerDailyQuestSystem
         lastQuestDate = "";
         activeQuests = new List<PlayerQuestData>();
     }
+}
+
+[System.Serializable]
+public class PlayerAchievementData
+{
+    public string achievementID;
+    public bool isUnlocked; // เงื่อนไขครบแล้ว (พร้อมให้รับรางวัล)
+    public bool isClaimed;  // รับรางวัลไปแล้ว
 }

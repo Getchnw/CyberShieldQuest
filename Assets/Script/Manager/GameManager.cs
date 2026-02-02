@@ -458,7 +458,7 @@ public class GameManager : MonoBehaviour
         }
     }
     /// บันทึกว่าผ่านด่าน Stage แล้ว
-    public void CompleteStage(int stageID, int starsEarned)
+    public void CompleteStage(string stageID, int starsEarned)
     {
         if (CurrentGameData == null) return;
 
@@ -491,13 +491,8 @@ public class GameManager : MonoBehaviour
     {
         if (CurrentGameData == null) return false;
         
-        // แปลง string เป็น int
-        if (int.TryParse(stageID, out int id))
-        {
-            var stage = CurrentGameData.stageProgress.FirstOrDefault(s => s.stage_id == id);
-            return stage != null && stage.is_completed;
-        }
-        return false;
+        var stage = CurrentGameData.stageProgress.FirstOrDefault(s => s.stage_id == stageID);
+        return stage != null && stage.is_completed;
     }
     
     // คลิกขวาที่ชื่อสคริปต์ใน Inspector -> เลือก "DEV: Add 5000 Gold"

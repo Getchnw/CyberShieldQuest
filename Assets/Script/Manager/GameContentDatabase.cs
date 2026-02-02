@@ -33,6 +33,8 @@ public class GameContentDatabase : MonoBehaviour
     // ข้อมูล Daily Login & Daily Quest
     [SerializeField] private List<DailyRewardData> dailyRewardDatabase = new List<DailyRewardData>();
     [SerializeField] private List<DailyQuestsData> dailyQuestDatabase = new List<DailyQuestsData>();
+    // ข้อมูล Achievement
+    [SerializeField] private List<AchievementData> achievementDatabase = new List<AchievementData>();
     void Awake()
     {
         // --- โค้ด Singleton ---
@@ -609,6 +611,37 @@ public class GameContentDatabase : MonoBehaviour
             }
 #endif
         }
+
+        // ดึง Acheivement Data
+        if (achievementDatabase == null || achievementDatabase.Count == 0)
+        {
+            var loadAchievementData = Resources.LoadAll<AchievementData>("GameContent/Achievement");
+            if (loadAchievementData != null && loadAchievementData.Length > 0)
+            {
+                achievementDatabase = new List<AchievementData>(loadAchievementData);
+            }
+            // #if UNITY_EDITOR
+            //             try
+            //             {
+            //                 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:AchievementData", new[] { "Assets/Script/Database" });
+            //                 if (guids != null && guids.Length > 0)
+            //                 {
+            //                     achievementDatabase = new List<AchievementData>();
+            //                     foreach (var g in guids)
+            //                     {
+            //                         string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+            //                         var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<AchievementData>(path);
+            //                         if (asset != null) achievementDatabase.Add(asset);
+            //                     }
+            //                     Debug.Log($"Editor auto-loaded {achievementDatabase.Count} AchievementData from Assets/Script/Database.");
+            //                 }
+            //             }
+            //             catch (System.Exception e)
+            //             {
+            //                 Debug.LogWarning($"Auto-load AchievementData failed: {e.Message}");
+            //             }
+            // #endif
+        }
     }
 
     //ฟังก์ชันดึงข้อมูลตาม ID ต่างๆ
@@ -671,6 +704,14 @@ public class GameContentDatabase : MonoBehaviour
         return chapterDatabase
             .Where(chap => chap.story != null && chap.story.story_id == storyId)
             .ToList();
+    }
+
+    public List<ChapterData> GetAllStoryChapters()
+    {
+        if (chapterDatabase == null)
+            return new List<ChapterData>(); // คืนค่าลิสต์ว่าง (กัน Error)
+
+        return chapterDatabase;
     }
 
     // ค้นหา ChapterEvents ทั้งหมดที่อยู่ใน Chapter ID
@@ -832,6 +873,11 @@ public class GameContentDatabase : MonoBehaviour
         return fillInBlankDescriptionDatabase.Where(FB => FB.FillInBlank.story.story_id == story_id).ToList();
     }
 
-
+    // ดึงข้อมูล Achievement ทั้งหมด
+    public List<AchievementData> GetAllAchievementData()
+    {
+        if (achievementDatabase == null) return new List<AchievementData>();
+        return achievementDatabase;
+    }
 }
 
