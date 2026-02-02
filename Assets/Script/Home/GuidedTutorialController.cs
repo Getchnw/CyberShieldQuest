@@ -28,8 +28,8 @@ public class GuidedTutorialController : MonoBehaviour
     [SerializeField] private Button backButton;
     [SerializeField] private TextMeshProUGUI nextButtonText;
 
-    [Header("Settings")]
-    [SerializeField] private string gameSceneName = "GameScene"; // (เก็บไว้เผื่ออนาคตอยากเปลี่ยนฉาก)
+    // [Header("Settings")]
+    // [SerializeField] private string gameSceneName = "GameScene"; // (เก็บไว้เผื่ออนาคตอยากเปลี่ยนฉาก)
 
     private int currentIndex = 0;
 

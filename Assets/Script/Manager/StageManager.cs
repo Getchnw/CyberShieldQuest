@@ -4,6 +4,19 @@ using System.Collections.Generic;
 
 public class StageManager : MonoBehaviour
 {
+    public static StageManager Instance { get; private set; }
+
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
     [System.Serializable]
     public class StageData
     {
@@ -21,7 +34,7 @@ public class StageManager : MonoBehaviour
         [Header("Popup Details (ข้อมูลแสดงในหน้าต่าง)")]
         public Sprite botSprite;        // รูปบอท
         public int botLevel;            // เลเวลบอท
-        [TextArea] 
+        [TextArea]
         public string deckDescription;  // คำบรรยายเด็คบอท
         
         // ⭐ เปลี่ยนเป็น StarCondition แทน string
@@ -29,10 +42,10 @@ public class StageManager : MonoBehaviour
 
         [Header("Unlock Conditions (เงื่อนไขการปลดล็อค)")]
         // 1. ต้องเรียนจบบทไหนบ้าง (1=A01, 2=A02, 3=A03)
-        public List<int> requiredChapters; 
-        
+        public List<int> requiredChapters;
+
         // 2. ต้องชนะด่านไหนมาก่อน (ใส่ StageID ของด่านก่อนหน้า)
-        public List<string> requiredPrevStages; 
+        public List<string> requiredPrevStages;
 
         [Header("Battle Settings (ส่งไปฉากต่อสู้)")]
         public List<MainCategory> botDecks; // บอทจะใช้การ์ดหมวดไหนบ้าง
@@ -119,13 +132,13 @@ public class StageManager : MonoBehaviour
     void Start()
     {
         Debug.Log("🟢 StageManager Start() เริ่มทำงาน");
-        
+
         // ซ่อน Popup ไว้ก่อนเสมอตอนเริ่ม
         if (detailPopup != null) detailPopup.Close();
-        
+
         // อัปเดตสถานะด่าน (ล็อค/ปลดล็อค)
         UpdateStageStatus();
-        
+
         Debug.Log($"🟢 มีด่านทั้งหมด: {allStages.Count} ด่าน");
     }
 
@@ -133,7 +146,7 @@ public class StageManager : MonoBehaviour
     public void UpdateStageStatus()
     {
         Debug.Log("🔵 UpdateStageStatus() ถูกเรียก");
-        
+
         if (GameManager.Instance == null)
         {
             Debug.LogError("❌ ไม่พบ GameManager ใน Scene!");
@@ -156,11 +169,11 @@ public class StageManager : MonoBehaviour
 
             // --- อัปเดตหน้าตาปุ่ม ---
             stage.stageButton.interactable = isUnlocked;
-            
+
             // เปิด/ปิด ไอคอนกุญแจ
-            if (stage.lockIcon != null) 
+            if (stage.lockIcon != null)
                 stage.lockIcon.SetActive(!isUnlocked);
-            
+
             // เปลี่ยนสีปุ่ม (ขาว=เล่นได้, เทา=ล็อค)
             stage.stageButton.image.color = isUnlocked ? Color.white : Color.gray;
 
@@ -196,7 +209,7 @@ public class StageManager : MonoBehaviour
     void OpenDetail(StageData stage)
     {
         Debug.Log($"🎯 กดปุ่มด่าน: {stage.stageName}");
-        
+
         if (detailPopup != null)
         {
             detailPopup.Open(stage);
