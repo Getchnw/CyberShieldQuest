@@ -76,7 +76,7 @@ public class AchievementItemUI : MonoBehaviour
                 // เป้าหมาย: จำนวนด่านทั้งหมด x 3
                 max = stages.Count * 3;
                 // ปัจจุบัน: ผลรวมดาวที่ผู้เล่นทำได้ใน Stage
-                current = gameData.stageProgress.Sum(x => x.stars_earned);
+                current = gameData.stageProgress.Sum(x => x.starsEarned);
                 break;
 
             case AchievementType.GrandMaster:

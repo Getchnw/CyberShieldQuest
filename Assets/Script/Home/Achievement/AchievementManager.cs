@@ -67,10 +67,10 @@ public class AchievementManager : MonoBehaviour
 
         foreach (var stage in allStages)
         {
-            var progress = userProgress.Find(p => p.stage_id == stage.stageID);
+            var progress = userProgress.Find(p => p.stageID == stage.stageID);
 
-            // เช็คว่าได้ 3 ดาวหรือยัง
-            if (progress == null || progress.stars_earned < 3)
+            // เช็คคว่าได้ 3 ดาวหรือยัง
+            if (progress == null || progress.starsEarned < 3)
                 return false;
         }
         return true;
