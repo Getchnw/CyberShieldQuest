@@ -125,6 +125,7 @@ public class BattleManager : MonoBehaviour
     public Button handRevealCloseButton; // ปุ่มปิด
 
     [Header("--- Mulligan UI ---")]
+    public GameObject muliganPanel; // Panel หลักของ mulligan
     public Button playerMulliganButton;
     public TextMeshProUGUI mulliganText;
     public Button playerMulliganConfirmButton;
@@ -453,64 +454,20 @@ public class BattleManager : MonoBehaviour
             
             if(cardPrefab)
             {
-                // 🔥 สร้างการ์ดที่ deckPileTransform ก่อน (เพื่อให้ animation ไป slot ได้)
-                Transform createParent = deckPileTransform != null ? deckPileTransform : targetSlot;
-                GameObject cardObj = Instantiate(cardPrefab, createParent);
+                // 🔥 สร้างการ์ดโดยตรงใน targetSlot (ไม่แสดงที่ deck position)
+                GameObject cardObj = Instantiate(cardPrefab, targetSlot);
                 BattleCardUI ui = cardObj.GetComponent<BattleCardUI>();
                 if (ui == null) continue;
                 
                 ui.Setup(d);
                 ui.parentAfterDrag = targetSlot;
+                cardObj.transform.localPosition = Vector3.zero;
+                cardObj.transform.localScale = Vector3.one;
                 
-                RectTransform uiRect = ui.GetComponent<RectTransform>();
-                
-                // เริ่มต้นจากตำแหน่งเด็ค (ตำแหน่ง local ใน parent)
-                Vector2 deckStartPos = Vector2.zero;
-                
-                Debug.Log($"🎴 {ui.name} เริ่มที่เด็ค");
-                
-                // พักสักครู่เพื่อให้เห็นการ์ด
-                yield return new WaitForSeconds(0.3f);
-                
-                // 🔥 ตัดการ์ดออกจากเด็ค ย้ายไปยัง targetSlot (ตอน animate)
-                // สร้าง temporary parent ให้เคลื่อนที่ได้
-                RectTransform tempRect = cardObj.GetComponent<RectTransform>();
-                if (tempRect == null) continue;
-                
-                // จำตำแหน่ง world ของเด็ค
-                Vector3 deckWorldPos = deckPileTransform != null ? deckPileTransform.position : Vector3.zero;
-                Vector3 slotWorldPos = targetSlot.position;
-                
-                float flyDuration = 0.5f;
-                float elapsed = 0f;
-                
-                while (elapsed < flyDuration)
-                {
-                    if (cardObj == null) break;
-                    
-                    elapsed += Time.deltaTime;
-                    float t = elapsed / flyDuration;
-                    float easeT = 1f - Mathf.Pow(1f - t, 2); // ease out
-                    
-                    // บินจาก deck ไป slot ในพื้นที่ world
-                    cardObj.transform.position = Vector3.Lerp(deckWorldPos, slotWorldPos, easeT);
-                    cardObj.transform.localScale = Vector3.Lerp(Vector3.one * 0.6f, Vector3.one, easeT);
-                    
-                    yield return null;
-                }
-                
-                // Snap เข้า slot อย่างสุดท้าย
-                if (cardObj != null)
-                {
-                    cardObj.transform.SetParent(targetSlot);
-                    cardObj.transform.localPosition = Vector3.zero;
-                    cardObj.transform.localScale = Vector3.one;
-                    
-                    Debug.Log($"✅ {ui.name} เข้า slot!");
-                }
+                Debug.Log($"✅ {ui.name} เข้า slot โดยตรง!");
                 
                 // พักระหว่างการ์ด
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(0.5f);
                 slotIndex++;
             }
         }
@@ -661,6 +618,13 @@ public class BattleManager : MonoBehaviour
 
     void HidePlayerMulliganUI()
     {
+        // 🔥 ปิด Panel หลักของ mulligan
+        if (muliganPanel != null)
+        {
+            muliganPanel.SetActive(false);
+            Debug.Log("✅ ปิด muliganPanel");
+        }
+        
         if (playerMulliganButton) playerMulliganButton.gameObject.SetActive(false);
         if (playerMulliganConfirmButton) playerMulliganConfirmButton.gameObject.SetActive(false);
         if (mulliganText) mulliganText.text = string.Empty;
