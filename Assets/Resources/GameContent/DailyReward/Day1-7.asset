@@ -18,40 +18,40 @@ MonoBehaviour:
     type: 1
     amount: 500
     card: {fileID: 0}
-    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+    icon: {fileID: 21300000, guid: a76c2117803ad28479a3c3df67125b8c, type: 3}
   - rewardName: Gold 500 G
     dayLabel: Day2
     type: 1
     amount: 500
     card: {fileID: 0}
-    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+    icon: {fileID: 21300000, guid: a76c2117803ad28479a3c3df67125b8c, type: 3}
   - rewardName: Gold 500 G
     dayLabel: Day3
     type: 1
     amount: 500
     card: {fileID: 0}
-    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+    icon: {fileID: 21300000, guid: a76c2117803ad28479a3c3df67125b8c, type: 3}
   - rewardName: Gold 500 G
     dayLabel: Day4
     type: 1
     amount: 500
     card: {fileID: 0}
-    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+    icon: {fileID: 21300000, guid: a76c2117803ad28479a3c3df67125b8c, type: 3}
   - rewardName: Gold 500 G
     dayLabel: Day5
     type: 1
     amount: 500
     card: {fileID: 0}
-    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+    icon: {fileID: 21300000, guid: a76c2117803ad28479a3c3df67125b8c, type: 3}
   - rewardName: Gold 500 G
     dayLabel: Day6
     type: 1
     amount: 500
     card: {fileID: 0}
-    icon: {fileID: 21300000, guid: 89a3b6b1a4200f04b92fe16b7cbafc1a, type: 3}
+    icon: {fileID: 21300000, guid: a76c2117803ad28479a3c3df67125b8c, type: 3}
   - rewardName: XML Parser Hardening
     dayLabel: Day7
     type: 0
-    amount: 500
+    amount: 1
     card: {fileID: 11400000, guid: 28aa11ea2c35e4d4abfdb78bc59742a5, type: 2}
     icon: {fileID: 0}
