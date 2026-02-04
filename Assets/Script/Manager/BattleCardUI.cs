@@ -9,6 +9,14 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 {
     [Header("UI References")]
     private Image artworkImage;
+    private Image frameImage; // 🔥 กรอบการ์ด
+
+    [Header("Card Frame")]
+    public Sprite frameSprite; // 🔥 Sprite ของกรอบการ์ด (ตั้งใน Inspector)
+    public Sprite commonFrame;
+    public Sprite rareFrame;
+    public Sprite epicFrame;
+    public Sprite legendaryFrame;
     
     private CardData _cardData;
     private CanvasGroup canvasGroup; // ตัวช่วยให้เมาส์ทะลุการ์ดตอนลาก
@@ -120,7 +128,49 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             
             artworkImage.color = Color.white;
             artworkImage.raycastTarget = true; 
-        }
+            }
+
+            // 🔥 สร้างกรอบการ์ด (ถ้ายังไม่มี)
+            if (frameImage == null)
+            {
+                Transform frameTransform = transform.Find("CardFrame");
+                if (frameTransform == null)
+                {
+                    GameObject frameObj = new GameObject("CardFrame");
+                    frameObj.transform.SetParent(transform);
+                    frameObj.transform.SetAsLastSibling(); // ให้กรอบอยู่ด้านหน้าสุด
+                
+                    frameImage = frameObj.AddComponent<Image>();
+                    frameImage.raycastTarget = false; // ไม่บล็อกการคลิก
+                
+                    // ตั้งค่า RectTransform ให้เต็มการ์ด
+                    RectTransform frameRect = frameObj.GetComponent<RectTransform>();
+                    frameRect.anchorMin = Vector2.zero;
+                    frameRect.anchorMax = Vector2.one;
+                    frameRect.offsetMin = Vector2.zero;
+                    frameRect.offsetMax = Vector2.zero;
+                
+                    Debug.Log($"✅ สร้างกรอบการ์ดให้ {_cardData?.cardName}");
+                }
+                else
+                {
+                    frameImage = frameTransform.GetComponent<Image>();
+                }
+            }
+
+            // 🔥 ใส่ Sprite กรอบ (ถ้ามี)
+            if (frameImage != null)
+            {
+                if (frameSprite != null)
+                {
+                    frameImage.sprite = frameSprite;
+                    frameImage.color = Color.white; // แสดงกรอบ
+                }
+                else
+                {
+                    frameImage.color = new Color(1f, 1f, 1f, 0f); // ซ่อนกรอบถ้าไม่มี sprite
+                }
+            }
     }
 
     /// <summary>ปรับขนาดการ์ดตามตำแหน่ง (ในมือ vs บนสนาม)</summary>
@@ -176,11 +226,67 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         
         // ตั้งชื่อ GameObject ให้หาง่ายๆ ใน Hierarchy
         gameObject.name = data.cardName;
+
+        // 🔥 ตั้งกรอบตามความหายาก
+        ApplyFrameByRarity();
         
         // 🎈 หยุดอนิเมชั่นลอยเพื่อไม่รบกวน HorizontalLayoutGroup
         floatTime = 0f;
         originalPosition = transform.localPosition;
         isFloating = false; // 🔥 ปิดลอยในมือ
+    }
+
+    void ApplyFrameByRarity()
+    {
+        if (frameImage == null || _cardData == null) return;
+
+        Sprite rarityFrame = null;
+        switch (_cardData.rarity)
+        {
+            case Rarity.Common:
+                rarityFrame = commonFrame;
+                break;
+            case Rarity.Rare:
+                rarityFrame = rareFrame;
+                break;
+            case Rarity.Epic:
+                rarityFrame = epicFrame;
+                break;
+            case Rarity.Legendary:
+                rarityFrame = legendaryFrame;
+                break;
+        }
+
+        // ถ้าไม่มีกรอบตาม rarity ให้ใช้ frameSprite เป็นค่า fallback
+        if (rarityFrame == null)
+        {
+            rarityFrame = frameSprite;
+        }
+
+        if (rarityFrame != null)
+        {
+            frameImage.sprite = rarityFrame;
+            frameImage.color = Color.white;
+        }
+        else
+        {
+            frameImage.color = new Color(1f, 1f, 1f, 0f);
+        }
+    }
+
+    public void SetFrameVisible(bool visible)
+    {
+        if (frameImage == null) return;
+
+        if (visible)
+        {
+            // ใช้กรอบตาม rarity อีกครั้งเผื่อเปลี่ยนตอน face-down
+            ApplyFrameByRarity();
+        }
+        else
+        {
+            frameImage.color = new Color(1f, 1f, 1f, 0f);
+        }
     }
 
     // --- Helper Functions ---

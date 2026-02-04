@@ -1441,6 +1441,8 @@ public class BattleManager : MonoBehaviour
             // 🔥 EquipSpell ไม่มืด
             cardImage.color = (cardUI.GetData().type == CardType.EquipSpell) ? Color.white : Color.gray;
         }
+        // แสดงกรอบเมื่อการ์ดหงายหน้า
+        cardUI.SetFrameVisible(true);
 
         if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
 
@@ -2094,6 +2096,8 @@ public class BattleManager : MonoBehaviour
             // 🔥 EquipSpell ไม่มืด
             img.color = (ui.GetData().type == CardType.EquipSpell) ? Color.white : Color.gray;
         }
+        // แสดงกรอบเมื่อการ์ดหงายหน้า
+        ui.SetFrameVisible(true);
 
         // 🔥 อนุญาตให้คลิกดูรายละเอียดการ์ดบนสนามบอท
         var cg = ui.GetComponent<CanvasGroup>();
@@ -2947,6 +2951,8 @@ public class BattleManager : MonoBehaviour
                                 img.sprite = backImg.sprite;
                         }
                     }
+                    // ซ่อนกรอบสำหรับการ์ดหลัง
+                    ui.SetFrameVisible(false);
                     
                     // อนิเมชั่นบินไปมือบอท
                     float duration = 0.3f;
@@ -3287,6 +3293,8 @@ public class BattleManager : MonoBehaviour
         }
         newCard.GetComponent<Image>().color = Color.white; // ไม่เป็นสีเทา
         newCard.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม
+        // แสดงกรอบเมื่อการ์ดหงายหน้า
+        newCard.SetFrameVisible(true);
 
         // 🪦 ส่งการ์ดเก่าลงสุสาน
         DestroyCardToGraveyard(oldCard);

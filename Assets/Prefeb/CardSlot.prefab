@@ -327,9 +327,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34c6940d8072e354491b7a49e2e446d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  frameSprite: {fileID: 0}
+  commonFrame: {fileID: 21300000, guid: be01e642111c5de49a6392d4584503fd, type: 3}
+  rareFrame: {fileID: 0}
+  epicFrame: {fileID: 0}
+  legendaryFrame: {fileID: 0}
   isOnField: 0
   parentAfterDrag: {fileID: 0}
   hasAttacked: 0
+  canBypassIntercept: 0
+  bypassCostThreshold: 0
+  bypassAllowedMainCat: 3
+  bypassAllowedSubCat: 0
+  mustIntercept: 0
+  cannotIntercept: 0
 --- !u!225 &4905903470944591649
 CanvasGroup:
   m_ObjectHideFlags: 0
