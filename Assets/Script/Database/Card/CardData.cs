@@ -22,6 +22,8 @@ public struct CardEffect {
     public int value;
     public DestroyMode destroyMode; // 🔥 โหมดการทำลาย (ใช้เมื่อ action = Destroy)
     public string tokenCardId; // 🔥 card_id ของ Token ที่จะ summon (ใช้เมื่อ action = SummonToken)
+    public MainCategory bypassAllowedMainCat; // 🔥 MainCategory ที่สามารถ Intercept ได้ (ใช้กับ BypassIntercept, General = ข้าวทั้งหมด)
+    public SubCategory bypassAllowedSubCat; // 🔥 SubCategory ที่สามารถ Intercept ได้ (ใช้กับ BypassIntercept, General = ข้ามทั้งหมด)
 }
 
 [CreateAssetMenu(fileName = "New Card", menuName = "Game Content/Card")]

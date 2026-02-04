@@ -22,6 +22,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     // 🎯 Intercept System
     public bool canBypassIntercept = false; // การ์ดนี้โจมตีข้ามการกันได้
     public int bypassCostThreshold = 0; // ข้ามการกันได้เฉพาะ Equip ที่ cost < threshold (0 = ไม่ข้ามไม่ได้, -1 = ข้ามทั้งหมด)
+    public MainCategory bypassAllowedMainCat = MainCategory.General; // MainCategory ที่สามารถ Intercept ได้ (General = ข้ามทั้งหมด)
+    public SubCategory bypassAllowedSubCat = SubCategory.General; // SubCategory ที่สามารถ Intercept ได้ (General = ข้ามทั้งหมด)
     public bool mustIntercept = false; // การ์ดนี้ต้องกันการโจมตีถัดไปบังคับ
     public bool cannotIntercept = false; // การ์ดนี้ไม่สามารถกันการโจมตีได้ในเทิร์นนี้
     
@@ -54,6 +56,52 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             floatTime += Time.deltaTime;
             float floatOffset = Mathf.Sin(floatTime * 2f) * 10f; // ลอยขึ้นลง 10 pixels
             transform.localPosition = originalPosition + Vector3.up * floatOffset;
+        }
+
+        // 🔥 Auto-highlight สำหรับการ์ดบนสนาม
+        if (isOnField && _cardData != null && artworkImage != null)
+        {
+            // ⚠️ ถ้าอยู่ใน DEFENDER_CHOICE state ให้ใช้ manual highlight แทน (ห้าม override)
+            if (BattleManager.Instance != null && BattleManager.Instance.state == BattleState.DEFENDER_CHOICE)
+            {
+                return; // ปล่อยให้ HighlightInterceptableShields() จัดการ
+            }
+
+            bool shouldHighlight = false;
+            bool shouldBeDark = false; // Monster ที่มี summoning sickness
+
+            // EquipSpell สว่างตลอดเวลา
+            if (_cardData.type == CardType.EquipSpell)
+            {
+                shouldHighlight = true;
+            }
+            // Monster สว่างเมื่อยังโจมตีไม่ได้ (และเป็นเทิร์นผู้เล่น)
+            else if (_cardData.type == CardType.Monster && BattleManager.Instance != null)
+            {
+                bool isPlayerTurn = BattleManager.Instance.state == BattleState.PLAYERTURN;
+                if (isPlayerTurn && !hasAttacked)
+                {
+                    shouldHighlight = true;
+                }
+                else if (hasAttacked)
+                {
+                    shouldBeDark = true; // Summoning Sickness
+                }
+            }
+
+            // ตั้งค่าสี
+            if (shouldHighlight && artworkImage.color != new Color(1.5f, 1.5f, 1.5f, 1f))
+            {
+                artworkImage.color = new Color(1.5f, 1.5f, 1.5f, 1f); // สว่างขึ้น 50%
+            }
+            else if (shouldBeDark && artworkImage.color != Color.gray)
+            {
+                artworkImage.color = Color.gray; // มืด (Summoning Sickness)
+            }
+            else if (!shouldHighlight && !shouldBeDark && artworkImage.color != Color.white)
+            {
+                artworkImage.color = Color.white; // ปกติ
+            }
         }
     }
 
@@ -353,14 +401,32 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             }
             else if (BattleManager.Instance.state == BattleState.DEFENDER_CHOICE)
             {
+                Debug.Log($"🖱️ Clicked on {_cardData.cardName} during DEFENDER_CHOICE");
+                
                 if (_cardData.type == CardType.EquipSpell)
                 {
-                    // 🔥 ให้เลือกกัน เสมอ (ไม่ว่า subCategory ตรงหรือต่างก็ได้)
-                    // OnPlayerSelectBlocker จะจัดการตรรมชาติการป้องกันเอง
+                    // 🔥 เช็คว่าโล่นี้สามารถกันได้หรือไม่ (ถ้าถูกข้าม = กันไม่ได้)
+                    var currentAttacker = BattleManager.Instance.GetCurrentAttacker();
                     var currentAttackerData = BattleManager.Instance.GetCurrentAttackerData();
-                    if (currentAttackerData != null)
+                    
+                    Debug.Log($"→ Current Attacker: {(currentAttacker != null ? currentAttacker.GetData().cardName : "NULL")}");
+                    Debug.Log($"→ Has BypassIntercept: {(currentAttacker != null ? currentAttacker.canBypassIntercept.ToString() : "N/A")}");
+                    
+                    if (currentAttacker != null && currentAttackerData != null)
                     {
-                        Debug.Log($"🛡️ เลือกกันด้วย {_cardData.cardName} ({_cardData.subCategory}) ต่อต้าน โจมตี ({currentAttackerData.subCategory})");
+                        // เช็คว่าผู้โจมตีสามารถข้ามโล่นี้ได้หรือไม่
+                        if (currentAttacker.canBypassIntercept)
+                        {
+                            bool isBypassed = BattleManager.Instance.CanBypassShield(currentAttacker, this);
+                            Debug.Log($"→ Is {_cardData.cardName} Bypassed? {isBypassed}");
+                            if (isBypassed)
+                            {
+                                Debug.Log($"⚠️ {_cardData.cardName} ถูกข้าม (Bypassed) - ไม่สามารถกันได้!");
+                                return; // ไม่ให้เลือกโล่นี้
+                            }
+                        }
+                        
+                        Debug.Log($"✅ {_cardData.cardName} สามารถกันได้ - เรียก OnPlayerSelectBlocker");
                         BattleManager.Instance.OnPlayerSelectBlocker(this);
                     }
                     else

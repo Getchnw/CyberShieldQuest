@@ -1426,7 +1426,11 @@ public class BattleManager : MonoBehaviour
         cardUI.transform.localPosition = Vector3.zero;
         
         cardUI.isOnField = true;
-        cardUI.hasAttacked = true;
+        // 🔥 EquipSpell ไม่มี Summoning Sickness
+        if (cardUI.GetData().type != CardType.EquipSpell)
+        {
+            cardUI.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
+        }
         cardUI.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม 
         
         // 🔥 แก้: ตรวจสอบให้แน่ใจว่าการ์ดแสดงหน้าไม่ใช่หลัง
@@ -1434,7 +1438,8 @@ public class BattleManager : MonoBehaviour
         if (cardImage != null && cardUI.GetData() != null && cardUI.GetData().artwork != null)
         {
             cardImage.sprite = cardUI.GetData().artwork; // แสดงหน้าการ์ด
-            cardImage.color = Color.gray; // สีเทา = Summoning Sickness
+            // 🔥 EquipSpell ไม่มืด
+            cardImage.color = (cardUI.GetData().type == CardType.EquipSpell) ? Color.white : Color.gray;
         }
 
         if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
@@ -1667,11 +1672,40 @@ public class BattleManager : MonoBehaviour
         // ถ้าการ์ดถูกทำลายระหว่าง OnStrike ให้หยุด
         if (attacker == null || attacker.GetData() == null) yield break;
         
-        // 🚀 ตรวจสอบว่าการ์ดนี้ข้ามการกันได้หรือไม่
-        bool canBypass = attacker.canBypassIntercept;
+        // 🚀 ตรวจสอบว่าการ์ดนี้ข้ามการกันได้หรือไม่ (ต้องเช็คว่ามีโล่บอทที่สามารถกันได้หรือไม่)
+        bool canBypassAll = false;
+        if (attacker.canBypassIntercept)
+        {
+            Debug.Log($"🔍 Player attacker has BypassIntercept. Checking bot shields...");
+            // เช็คว่ามีโล่บอทที่สามารถกันได้หรือไม่
+            bool hasInterceptableShield = false;
+            foreach (Transform equipSlot in enemyEquipSlots)
+            {
+                if (equipSlot.childCount > 0)
+                {
+                    var shield = equipSlot.GetChild(0).GetComponent<BattleCardUI>();
+                    if (shield != null && shield.GetData() != null && !shield.cannotIntercept)
+                    {
+                        Debug.Log($"  → Checking bot shield: {shield.GetData().cardName} (Cost={shield.GetData().cost}, MainCat={shield.GetData().mainCategory})");
+                        // ถ้าโล่นี้ไม่ถูกข้าม = สามารถกันได้
+                        bool isBypassed = CanAttackerBypassShield(attacker, shield);
+                        Debug.Log($"     Result: isBypassed={isBypassed}");
+                        if (!isBypassed)
+                        {
+                            hasInterceptableShield = true;
+                            Debug.Log($"✅ Found interceptable bot shield: {shield.GetData().cardName}");
+                            break;
+                        }
+                    }
+                }
+            }
+            // ถ้าไม่มีโล่ที่สามารถกันได้เลย = ข้ามการกันทั้งหมด
+            canBypassAll = !hasInterceptableShield;
+            Debug.Log($"📊 hasInterceptableShield={hasInterceptableShield}, canBypassAll={canBypassAll}");
+        }
         
-        // 🔥 ถ้าข้ามการกันได้ โจมตีตรงไปที่ผู้เล่นโดยตรง
-        if (canBypass)
+        // 🔥 ถ้าข้ามการกันได้ทั้งหมด โจมตีตรงไปที่บอทโดยตรง
+        if (canBypassAll)
         {
             Debug.Log($"🚀 {attacker.GetData().cardName} bypasses intercept - direct damage!");
             AddBattleLog($"{attacker.GetData().cardName} bypasses intercept - {damage} direct damage");
@@ -1690,6 +1724,8 @@ public class BattleManager : MonoBehaviour
             // รีเซ็ต bypass status หลังโจมตี
             attacker.canBypassIntercept = false;
             attacker.bypassCostThreshold = 0;
+            attacker.bypassAllowedMainCat = MainCategory.General;
+            attacker.bypassAllowedSubCat = SubCategory.General;
             
             yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
             
@@ -1728,6 +1764,8 @@ public class BattleManager : MonoBehaviour
         {
             // ✅ ให้ผู้เล่นเลือกโล่ฝั่งบอทว่าจะออกมากัน (ถ้ามี)
             List<BattleCardUI> selectableShields = new List<BattleCardUI>();
+            Debug.Log($"🔍 Checking bot shields for interception. Attacker: {attacker.GetData().cardName}, canBypass: {attacker.canBypassIntercept}");
+            
             foreach (Transform slot in enemyEquipSlots)
             {
                 if (slot.childCount > 0)
@@ -1735,14 +1773,19 @@ public class BattleManager : MonoBehaviour
                     var s = slot.GetChild(0).GetComponent<BattleCardUI>();
                     if (s != null && s.GetData() != null && !s.cannotIntercept)
                     {
+                        Debug.Log($"  → Checking shield: {s.GetData().cardName} (Cost={s.GetData().cost})");
                         // ตรวจสอบว่าผู้โจมตี canBypassIntercept นี้ข้ามกันได้หรือไม่
-                        if (!CanAttackerBypassShield(attacker, s))
+                        bool isBypassed = CanAttackerBypassShield(attacker, s);
+                        Debug.Log($"     Result: isBypassed={isBypassed}, will be added={!isBypassed}");
+                        if (!isBypassed)
                         {
                             selectableShields.Add(s);
                         }
                     }
                 }
             }
+
+            Debug.Log($"✅ Total selectable shields: {selectableShields.Count}");
 
             if (selectableShields.Count > 0)
             {
@@ -2034,7 +2077,11 @@ public class BattleManager : MonoBehaviour
         ui.transform.localScale = Vector3.one;
 
         ui.isOnField = true;
-        ui.hasAttacked = true; // summoning sickness
+        // 🔥 EquipSpell ไม่มี Summoning Sickness
+        if (ui.GetData().type != CardType.EquipSpell)
+        {
+            ui.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
+        }
         ui.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม
         var img = ui.GetComponent<Image>();
         if (img)
@@ -2044,7 +2091,8 @@ public class BattleManager : MonoBehaviour
             {
                 img.sprite = ui.GetData().artwork; // แสดงหน้าการ์ด
             }
-            img.color = Color.gray;
+            // 🔥 EquipSpell ไม่มืด
+            img.color = (ui.GetData().type == CardType.EquipSpell) ? Color.white : Color.gray;
         }
 
         // 🔥 อนุญาตให้คลิกดูรายละเอียดการ์ดบนสนามบอท
@@ -2102,14 +2150,43 @@ public class BattleManager : MonoBehaviour
                     // ถ้าการ์ดถูกทำลายระหว่าง OnStrike ให้ข้าม
                     if (monster == null || monster.GetData() == null) continue;
 
-                    // 🚀 ตรวจสอบว่าบอทสามารถข้ามการกันได้หรือไม่
-                    bool canBypass = monster.canBypassIntercept;
+                    // 🚀 ตรวจสอบว่าบอทสามารถข้ามการกันได้หรือไม่ (ต้องเช็คว่ามีโล่ที่สามารถกันได้หรือไม่)
+                    bool canBypassAll = false;
+                    if (monster.canBypassIntercept)
+                    {
+                        Debug.Log($"🔍 Bot has BypassIntercept. Checking player shields...");
+                        // เช็คว่ามีโล่ที่สามารถกันได้หรือไม่
+                        bool hasInterceptableShield = false;
+                        foreach (Transform equipSlot in playerEquipSlots)
+                        {
+                            if (equipSlot.childCount > 0)
+                            {
+                                var shield = equipSlot.GetChild(0).GetComponent<BattleCardUI>();
+                                if (shield != null && shield.GetData() != null && !shield.cannotIntercept)
+                                {
+                                    Debug.Log($"  → Checking player shield: {shield.GetData().cardName} (Cost={shield.GetData().cost}, MainCat={shield.GetData().mainCategory})");
+                                    // ถ้าโล่นี้ไม่ถูกข้าม = สามารถกันได้
+                                    bool isBypassed = CanAttackerBypassShield(monster, shield);
+                                    Debug.Log($"     Result: isBypassed={isBypassed}");
+                                    if (!isBypassed)
+                                    {
+                                        hasInterceptableShield = true;
+                                        Debug.Log($"✅ Found interceptable shield: {shield.GetData().cardName}");
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        // ถ้าไม่มีโล่ที่สามารถกันได้เลย = ข้ามการกันทั้งหมด
+                        canBypassAll = !hasInterceptableShield;
+                        Debug.Log($"📊 hasInterceptableShield={hasInterceptableShield}, canBypassAll={canBypassAll}");
+                    }
                     
                     // 1. พุ่งมา (เร็วขึ้น 0.3 วินาที)
                     yield return StartCoroutine(MoveToTarget(monster.transform, targetPos, 0.3f));
                     
-                    // 🔥 ถ้าบอทข้ามการกันได้ โจมตีตรงไปที่ผู้เล่นโดยตรง
-                    if (canBypass)
+                    // 🔥 ถ้าบอทข้ามการกันได้ทั้งหมด โจมตีตรงไปที่ผู้เล่นโดยตรง
+                    if (canBypassAll)
                     {
                         Debug.Log($"🚀 Bot {monster.GetData().cardName} bypasses intercept - direct damage!");
                         AddBattleLog($"Bot {monster.GetData().cardName} bypasses intercept - direct damage");
@@ -2123,6 +2200,8 @@ public class BattleManager : MonoBehaviour
                         // รีเซ็ต bypass status
                         monster.canBypassIntercept = false;
                         monster.bypassCostThreshold = 0;
+                        monster.bypassAllowedMainCat = MainCategory.General;
+                        monster.bypassAllowedSubCat = SubCategory.General;
                         
                         // ดึงกลับ
                         if (monster != null && monster.gameObject != null && monster.transform != null)
@@ -2185,11 +2264,18 @@ public class BattleManager : MonoBehaviour
                     {
                         state = BattleState.DEFENDER_CHOICE;
                         playerHasMadeChoice = false;
+                        currentAttackerBot = monster; // เก็บผู้โจมตีปัจจุบัน
+
+                        // 🔥 Highlight โล่ที่สามารถกันได้
+                        HighlightInterceptableShields(monster);
 
                         takeDamageButton.SetActive(true);
                         if (turnText) turnText.text = "DEFEND!";
 
                         yield return new WaitUntil(() => playerHasMadeChoice);
+
+                        // 🔥 ปิด Highlight ทั้งหมด
+                        ClearAllShieldHighlights();
 
                         if(takeDamageButton) takeDamageButton.SetActive(false);
                     }
@@ -2242,6 +2328,17 @@ public class BattleManager : MonoBehaviour
     public CardData GetCurrentAttackerData()
     {
         return currentAttackerBot != null ? currentAttackerBot.GetData() : null;
+    }
+
+    public BattleCardUI GetCurrentAttacker()
+    {
+        return currentAttackerBot;
+    }
+
+    /// <summary>ฟังก์ชันสำหรับให้ BattleCardUI เช็คว่าโล่สามารถกันได้หรือไม่ (public wrapper)</summary>
+    public bool CanBypassShield(BattleCardUI attacker, BattleCardUI shield)
+    {
+        return CanAttackerBypassShield(attacker, shield);
     }
 
     public void OnPlayerSkipBlock()
@@ -2298,33 +2395,14 @@ public class BattleManager : MonoBehaviour
             return; // ไม่อนุญาตให้กัน
         }
         
-        // 🚫 ตรวจสอบ bypass intercept ของผู้โจมตี กับ cost ของโล่
+        // 🚫 ตรวจสอบว่าโล่นี้ถูก bypass หรือไม่ (ใช้ฟังก์ชันเดียวกับที่เช็คตอน highlight)
         if (currentAttackerBot.canBypassIntercept)
         {
-            int costThreshold = currentAttackerBot.bypassCostThreshold;
-            int shieldCost = myShield.GetData().cost;
-            
-            // value = 0 → ไม่ข้ามไม่ได้เลย
-            if (costThreshold == 0)
+            bool isBypassed = CanAttackerBypassShield(currentAttackerBot, myShield);
+            if (isBypassed)
             {
-                Debug.LogWarning($"🚫 {currentAttackerBot.GetData().cardName} ไม่สามารถข้ามการกัน!");
-                ShowDamagePopupString("Cannot Bypass!", myShield.transform);
-                return;
-            }
-            
-            // value = -1 → ข้ามทั้งหมด (ไม่อนุญาตให้กัน)
-            if (costThreshold == -1)
-            {
-                Debug.LogWarning($"🚫 {myShield.GetData().cardName} มี bypass attack skill (all) ไม่ได้ใช้เป็นตัวกันได้!");
-                ShowDamagePopupString("Cannot Block!", myShield.transform);
-                return;
-            }
-            
-            // value > 0 → ข้ามได้เฉพาะ Equip ที่ cost < threshold
-            if (shieldCost < costThreshold)
-            {
-                Debug.LogWarning($"🚫 {myShield.GetData().cardName} (cost={shieldCost}) < threshold ({costThreshold}) ไม่สามารถกัน!");
-                ShowDamagePopupString($"Cost too low!", myShield.transform);
+                Debug.LogWarning($"🚫 {myShield.GetData().cardName} ถูกข้าม (Bypassed) - ไม่สามารถกันได้!");
+                ShowDamagePopupString("Bypassed!", myShield.transform);
                 return;
             }
         }
@@ -2610,6 +2688,9 @@ public class BattleManager : MonoBehaviour
                 if (c) {
                     c.hasAttacked = false;
                     c.canBypassIntercept = false; // รีเซ็ต Bypass ตอนเริ่มเทิร์น
+                    c.bypassCostThreshold = 0;
+                    c.bypassAllowedMainCat = MainCategory.General;
+                    c.bypassAllowedSubCat = SubCategory.General;
                     // 🔥 แก้: ตรวจสอบ Image ก่อน และให้แน่ใจว่าแสดงหน้าการ์ด
                     var img = c.GetComponent<Image>();
                     if (img != null)
@@ -2651,6 +2732,9 @@ public class BattleManager : MonoBehaviour
                 if (c) {
                     c.hasAttacked = false;
                     c.canBypassIntercept = false; // รีเซ็ต Bypass
+                    c.bypassCostThreshold = 0;
+                    c.bypassAllowedMainCat = MainCategory.General;
+                    c.bypassAllowedSubCat = SubCategory.General;
                     c.GetComponent<Image>().color = Color.white; // คืนสี
                 }
             }
@@ -3196,7 +3280,11 @@ public class BattleManager : MonoBehaviour
         newCard.transform.SetParent(oldCardSlot);
         newCard.transform.localPosition = Vector3.zero;
         newCard.isOnField = true;
-        newCard.hasAttacked = true; // ลงแบบสังเวยต้องรอเทิร์นถัดไปถึงจะตีได้
+        // 🔥 EquipSpell ไม่มี Summoning Sickness
+        if (newData.type != CardType.EquipSpell)
+        {
+            newCard.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
+        }
         newCard.GetComponent<Image>().color = Color.white; // ไม่เป็นสีเทา
         newCard.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม
 
@@ -3915,8 +4003,9 @@ public class BattleManager : MonoBehaviour
 
     /// <summary>ให้การ์ด source สามารถข้ามการกัน (Bypass Intercept) ได้ โดย value = cost threshold
     /// value = 0 → ไม่สามารถข้ามไม่ได้เลย
-    /// value = 3 → ข้ามได้เฉพาะ Equip ที่ cost < 3
+    /// value = 3 → ข้ามได้เฉพาะ Equip ที่ cost < 3 และไม่ตรงกับ bypassAllowedMainCat/SubCat
     /// value = -1 → ข้ามการกันทั้งหมด
+    /// 🔥 bypassAllowedMainCat/SubCat: ถ้าโล่ตรงกับ Category นี้ = โล่สามารถ Intercept ได้ (ไม่ถูกข้าม)
     /// สกิลนี้ติดตัวมอนสเตอร์ที่ใช้สกิลเท่านั้น ไม่ใช่ทั้งสนาม
     /// </summary>
     void ApplyBypassIntercept(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
@@ -3928,13 +4017,24 @@ public class BattleManager : MonoBehaviour
         }
 
         int costThreshold = effect.value;
+        MainCategory allowedMainCat = effect.bypassAllowedMainCat;
+        SubCategory allowedSubCat = effect.bypassAllowedSubCat;
         
         // ตั้ง bypass ให้กับ sourceCard เท่านั้น
         sourceCard.canBypassIntercept = true;
         sourceCard.bypassCostThreshold = costThreshold;
+        sourceCard.bypassAllowedMainCat = allowedMainCat;
+        sourceCard.bypassAllowedSubCat = allowedSubCat;
+        
         string thresholdText = costThreshold == -1 ? "all" : (costThreshold == 0 ? "nothing" : $"cost < {costThreshold}");
-        Debug.Log($"🚀 {sourceCard.GetData().cardName} gained Bypass Intercept ({thresholdText})!");
-        AddBattleLog($"{sourceCard.GetData().cardName} gained Bypass Intercept ({thresholdText})");
+        string categoryText = "";
+        if (allowedMainCat != MainCategory.General)
+            categoryText = $" (except {allowedMainCat})";
+        else if (allowedSubCat != SubCategory.General)
+            categoryText = $" (except {allowedSubCat})";
+        
+        Debug.Log($"🚀 {sourceCard.GetData().cardName} gained Bypass Intercept ({thresholdText}{categoryText})!");
+        AddBattleLog($"{sourceCard.GetData().cardName} gained Bypass Intercept ({thresholdText}{categoryText})");
     }
 
     /// <summary>บังคับให้การ์ดต้องกันการโจมตี (Force Intercept)</summary>
@@ -4056,26 +4156,12 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>เช็คว่าฝั่งป้องกันมีการ์ดที่ต้องกันบังคับหรือไม่</summary>
-        /// <summary>หาการ์ดแรกที่มี mustIntercept = true</summary>
+        /// <summary>หาการ์ดแรกที่มี mustIntercept = true (เช็คเฉพาะ EquipSlots เท่านั้น)</summary>
         BattleCardUI GetMustInterceptCard(bool defenderIsPlayer)
         {
-            Transform[] monsterSlots = defenderIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
             Transform[] equipSlots = defenderIsPlayer ? playerEquipSlots : enemyEquipSlots;
         
-            // หาจากมอนสเตอร์ก่อน
-            foreach (var slot in monsterSlots)
-            {
-                if (slot != null && slot.childCount > 0)
-                {
-                    var card = slot.GetChild(0).GetComponent<BattleCardUI>();
-                    if (card != null && card.mustIntercept)
-                    {
-                        return card;
-                    }
-                }
-            }
-        
-            // หาจากอุปกรณ์
+            // หาจากอุปกรณ์เท่านั้น (ไม่เช็คมอนสเตอร์)
             foreach (var slot in equipSlots)
             {
                 if (slot != null && slot.childCount > 0)
@@ -4091,26 +4177,12 @@ public class BattleManager : MonoBehaviour
             return null;
         }
 
-        /// <summary>เช็คว่าฝั่งป้องกันมีการ์ดที่ต้องกันบังคับหรือไม่</summary>
+        /// <summary>เช็คว่าฝั่งป้องกันมีการ์ดที่ต้องกันบังคับหรือไม่ (เช็คเฉพาะ EquipSlots เท่านั้น)</summary>
     bool HasMustInterceptCard(bool defenderIsPlayer)
     {
-        Transform[] monsterSlots = defenderIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
         Transform[] equipSlots = defenderIsPlayer ? playerEquipSlots : enemyEquipSlots;
         
-        // เช็คมอนสเตอร์
-        foreach (var slot in monsterSlots)
-        {
-            if (slot != null && slot.childCount > 0)
-            {
-                var card = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (card != null && card.mustIntercept)
-                {
-                    return true;
-                }
-            }
-        }
-        
-        // เช็คอุปกรณ์
+        // เช็คอุปกรณ์เท่านั้น (ไม่เช็คมอนสเตอร์)
         foreach (var slot in equipSlots)
         {
             if (slot != null && slot.childCount > 0)
@@ -5244,16 +5316,85 @@ public class BattleManager : MonoBehaviour
         if (attacker == null || !attacker.canBypassIntercept) return false;
         if (shield == null || shield.GetData() == null) return false;
 
+        CardData shieldData = shield.GetData();
         int costThreshold = attacker.bypassCostThreshold;
-        int shieldCost = shield.GetData().cost;
+        int shieldCost = shieldData.cost;
+        MainCategory allowedMainCat = attacker.bypassAllowedMainCat;
+        SubCategory allowedSubCat = attacker.bypassAllowedSubCat;
+
+        Debug.Log($"🔍 Check Bypass: Shield={shieldData.cardName} (Cost={shieldCost}, MainCat={shieldData.mainCategory}, SubCat={shieldData.subCategory}) | Threshold={costThreshold}, AllowedMainCat={allowedMainCat}, AllowedSubCat={allowedSubCat}");
 
         // value = 0 → ไม่ข้ามไม่ได้เลย
-        if (costThreshold == 0) return false;
+        if (costThreshold == 0) {
+            Debug.Log($"→ Threshold=0, CANNOT bypass");
+            return false;
+        }
 
-        // value = -1 → ข้ามทั้งหมด
-        if (costThreshold == -1) return true;
+        // value = -1 → ข้ามทั้งหมด (ไม่เช็ค category)
+        if (costThreshold == -1) {
+            Debug.Log($"→ Threshold=-1, CAN bypass all");
+            return true;
+        }
 
-        // value > 0 → ข้ามได้เฉพาะ shield ที่ cost < threshold
-        return shieldCost < costThreshold;
+        // 🔥 ตรวจสอบว่าโล่ตรงกับ Category ที่อนุญาต → ถ้าตรง = ไม่ถูกข้าม (สามารถ Intercept ได้)
+        if (allowedMainCat != MainCategory.General && shieldData.mainCategory == allowedMainCat) {
+            Debug.Log($"→ Shield matches AllowedMainCat={allowedMainCat}, CANNOT bypass (Shield can intercept)");
+            return false;
+        }
+        
+        if (allowedSubCat != SubCategory.General && shieldData.subCategory == allowedSubCat) {
+            Debug.Log($"→ Shield matches AllowedSubCat={allowedSubCat}, CANNOT bypass (Shield can intercept)");
+            return false;
+        }
+
+        // value > 0 → ข้ามได้เฉพาะ shield ที่ cost < threshold และไม่ใช่ Category ที่อนุญาต
+        bool canBypass = shieldCost < costThreshold;
+        Debug.Log($"→ Cost check: {shieldCost} < {costThreshold} = {canBypass}, Result: {(canBypass ? "CAN bypass" : "CANNOT bypass")}");
+        return canBypass;
+    }
+
+    /// <summary>ไฮไลท์โล่ที่สามารถกันได้ (สีเหลือง)</summary>
+    void HighlightInterceptableShields(BattleCardUI attacker)
+    {
+        if (attacker == null) return;
+
+        foreach (Transform slot in playerEquipSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                var shield = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (shield != null && shield.GetData() != null && shield.GetData().type == CardType.EquipSpell && !shield.cannotIntercept)
+                {
+                    // เช็คว่าโล่นี้สามารถกันได้หรือไม่
+                    bool canIntercept = true;
+                    if (attacker.canBypassIntercept)
+                    {
+                        canIntercept = !CanAttackerBypassShield(attacker, shield);
+                    }
+
+                    if (canIntercept)
+                    {
+                        shield.SetHighlight(true);
+                        Debug.Log($"💛 Highlight: {shield.GetData().cardName} (can intercept)");
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>ปิดไฮไลท์โล่ทั้งหมด</summary>
+    void ClearAllShieldHighlights()
+    {
+        foreach (Transform slot in playerEquipSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                var shield = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (shield != null)
+                {
+                    shield.SetHighlight(false);
+                }
+            }
+        }
     }
 }
