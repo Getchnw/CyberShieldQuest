@@ -19,7 +19,7 @@ MonoBehaviour:
   type: 0
   mainCategory: 0
   subCategory: 3
-  rarity: 0
+  rarity: 3
   cost: 5
   atk: 2
   hp: 0
@@ -31,9 +31,11 @@ MonoBehaviour:
   effects:
   - trigger: 4
     targetType: 0
-    action: 0
+    action: 16
     targetMainCat: 0
     targetSubCat: 0
     value: 2
     destroyMode: 0
     tokenCardId: 
+    bypassAllowedMainCat: 0
+    bypassAllowedSubCat: 0

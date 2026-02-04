@@ -30,9 +30,11 @@ MonoBehaviour:
   effects:
   - trigger: 1
     targetType: 2
-    action: 8
+    action: 18
     targetMainCat: 0
     targetSubCat: 0
     value: 0
     destroyMode: 0
     tokenCardId: 
+    bypassAllowedMainCat: 0
+    bypassAllowedSubCat: 0

@@ -273,8 +273,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardImage: {fileID: 5214189744827470782}
+  frameImage: {fileID: 0}
   btn: {fileID: 1022527979207781532}
   amountText: {fileID: 2942661467194274656}
+  commonFrame: {fileID: 21300000, guid: be01e642111c5de49a6392d4584503fd, type: 3}
+  rareFrame: {fileID: 21300000, guid: 5e5691a27c4e12e43848939aa211a393, type: 3}
+  epicFrame: {fileID: 21300000, guid: fda9cdb55b3e6dc4b932d3a33df0c40f, type: 3}
+  legendaryFrame: {fileID: 21300000, guid: 0a210cf35e9cbd344ac3ec22ea1ce4c1, type: 3}
 --- !u!223 &-7650100318925113479
 Canvas:
   m_ObjectHideFlags: 0
@@ -329,9 +334,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   frameSprite: {fileID: 0}
   commonFrame: {fileID: 21300000, guid: be01e642111c5de49a6392d4584503fd, type: 3}
-  rareFrame: {fileID: 0}
-  epicFrame: {fileID: 0}
-  legendaryFrame: {fileID: 0}
+  rareFrame: {fileID: 21300000, guid: 5e5691a27c4e12e43848939aa211a393, type: 3}
+  epicFrame: {fileID: 21300000, guid: fda9cdb55b3e6dc4b932d3a33df0c40f, type: 3}
+  legendaryFrame: {fileID: 21300000, guid: 0a210cf35e9cbd344ac3ec22ea1ce4c1, type: 3}
   isOnField: 0
   parentAfterDrag: {fileID: 0}
   hasAttacked: 0

@@ -160,7 +160,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 37.472046, y: -30.323486}
+  m_AnchoredPosition: {x: 37.472168, y: -30.323486}
   m_SizeDelta: {x: -1920, y: -1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &16773637
@@ -2778,6 +2778,10 @@ PrefabInstance:
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25
       objectReference: {fileID: 0}
+    - target: {fileID: 442003084862066329, guid: 7f659e043346f3849b867d6cdf284f4d, type: 3}
+      propertyPath: commonFrame
+      value: 
+      objectReference: {fileID: 21300000, guid: be01e642111c5de49a6392d4584503fd, type: 3}
     - target: {fileID: 2077113337728995661, guid: 7f659e043346f3849b867d6cdf284f4d, type: 3}
       propertyPath: m_Name
       value: CardSlot
@@ -2861,6 +2865,10 @@ PrefabInstance:
     - target: {fileID: 3475767444335513050, guid: 7f659e043346f3849b867d6cdf284f4d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6045390745908478781, guid: 7f659e043346f3849b867d6cdf284f4d, type: 3}
+      propertyPath: frameSprite
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11669,7 +11677,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -1.5279541, y: -7.3234863}
+  m_AnchoredPosition: {x: -1.527832, y: -7.3234863}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1903736813

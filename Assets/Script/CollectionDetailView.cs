@@ -7,12 +7,19 @@ public class CollectionDetailView : MonoBehaviour
 {
     [Header("Card Info UI")]
     public Image artworkImage;
+    public Image frameImage; // 🔥 กรอบการ์ด
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI typeText;
     public TextMeshProUGUI statsText;
     public TextMeshProUGUI abilityText;
     public TextMeshProUGUI flavorText;
     public TextMeshProUGUI amountOwnedText; // โชว์จำนวนที่มี
+
+    [Header("Card Frame")]
+    public Sprite commonFrame;
+    public Sprite rareFrame;
+    public Sprite epicFrame;
+    public Sprite legendaryFrame;
 
     [Header("Crafting UI")]
     public Button craftButton;
@@ -41,6 +48,7 @@ public class CollectionDetailView : MonoBehaviour
 
         // 1. แสดงข้อมูลการ์ด (เหมือน CardDetailView ปกติ)
         if (currentCard.artwork != null) artworkImage.sprite = currentCard.artwork;
+        ApplyFrameByRarity(currentCard);
         nameText.text = currentCard.cardName;
         
         string subCat = currentCard.subCategory != SubCategory.General ? $" / [{currentCard.subCategory}]" : "";
@@ -80,5 +88,70 @@ public class CollectionDetailView : MonoBehaviour
     public void Close()
     {
         gameObject.SetActive(false);
+    }
+
+    void EnsureFrameImage()
+    {
+        // ถ้ามี frameImage อยู่แล้ว ไม่ต้องสร้างใหม่
+        if (frameImage != null) return;
+
+        // ลบ CardFrame เก่าทั้งหมดก่อน (ป้องกันการสร้างซ้ำ)
+        foreach (Transform child in transform)
+        {
+            if (child.name == "CardFrame")
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        // สร้าง CardFrame ใหม่
+        GameObject frameObj = new GameObject("CardFrame");
+        frameObj.transform.SetParent(transform, false);
+        frameObj.transform.SetAsFirstSibling();
+
+        frameImage = frameObj.AddComponent<Image>();
+        frameImage.raycastTarget = false;
+        frameImage.color = new Color(0f, 0f, 0f, 0f); // โปร่งใสสนิท
+        frameImage.sprite = null; // ไม่มี sprite
+
+        RectTransform frameRect = frameObj.GetComponent<RectTransform>();
+        frameRect.anchorMin = Vector2.zero;
+        frameRect.anchorMax = Vector2.one;
+        frameRect.offsetMin = Vector2.zero;
+        frameRect.offsetMax = Vector2.zero;
+    }
+
+    void ApplyFrameByRarity(CardData data)
+    {
+        if (data == null) return;
+        EnsureFrameImage();
+        if (frameImage == null) return;
+
+        Sprite rarityFrame = null;
+        switch (data.rarity)
+        {
+            case Rarity.Common:
+                rarityFrame = commonFrame;
+                break;
+            case Rarity.Rare:
+                rarityFrame = rareFrame;
+                break;
+            case Rarity.Epic:
+                rarityFrame = epicFrame;
+                break;
+            case Rarity.Legendary:
+                rarityFrame = legendaryFrame;
+                break;
+        }
+
+        if (rarityFrame != null)
+        {
+            frameImage.sprite = rarityFrame;
+            frameImage.color = Color.white;
+        }
+        else
+        {
+            frameImage.color = new Color(1f, 1f, 1f, 0f);
+        }
     }
 }

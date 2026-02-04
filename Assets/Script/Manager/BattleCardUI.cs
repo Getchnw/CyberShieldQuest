@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro; 
@@ -10,6 +11,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     [Header("UI References")]
     private Image artworkImage;
     private Image frameImage; // 🔥 กรอบการ์ด
+    private TextMeshProUGUI atkText; // 🔥 แสดงพลังปัจจุบัน (ซ้ายล่าง)
+    private TextMeshProUGUI costText; // 🔥 แสดงคอส (ขวาบน)
 
     [Header("Card Frame")]
     public Sprite frameSprite; // 🔥 Sprite ของกรอบการ์ด (ตั้งใน Inspector)
@@ -25,6 +28,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public bool isOnField = false; 
     public Transform parentAfterDrag; // จำตำแหน่งเดิมก่อนลาก
     public bool hasAttacked = false;
+    public int attacksThisTurn = 0; // จำนวนครั้งที่โจมตีในเทิร์นนี้
+    public bool isManualHighlight = false; // ถ้า true = อย่าให้ auto-highlight แตะสี
     private bool mulliganSelected = false;
     
     // 🎯 Intercept System
@@ -66,9 +71,18 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             transform.localPosition = originalPosition + Vector3.up * floatOffset;
         }
 
+        // 🔥 อัพเดตแสดงพลังปัจจุบัน
+        UpdateATKDisplay();
+
         // 🔥 Auto-highlight สำหรับการ์ดบนสนาม
         if (isOnField && _cardData != null && artworkImage != null)
         {
+            // ⚠️ ถ้าเป็น manual highlight (effect เลือกเป้าหมาย) ห้ามแตะ
+            if (isManualHighlight)
+            {
+                return;
+            }
+
             // ⚠️ ถ้าอยู่ใน DEFENDER_CHOICE state ให้ใช้ manual highlight แทน (ห้าม override)
             if (BattleManager.Instance != null && BattleManager.Instance.state == BattleState.DEFENDER_CHOICE)
             {
@@ -87,13 +101,13 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             else if (_cardData.type == CardType.Monster && BattleManager.Instance != null)
             {
                 bool isPlayerTurn = BattleManager.Instance.state == BattleState.PLAYERTURN;
-                if (isPlayerTurn && !hasAttacked)
+                if (isPlayerTurn && CanAttackNow())
                 {
                     shouldHighlight = true;
                 }
-                else if (hasAttacked)
+                else if (isPlayerTurn && !CanAttackNow())
                 {
-                    shouldBeDark = true; // Summoning Sickness
+                    shouldBeDark = true; // Summoning Sickness หรือโจมตีครบแล้ว
                 }
             }
 
@@ -111,6 +125,103 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 artworkImage.color = Color.white; // ปกติ
             }
         }
+    }
+
+    void UpdateATKDisplay()
+    {
+        // แสดง ATK และ Cost เฉพาะตอนอยู่ใน Battle Scene และบนสนาม
+        if (atkText == null || costText == null) return;
+        
+        // 🔥 เช็คว่าอยู่ใน Battle Scene หรือไม่
+        bool inBattleScene = BattleManager.Instance != null;
+        
+        if (inBattleScene && isOnField && _cardData != null)
+        {
+            // 🔥 แสดง ATK (มุมซ้ายล่าง) - เฉพาะ Monster/Token
+            if (_cardData.type == CardType.Monster || _cardData.type == CardType.Token)
+            {
+                // ใช้ GetModifiedATK() เพื่อแสดงพลังปัจจุบันที่คำนึงถึงสกิลทั้งหมด
+                int currentATK = GetModifiedATK(isPlayerAttack: true);
+                
+                // ถ้ามี GraveyardATK ให้แสดงเป็นสีเขียว
+                var graveyardEffect = _cardData.effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
+                if (graveyardEffect.action == ActionType.GraveyardATK && currentATK > _cardData.atk)
+                {
+                    atkText.color = new Color(0.5f, 1f, 0.5f); // สีเขียวอ่อน
+                }
+                else
+                {
+                    atkText.color = Color.white;
+                }
+                
+                atkText.text = currentATK.ToString();
+                atkText.gameObject.SetActive(true);
+            }
+            else
+            {
+                atkText.gameObject.SetActive(false);
+            }
+
+            // 🔥 แสดง Cost (มุมขวาบน)
+            costText.text = _cardData.cost.ToString();
+            costText.color = Color.white;
+            costText.gameObject.SetActive(true);
+        }
+        else
+        {
+            // ซ่อนตัวเลขถ้าไม่อยู่ใน Battle Scene หรือไม่อยู่บนสนาม
+            atkText.gameObject.SetActive(false);
+            costText.gameObject.SetActive(false);
+        }
+    }
+
+    public int GetMaxAttacksPerTurn()
+    {
+        if (_cardData == null) return 1;
+        bool hasDoubleStrike = _cardData.effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.DoubleStrike);
+        return hasDoubleStrike ? 2 : 1;
+    }
+
+    public bool CanAttackNow()
+    {
+        if (_cardData == null) return false;
+        if (_cardData.type != CardType.Monster && _cardData.type != CardType.Token) return false;
+        if (hasAttacked) return false;
+        return attacksThisTurn < GetMaxAttacksPerTurn();
+    }
+
+    public int GetModifiedATK(bool isPlayerAttack = true)
+    {
+        if (_cardData == null) return 0;
+        int baseATK = _cardData.atk;
+
+        // 🔥 เช็คสกิล GraveyardATK (เพิ่มพลังตามจำนวนการ์ดในสุสาน)
+        var graveyardEffect = _cardData.effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
+        
+        if (graveyardEffect.action == ActionType.GraveyardATK)
+        {
+            int graveCount = 0;
+            
+            // ถ้า player โจมตี นับสุสานของ Bot ถ้าเป็น Bot นับสุสานของ Player
+            if (BattleManager.Instance != null)
+            {
+                if (isPlayerAttack)
+                {
+                    graveCount = BattleManager.Instance.GetEnemyGraveyardCount();
+                }
+                else
+                {
+                    graveCount = BattleManager.Instance.GetPlayerGraveyardCount();
+                }
+            }
+            
+            // 🔥 คำนวณ ATK: +1 ต่อทุกๆ 2 ใบ (หารด้วย 2 แล้วปัดลง)
+            int extraATK = (graveCount / 2) * graveyardEffect.value;
+            Debug.Log($"🔥 GraveyardATK [{_cardData.cardName}]: Base={baseATK}, Graves={graveCount}, Per2Cards={graveCount/2}, Value={graveyardEffect.value}, Extra={extraATK}, Total={baseATK + extraATK}");
+            return baseATK + extraATK;
+        }
+
+        return baseATK;
     }
 
     void CreateUIElementsIfNeeded()
@@ -133,29 +244,29 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             // 🔥 สร้างกรอบการ์ด (ถ้ายังไม่มี)
             if (frameImage == null)
             {
-                Transform frameTransform = transform.Find("CardFrame");
-                if (frameTransform == null)
+                // ลบ CardFrame เก่าทั้งหมดก่อน (ป้องกันการสร้างซ้ำ)
+                foreach (Transform child in transform)
                 {
-                    GameObject frameObj = new GameObject("CardFrame");
-                    frameObj.transform.SetParent(transform);
-                    frameObj.transform.SetAsLastSibling(); // ให้กรอบอยู่ด้านหน้าสุด
-                
-                    frameImage = frameObj.AddComponent<Image>();
-                    frameImage.raycastTarget = false; // ไม่บล็อกการคลิก
-                
-                    // ตั้งค่า RectTransform ให้เต็มการ์ด
-                    RectTransform frameRect = frameObj.GetComponent<RectTransform>();
-                    frameRect.anchorMin = Vector2.zero;
-                    frameRect.anchorMax = Vector2.one;
-                    frameRect.offsetMin = Vector2.zero;
-                    frameRect.offsetMax = Vector2.zero;
-                
-                    Debug.Log($"✅ สร้างกรอบการ์ดให้ {_cardData?.cardName}");
+                    if (child.name == "CardFrame")
+                    {
+                        Destroy(child.gameObject);
+                    }
                 }
-                else
-                {
-                    frameImage = frameTransform.GetComponent<Image>();
-                }
+
+                GameObject frameObj = new GameObject("CardFrame");
+                frameObj.transform.SetParent(transform, false);
+                frameObj.transform.SetAsFirstSibling();
+                
+                frameImage = frameObj.AddComponent<Image>();
+                frameImage.raycastTarget = false;
+                frameImage.color = new Color(0f, 0f, 0f, 0f); // โปร่งใสสนิท
+                frameImage.sprite = null; // ไม่มี sprite
+                
+                RectTransform frameRect = frameObj.GetComponent<RectTransform>();
+                frameRect.anchorMin = Vector2.zero;
+                frameRect.anchorMax = Vector2.one;
+                frameRect.offsetMin = Vector2.zero;
+                frameRect.offsetMax = Vector2.zero;
             }
 
             // 🔥 ใส่ Sprite กรอบ (ถ้ามี)
@@ -170,6 +281,68 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 {
                     frameImage.color = new Color(1f, 1f, 1f, 0f); // ซ่อนกรอบถ้าไม่มี sprite
                 }
+            }
+
+            // 🔥 สร้างข้อความแสดงพลังปัจจุบัน (ซ้ายล่าง)
+            if (atkText == null)
+            {
+                // ลบ ATKDisplay เก่าทั้งหมดก่อน
+                foreach (Transform child in transform)
+                {
+                    if (child.name == "ATKDisplay")
+                    {
+                        Destroy(child.gameObject);
+                    }
+                }
+
+                GameObject atkObj = new GameObject("ATKDisplay");
+                atkObj.transform.SetParent(transform, false);
+                atkObj.transform.SetAsLastSibling();
+
+                atkText = atkObj.AddComponent<TextMeshProUGUI>();
+                atkText.fontSize = 42;
+                atkText.alignment = TextAlignmentOptions.BottomLeft; // 🔥 ซ้ายล่าง
+                atkText.color = Color.white;
+                atkText.fontStyle = FontStyles.Bold;
+                atkText.text = "0";
+                atkText.raycastTarget = false;
+
+                RectTransform atkRect = atkObj.GetComponent<RectTransform>();
+                atkRect.anchorMin = Vector2.zero;
+                atkRect.anchorMax = Vector2.one;
+                atkRect.offsetMin = new Vector2(12, 8); // 🔥 มุมซ้ายล่าง (ห่างจากขอบ)
+                atkRect.offsetMax = new Vector2(-12, -8);
+            }
+
+            // 🔥 สร้างข้อความแสดงคอส (ขวาบน)
+            if (costText == null)
+            {
+                // ลบ CostDisplay เก่าทั้งหมดก่อน
+                foreach (Transform child in transform)
+                {
+                    if (child.name == "CostDisplay")
+                    {
+                        Destroy(child.gameObject);
+                    }
+                }
+
+                GameObject costObj = new GameObject("CostDisplay");
+                costObj.transform.SetParent(transform, false);
+                costObj.transform.SetAsLastSibling();
+
+                costText = costObj.AddComponent<TextMeshProUGUI>();
+                costText.fontSize = 42;
+                costText.alignment = TextAlignmentOptions.TopRight; // 🔥 ขวาบน
+                costText.color = Color.white;
+                costText.fontStyle = FontStyles.Bold;
+                costText.text = "0";
+                costText.raycastTarget = false;
+
+                RectTransform costRect = costObj.GetComponent<RectTransform>();
+                costRect.anchorMin = Vector2.zero;
+                costRect.anchorMax = Vector2.one;
+                costRect.offsetMin = new Vector2(12, 13);
+                costRect.offsetMax = new Vector2(-10, -1 ); // 🔥 มุมขวาบน (สูงขึ้นอีก 10px)
             }
     }
 
@@ -495,14 +668,14 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             if (BattleManager.Instance.state == BattleState.PLAYERTURN
                 && (_cardData.type == CardType.Monster || _cardData.type == CardType.Token))
             {
-                if (!hasAttacked)
+                if (CanAttackNow())
                 {
                     BattleManager.Instance.OnPlayerAttack(this);
                     Debug.Log($"⚔️ โจมตี: {_cardData.cardName}");
                 }
                 else
                 {
-                    Debug.Log("⚠️ การ์ดนี้โจมตีแล้ว");
+                    Debug.Log("⚠️ การ์ดนี้โจมตีครบแล้ว");
                 }
             }
             else if (BattleManager.Instance.state == BattleState.DEFENDER_CHOICE)
@@ -572,21 +745,24 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
     }
     
-        /// <summary>ฮาイไลท์การ์ดสำหรับการเลือกเป้าหมาย</summary>
-        public void SetHighlight(bool highlight)
+    /// <summary>ฮาไลท์การ์ดสำหรับการเลือกเป้าหมาย</summary>
+    public void SetHighlight(bool highlight)
+    {
+        isManualHighlight = highlight; // บอก Update() ว่าห้ามแตะสี
+        if (artworkImage)
         {
-            if (artworkImage)
-            {
-                // ฮาไลท์ = สีเหลือง, ปกติ = สีขาว
-                artworkImage.color = highlight ? new Color(1f, 1f, 0.5f) : Color.white;
-                Debug.Log($"🎯 SetHighlight({highlight}): {_cardData?.cardName} -> {(highlight ? "Yellow" : "White")}");
-            }
+            // ฮาไลท์ = สีเหลือง, ปกติ = สีขาว
+            artworkImage.color = highlight ? new Color(1f, 1f, 0.5f) : Color.white;
+            Debug.Log($"🎯 SetHighlight({highlight}): {_cardData?.cardName} -> {(highlight ? "Yellow" : "White")}");
         }
+    }
     
         // ฟังก์ชันรีเซ็ตตอนเริ่มเทิร์น (ให้โจมตีใหม่ได้)
     public void ResetAttackState()
     {
         hasAttacked = false;
+        attacksThisTurn = 0; // รีเซ็ตจำนวนครั้งที่โจมตี
+        isManualHighlight = false; // รีเซ็ต manual highlight
         // เปลี่ยนสีกลับเป็นปกติ และตรวจสอบให้แสดงหน้าการ์ด
         if(artworkImage) 
         {

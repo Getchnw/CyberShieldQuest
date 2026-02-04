@@ -1430,6 +1430,13 @@ public class BattleManager : MonoBehaviour
         if (cardUI.GetData().type != CardType.EquipSpell)
         {
             cardUI.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
+            // 🔥 เช็คว่ามีสกิล Rush หรือไม่ (โจมตีได้ทันที)
+            bool hasRush = cardUI.GetData().effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.Rush);
+            if (hasRush)
+            {
+                cardUI.hasAttacked = false; // สามารถโจมตีได้ทันทีในเทิร์นนี้
+                AddBattleLog($"💨 <color=cyan>{cardUI.GetData().cardName}</color> มีสกิล Rush! สามารถโจมตีได้ทันที");
+            }
         }
         cardUI.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม 
         
@@ -1497,6 +1504,7 @@ public class BattleManager : MonoBehaviour
             {
                 case ActionType.Destroy:
                 case ActionType.ModifyStat:
+                case ActionType.ZeroStats:
                     // ต้องมีเป้าหมาย (กำลังโจมตี)
                     List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
                     if (targets.Count == 0)
@@ -1655,10 +1663,18 @@ public class BattleManager : MonoBehaviour
     {
         if (state != BattleState.PLAYERTURN) return;
 
-        attacker.hasAttacked = true;
+        attacker.attacksThisTurn++;
+        
+        // ถ้าโจมตีครบครั้งแล้ว ให้ปิดการโจมตี
+        if (attacker.attacksThisTurn >= attacker.GetMaxAttacksPerTurn())
+        {
+            attacker.hasAttacked = true;
+        }
+        
         attacker.GetComponent<Image>().color = Color.gray;
         
-        AddBattleLog($"Player attacks with {attacker.GetData().cardName} (ATK:{attacker.GetData().atk})");
+        int attackDamage = attacker.GetModifiedATK(isPlayerAttack: true); // 🔥 ใช้ ModifiedATK แทน
+        AddBattleLog($"Player attacks with {attacker.GetData().cardName} (ATK:{attackDamage}) [{attacker.attacksThisTurn}/{attacker.GetMaxAttacksPerTurn()}]");
 
         StartCoroutine(ProcessPlayerAttack(attacker));
     }
@@ -1666,7 +1682,8 @@ public class BattleManager : MonoBehaviour
     IEnumerator ProcessPlayerAttack(BattleCardUI attacker)
     {
         Vector3 startPos = attacker.transform.position;
-        int damage = attacker.GetData().atk;
+        int damage = attacker.GetModifiedATK(isPlayerAttack: true); // 🔥 ใช้ ModifiedATK
+
 
         // 🔥 ทริกเกอร์ OnStrike Effects (ก่อนเช็คการกัน)
         yield return StartCoroutine(ResolveEffects(attacker, EffectTrigger.OnStrike, isPlayer: true));
@@ -2083,6 +2100,14 @@ public class BattleManager : MonoBehaviour
         if (ui.GetData().type != CardType.EquipSpell)
         {
             ui.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
+
+                    // 🔥 เช็คว่ามีสกิล Rush หรือไม่ (Bot)
+                    bool hasRush = ui.GetData().effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.Rush);
+                    if (hasRush)
+                    {
+                        ui.hasAttacked = false;
+                        AddBattleLog($"💨 <color=red>Bot's {ui.GetData().cardName}</color> มีสกิล Rush!");
+                    }
         }
         ui.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม
         var img = ui.GetComponent<Image>();
@@ -2134,12 +2159,17 @@ public class BattleManager : MonoBehaviour
             {
                 var monster = slot.GetChild(0).GetComponent<BattleCardUI>();
                 // 🔥 แก้: เช็คว่าตัวมอนสเตอร์ยังไม่ได้โจมตีในเทิร์นนี้ (Summoning Sickness)
-                if (monster != null && !monster.hasAttacked)
+                if (monster != null && monster.CanAttackNow())
                 {
                     currentAttackerBot = monster;
                     
-                    // ตั้งสถานะว่าโจมตีแล้ว และเปลี่ยนสีเป็นเทา
-                    monster.hasAttacked = true;
+                    // นับจำนวนครั้งที่โจมตี
+                    monster.attacksThisTurn++;
+                    if (monster.attacksThisTurn >= monster.GetMaxAttacksPerTurn())
+                    {
+                        monster.hasAttacked = true;
+                    }
+                    
                     monster.GetComponent<Image>().color = Color.gray;
                     
                     Vector3 startPos = monster.transform.position;
@@ -2192,11 +2222,12 @@ public class BattleManager : MonoBehaviour
                     // 🔥 ถ้าบอทข้ามการกันได้ทั้งหมด โจมตีตรงไปที่ผู้เล่นโดยตรง
                     if (canBypassAll)
                     {
+                        int botDamage = monster.GetModifiedATK(isPlayerAttack: false); // 🔥 ใช้ ModifiedATK
                         Debug.Log($"🚀 Bot {monster.GetData().cardName} bypasses intercept - direct damage!");
-                        AddBattleLog($"Bot {monster.GetData().cardName} bypasses intercept - direct damage");
+                        AddBattleLog($"Bot {monster.GetData().cardName} bypasses intercept - {botDamage} direct damage");
                         
                         yield return new WaitForSeconds(0.2f);
-                        PlayerTakeDamage(monster.GetData().atk);
+                        PlayerTakeDamage(botDamage);
                         
                         // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ - ข้ามการกัน)
                         yield return StartCoroutine(ResolveEffects(monster, EffectTrigger.OnStrikeHit, isPlayer: false));
@@ -2291,7 +2322,8 @@ public class BattleManager : MonoBehaviour
                         yield return new WaitForSeconds(0.2f);
                         if(monster != null)
                         {
-                            PlayerTakeDamage(monster.GetData().atk);
+                            int botDamage = monster.GetModifiedATK(isPlayerAttack: false); // 🔥 ใช้ ModifiedATK
+                            PlayerTakeDamage(botDamage);
                             
                             // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ - ไม่ถูกกัน)
                             yield return StartCoroutine(ResolveEffects(monster, EffectTrigger.OnStrikeHit, isPlayer: false));
@@ -2691,6 +2723,7 @@ public class BattleManager : MonoBehaviour
                 var c = slot.GetChild(0).GetComponent<BattleCardUI>();
                 if (c) {
                     c.hasAttacked = false;
+                    c.attacksThisTurn = 0; // รีเซ็ตจำนวนครั้งที่โจมตี
                     c.canBypassIntercept = false; // รีเซ็ต Bypass ตอนเริ่มเทิร์น
                     c.bypassCostThreshold = 0;
                     c.bypassAllowedMainCat = MainCategory.General;
@@ -2735,6 +2768,7 @@ public class BattleManager : MonoBehaviour
                 var c = slot.GetChild(0).GetComponent<BattleCardUI>();
                 if (c) {
                     c.hasAttacked = false;
+                    c.attacksThisTurn = 0; // รีเซ็ตจำนวนครั้งที่โจมตี
                     c.canBypassIntercept = false; // รีเซ็ต Bypass
                     c.bypassCostThreshold = 0;
                     c.bypassAllowedMainCat = MainCategory.General;
@@ -3290,6 +3324,14 @@ public class BattleManager : MonoBehaviour
         if (newData.type != CardType.EquipSpell)
         {
             newCard.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
+
+                    // 🔥 เช็คว่ามีสกิล Rush หรือไม่ (Sacrifice)
+                    bool hasRush = newData.effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.Rush);
+                    if (hasRush)
+                    {
+                        newCard.hasAttacked = false;
+                        AddBattleLog($"💨 <color=cyan>{newData.cardName}</color> มีสกิล Rush! สามารถโจมตีได้ทันที");
+                    }
         }
         newCard.GetComponent<Image>().color = Color.white; // ไม่เป็นสีเทา
         newCard.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม
@@ -3511,6 +3553,9 @@ public class BattleManager : MonoBehaviour
             case ActionType.ModifyStat:
                 ApplyModifyStat(sourceCard, effect, isPlayer);
                 yield break;
+            case ActionType.ZeroStats:
+                yield return StartCoroutine(ApplyZeroStats(sourceCard, effect, isPlayer));
+                break;
             case ActionType.BypassIntercept:
                 ApplyBypassIntercept(sourceCard, effect, isPlayer);
                 yield break;
@@ -3973,6 +4018,55 @@ public class BattleManager : MonoBehaviour
                 target.GetData().atk = Mathf.Max(0, target.GetData().atk - graveyardBoost);
                 target.GetData().cost = 0;
                 Debug.Log($"⚠️ ModifyStat: {target.GetData().cardName} ATK->{target.GetData().atk} (Graveyard boost: {graveyardBoost}) Cost->0");
+            }
+        }
+    }
+
+    IEnumerator ApplyZeroStats(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
+        
+        // 🔥 ถ้ามีหลายเป้าหมาย ให้ผู้เล่นเลือก 1 ตัว
+        if (targets.Count > 1)
+        {
+            Debug.Log($"🎯 ZeroStats: มี {targets.Count} เป้าหมาย ให้เลือก 1 ตัว");
+            
+            // Highlight เป้าหมายที่เลือกได้
+            foreach (var t in targets)
+            {
+                t.SetHighlight(true);
+            }
+            
+            // รอให้ผู้เล่นเลือก
+            yield return StartCoroutine(WaitForTargetSelection(targets, selectCount: 1));
+            
+            // ลบ Highlight
+            foreach (var t in targets)
+            {
+                t.SetHighlight(false);
+            }
+            
+            // ใช้เป้าหมายที่เลือก
+            if (selectedTargets != null && selectedTargets.Count > 0)
+            {
+                targets = selectedTargets;
+            }
+            else
+            {
+                Debug.Log("⚠️ ไม่ได้เลือกเป้าหมาย ยกเลิก ZeroStats");
+                yield break;
+            }
+        }
+        
+        // ตั้งค่า Cost = 0 และ ATK = 0
+        foreach (var target in targets)
+        {
+            if (target != null && target.GetData() != null)
+            {
+                target.GetData().cost = 0;
+                target.GetData().atk = 0;
+                Debug.Log($"💀 ZeroStats: {target.GetData().cardName} → Cost=0, ATK=0");
+                AddBattleLog($"  {target.GetData().cardName} nullified! (Cost=0, ATK=0)");
             }
         }
     }
@@ -4466,6 +4560,10 @@ public class BattleManager : MonoBehaviour
 
         UpdateGraveyardCountUI();
     }
+
+    // 🔥 Helper ฟังก์ชันสำหรับสกิล GraveyardATK
+    public int GetPlayerGraveyardCount() => playerGraveyard.Count;
+    public int GetEnemyGraveyardCount() => enemyGraveyard.Count;
 
     /// <summary>ดึงการ์ดจากสุสาน (เพื่อเรียกกลับมา)</summary>
     CardData RestoreFromGraveyard(int index, bool isPlayer)

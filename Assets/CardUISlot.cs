@@ -9,8 +9,15 @@ public class CardUISlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
 {
     [Header("UI Elements")]
     public Image cardImage;
+    public Image frameImage; // 🔥 กรอบการ์ด
     public Button btn;
     public TextMeshProUGUI amountText;
+
+    [Header("Card Frame")]
+    public Sprite commonFrame;
+    public Sprite rareFrame;
+    public Sprite epicFrame;
+    public Sprite legendaryFrame;
 
     private CardData _data;
     private UnityAction<CardData> _onLeftClick;
@@ -18,15 +25,10 @@ public class CardUISlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
 
     private Vector3 originalScale;
     private Coroutine currentAnim;
-    
-    // 🔥 เพิ่มตัวแปร Canvas
-    private Canvas myCanvas;
 
     void Awake()
     {
         originalScale = transform.localScale;
-        // หา Canvas ในตัวมันเอง (ถ้าลืมใส่ใน Prefab โค้ดนี้จะช่วยกัน Error)
-        myCanvas = GetComponent<Canvas>();
     }
 
     public void Setup(CardData data, int amount, UnityAction<CardData> leftClick, UnityAction<CardData> rightClick)
@@ -38,15 +40,14 @@ public class CardUISlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
         if (currentAnim != null) StopCoroutine(currentAnim);
         transform.localScale = originalScale;
 
-        // Reset Sorting (กันค้าง)
-        if (myCanvas != null) myCanvas.sortingOrder = 0;
-
         if (data.artwork != null) {
             cardImage.sprite = data.artwork;
             cardImage.color = Color.white;
         } else {
             cardImage.color = Color.red; 
         }
+
+        ApplyFrameByRarity();
 
         if (amountText != null) amountText.text = (amount >= 0) ? $"x{amount}" : "";
         if (amount == 0) cardImage.color = Color.gray;
@@ -57,19 +58,13 @@ public class CardUISlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (currentAnim != null) StopCoroutine(currentAnim);
-        currentAnim = StartCoroutine(AnimateScale(originalScale * 1.15f, 0.1f));
-        
-        // 🔥 เทคนิคพิเศษ: ดัน Canvas ขึ้นมาทับคนอื่น
-        if (myCanvas != null) myCanvas.sortingOrder = 10; 
+        currentAnim = StartCoroutine(AnimateScale(originalScale * 1.05f, 0.1f));
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         if (currentAnim != null) StopCoroutine(currentAnim);
         currentAnim = StartCoroutine(AnimateScale(originalScale, 0.1f));
-
-        // 🔥 คืนค่ากลับไปปกติ
-        if (myCanvas != null) myCanvas.sortingOrder = 0;
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -100,5 +95,70 @@ public class CardUISlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
     {
         yield return StartCoroutine(AnimateScale(originalScale * 0.9f, 0.05f));
         yield return StartCoroutine(AnimateScale(originalScale * 1.1f, 0.05f));
+    }
+
+    void EnsureFrameImage()
+    {
+        // ถ้ามี frameImage อยู่แล้ว ไม่ต้องสร้างใหม่
+        if (frameImage != null) return;
+
+        // ลบ CardFrame เก่าทั้งหมดก่อน (ป้องกันการสร้างซ้ำ)
+        foreach (Transform child in transform)
+        {
+            if (child.name == "CardFrame")
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        // สร้าง CardFrame ใหม่
+        GameObject frameObj = new GameObject("CardFrame");
+        frameObj.transform.SetParent(transform, false);
+        frameObj.transform.SetAsFirstSibling();
+
+        frameImage = frameObj.AddComponent<Image>();
+        frameImage.raycastTarget = false;
+        frameImage.color = new Color(0f, 0f, 0f, 0f); // โปร่งใสสนิท
+        frameImage.sprite = null; // ไม่มี sprite
+
+        RectTransform frameRect = frameObj.GetComponent<RectTransform>();
+        frameRect.anchorMin = Vector2.zero;
+        frameRect.anchorMax = Vector2.one;
+        frameRect.offsetMin = Vector2.zero;
+        frameRect.offsetMax = Vector2.zero;
+    }
+
+    void ApplyFrameByRarity()
+    {
+        if (_data == null) return;
+        EnsureFrameImage();
+        if (frameImage == null) return;
+
+        Sprite rarityFrame = null;
+        switch (_data.rarity)
+        {
+            case Rarity.Common:
+                rarityFrame = commonFrame;
+                break;
+            case Rarity.Rare:
+                rarityFrame = rareFrame;
+                break;
+            case Rarity.Epic:
+                rarityFrame = epicFrame;
+                break;
+            case Rarity.Legendary:
+                rarityFrame = legendaryFrame;
+                break;
+        }
+
+        if (rarityFrame != null)
+        {
+            frameImage.sprite = rarityFrame;
+            frameImage.color = Color.white;
+        }
+        else
+        {
+            frameImage.color = new Color(1f, 1f, 1f, 0f);
+        }
     }
 }

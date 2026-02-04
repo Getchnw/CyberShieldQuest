@@ -6,11 +6,18 @@ public class CardDetailView : MonoBehaviour
 {
     [Header("UI Components")]
     public Image artworkImage;
+    public Image frameImage; // 🔥 กรอบการ์ด
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI typeText;
     public TextMeshProUGUI statsText;
     public TextMeshProUGUI abilityText;
     public TextMeshProUGUI flavorText;
+
+    [Header("Card Frame")]
+    public Sprite commonFrame;
+    public Sprite rareFrame;
+    public Sprite epicFrame;
+    public Sprite legendaryFrame;
 
     private CardData currentCard; // จำการ์ดที่กำลังแสดงอยู่
 
@@ -31,6 +38,7 @@ public class CardDetailView : MonoBehaviour
         {
             artworkImage.sprite = data.artwork;
         }
+        ApplyFrameByRarity(data);
 
         // 2. ใส่ชื่อ (เพิ่มหัวข้อ Name:)
         nameText.text = $"<b>Name:</b> {data.cardName}";
@@ -63,5 +71,70 @@ public class CardDetailView : MonoBehaviour
     {
         currentCard = null; // ล้างการ์ดที่จำไว้
         gameObject.SetActive(false);
+    }
+
+    void EnsureFrameImage()
+    {
+        // ถ้ามี frameImage อยู่แล้ว ไม่ต้องสร้างใหม่
+        if (frameImage != null) return;
+
+        // ลบ CardFrame เก่าทั้งหมดก่อน (ป้องกันการสร้างซ้ำ)
+        foreach (Transform child in transform)
+        {
+            if (child.name == "CardFrame")
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        // สร้าง CardFrame ใหม่
+        GameObject frameObj = new GameObject("CardFrame");
+        frameObj.transform.SetParent(transform, false);
+        frameObj.transform.SetAsFirstSibling();
+
+        frameImage = frameObj.AddComponent<Image>();
+        frameImage.raycastTarget = false;
+        frameImage.color = new Color(0f, 0f, 0f, 0f); // โปร่งใสสนิท
+        frameImage.sprite = null; // ไม่มี sprite
+
+        RectTransform frameRect = frameObj.GetComponent<RectTransform>();
+        frameRect.anchorMin = Vector2.zero;
+        frameRect.anchorMax = Vector2.one;
+        frameRect.offsetMin = Vector2.zero;
+        frameRect.offsetMax = Vector2.zero;
+    }
+
+    void ApplyFrameByRarity(CardData data)
+    {
+        if (data == null) return;
+        EnsureFrameImage();
+        if (frameImage == null) return;
+
+        Sprite rarityFrame = null;
+        switch (data.rarity)
+        {
+            case Rarity.Common:
+                rarityFrame = commonFrame;
+                break;
+            case Rarity.Rare:
+                rarityFrame = rareFrame;
+                break;
+            case Rarity.Epic:
+                rarityFrame = epicFrame;
+                break;
+            case Rarity.Legendary:
+                rarityFrame = legendaryFrame;
+                break;
+        }
+
+        if (rarityFrame != null)
+        {
+            frameImage.sprite = rarityFrame;
+            frameImage.color = Color.white;
+        }
+        else
+        {
+            frameImage.color = new Color(1f, 1f, 1f, 0f);
+        }
     }
 }
