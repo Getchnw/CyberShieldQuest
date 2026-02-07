@@ -17,6 +17,7 @@ MonoBehaviour:
     50 \u0E41\u0E15\u0E49\u0E21 (\u0E2A\u0E30\u0E2A\u0E21\u0E44\u0E14\u0E49\u0E2B\u0E25\u0E32\u0E22\u0E15\u0E32)"
   targetAmount: 1
   rewardGold: 1000
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: a76c2117803ad28479a3c3df67125b8c, type: 3}
   type: 0
   conditionKey: damage_50
+  targetScene: Stage

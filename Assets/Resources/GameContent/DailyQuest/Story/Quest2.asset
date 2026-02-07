@@ -17,5 +17,7 @@ MonoBehaviour:
     1 chapter"
   targetAmount: 1
   rewardGold: 500
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: a76c2117803ad28479a3c3df67125b8c, type: 3}
   type: 1
+  conditionKey: 
+  targetScene: Story

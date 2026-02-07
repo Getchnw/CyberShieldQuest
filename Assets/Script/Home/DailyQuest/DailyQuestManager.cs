@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using TMPro;
 
 public class DailyQuestManager : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class DailyQuestManager : MonoBehaviour
 
     [SerializeField] private Transform contentContainer;
     [SerializeField] private GameObject questPrefab;
+    public TextMeshProUGUI goldText;
 
     private void Awake() { Instance = this; }
 
@@ -110,7 +112,8 @@ public class DailyQuestManager : MonoBehaviour
             // 3. แจกรางวัล (สมมติแจก Gold)
             data.profile.gold += def.rewardGold;
             Debug.Log($"ได้รับเงิน {def.rewardGold} Gold!");
-
+            // Update Ui
+            UpdateUI();
             // 4. อัปเดตสถานะว่ารับแล้ว
             savedQ.isClaimed = true;
 
@@ -118,6 +121,13 @@ public class DailyQuestManager : MonoBehaviour
             GameManager.Instance.SaveCurrentGame();
             CreateUI(); // รีเฟรชปุ่มให้เป็นสีเทา/ขึ้นว่ารับแล้ว
         }
+    }
 
+    void UpdateUI()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.CurrentGameData != null && goldText != null)
+        {
+            goldText.text = $"{GameManager.Instance.CurrentGameData.profile.gold}";
+        }
     }
 }

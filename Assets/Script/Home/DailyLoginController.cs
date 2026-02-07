@@ -8,8 +8,9 @@ public class DailyLoginController : MonoBehaviour
 {
     //[Header("Data")]
     // public DailyRewardData rewardConfig; // ตรวจสอบว่าชื่อ Class ตรงกับไฟล์ ScriptableObject ของคุณ
-
+    public TextMeshProUGUI goldText;
     [Header("UI References")]
+
     public GameObject loginPopup;       // ตัว Popup ทั้งหมด
     public Button claimButton;          // ปุ่ม "CLAIM"
     public TextMeshProUGUI nextRewardTimeText;     // ข้อความ "Time unit Next time"
@@ -19,6 +20,7 @@ public class DailyLoginController : MonoBehaviour
     public TextMeshProUGUI[] dayAmounts;           // ช่องใส่จำนวนรางวัล
     public GameObject[] claimedMarks;   // รูป "ติ๊กถูก" (Checkmark) ของ Day 1-7
     public GameObject[] dayHighlightBGs;
+
 
     // ตัวแปรภายใน
     private int streakDayToClaim;
@@ -229,6 +231,7 @@ public class DailyLoginController : MonoBehaviour
                 claimedMarks[i].SetActive(false); // อนาคต
             }
         }
+
     }
 
     void GiveReward(int day)
@@ -243,6 +246,7 @@ public class DailyLoginController : MonoBehaviour
         {
             GameManager.Instance.AddGold(reward.amount);
             Debug.Log($"Daily Reward: Added {reward.amount} Gold");
+            UpdateUIGold();
         }
         else if (reward.type == RewardType.Card)
         {
@@ -255,6 +259,14 @@ public class DailyLoginController : MonoBehaviour
             // GameManager.Instance.AddCardToInventory(reward.cardID, reward.amount);
 
             Debug.Log($"Daily Reward: Added Card ID {reward.card.card_id}");
+        }
+    }
+
+    void UpdateUIGold()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.CurrentGameData != null && goldText != null)
+        {
+            goldText.text = $"{GameManager.Instance.CurrentGameData.profile.gold}";
         }
     }
 }

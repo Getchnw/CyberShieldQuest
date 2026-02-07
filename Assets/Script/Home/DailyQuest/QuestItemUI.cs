@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class QuestItemUI : MonoBehaviour
 {
@@ -8,7 +9,10 @@ public class QuestItemUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI progressText;
     [SerializeField] private Slider progressSlider;
     [SerializeField] private Button claimButton;
-    [SerializeField] private Image iconImage;
+    // [SerializeField] private Image LockImage;
+    [SerializeField] private Image IconRewardImage;
+    [SerializeField] private TextMeshProUGUI amountRewardText;
+    [SerializeField] private Image checkImage;
 
     private PlayerQuestData mySaveData;
     private DailyQuestsData myStaticData;
@@ -25,7 +29,9 @@ public class QuestItemUI : MonoBehaviour
     {
         // 1. รีเซ็ตข้อความให้เป็นค่าตั้งต้นเสมอก่อนเริ่ม Logic
         descText.text = myStaticData.description;
-        iconImage.sprite = myStaticData.icon;
+        // Gold
+        IconRewardImage.sprite = myStaticData.icon;
+        amountRewardText.text = $"{myStaticData.rewardGold} G";
 
         // 2. อัปเดต Slider
         progressSlider.maxValue = myStaticData.targetAmount;
@@ -42,15 +48,24 @@ public class QuestItemUI : MonoBehaviour
         {
             // กรณีรับไปแล้ว
             claimButton.interactable = false;
-            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "Claimed"; // เปลี่ยนข้อความปุ่ม
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "<color=green>Claimed</color>"; // เปลี่ยนข้อความปุ่ม
+
+            // ปิดรูป
+            checkImage.gameObject.SetActive(true);
             // descText.text += " <color=green>(สำเร็จ)</color>"; // ถ้ายังอยากใส่ต่อท้าย ให้ใส่วงเล็บนี้
+        }
+        else if (isComplete)
+        {
+            // กรณีทำครบแล้ว แต่ยังไม่รับ
+            claimButton.interactable = isComplete; // กดได้เมื่อทำครบ
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "Claim";
+            claimButton.onClick.AddListener(OnClaimClicked);
         }
         else
         {
-            // กรณีขอยังไม่รับ
-            claimButton.interactable = isComplete; // กดได้เมื่อทำครบ
-            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = isComplete ? "Claim" : "Locked";
-            claimButton.onClick.AddListener(OnClaimClicked);
+            // กรณียังไม่ครบ
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "Go";
+            claimButton.onClick.AddListener(() => GotoQuest(myStaticData.targetScene));
         }
     }
 
@@ -59,5 +74,10 @@ public class QuestItemUI : MonoBehaviour
         // เรียก Manager ให้แจกรางวัล
         DailyQuestManager.Instance.ClaimReward(mySaveData.questID);
         RefreshUI();
+    }
+
+    public void GotoQuest(string Namescene)
+    {
+        SceneManager.LoadScene(Namescene);
     }
 }

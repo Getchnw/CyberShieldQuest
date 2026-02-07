@@ -17,6 +17,7 @@ MonoBehaviour:
     1 \u0E04\u0E23\u0E31\u0E49\u0E07 (\u0E41\u0E1E\u0E49\u0E2B\u0E23\u0E37\u0E2D\u0E0A\u0E19\u0E30\u0E01\u0E47\u0E44\u0E14\u0E49)"
   targetAmount: 1
   rewardGold: 500
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: a76c2117803ad28479a3c3df67125b8c, type: 3}
   type: 0
   conditionKey: play_1
+  targetScene: Stage

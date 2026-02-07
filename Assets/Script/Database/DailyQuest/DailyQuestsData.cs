@@ -19,6 +19,7 @@ public class DailyQuestsData : ScriptableObject
     public QuestType type;
 
     public string conditionKey;
+    public string targetScene;
 }
 
 public enum QuestType
