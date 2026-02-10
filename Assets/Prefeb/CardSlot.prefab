@@ -276,10 +276,10 @@ MonoBehaviour:
   frameImage: {fileID: 0}
   btn: {fileID: 1022527979207781532}
   amountText: {fileID: 2942661467194274656}
-  commonFrame: {fileID: 21300000, guid: be01e642111c5de49a6392d4584503fd, type: 3}
-  rareFrame: {fileID: 21300000, guid: 5e5691a27c4e12e43848939aa211a393, type: 3}
-  epicFrame: {fileID: 21300000, guid: fda9cdb55b3e6dc4b932d3a33df0c40f, type: 3}
-  legendaryFrame: {fileID: 21300000, guid: 0a210cf35e9cbd344ac3ec22ea1ce4c1, type: 3}
+  commonFrame: {fileID: 21300000, guid: 026f9ff8c6d16e947a173157ede79a1b, type: 3}
+  rareFrame: {fileID: 21300000, guid: be01e642111c5de49a6392d4584503fd, type: 3}
+  epicFrame: {fileID: 21300000, guid: cf4ea02dce943224eb79903d9dc5cc3a, type: 3}
+  legendaryFrame: {fileID: 21300000, guid: 4270b6c938ca88b4c88cd6fcb3186d5b, type: 3}
 --- !u!223 &-7650100318925113479
 Canvas:
   m_ObjectHideFlags: 0
@@ -333,13 +333,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   frameSprite: {fileID: 0}
-  commonFrame: {fileID: 21300000, guid: be01e642111c5de49a6392d4584503fd, type: 3}
-  rareFrame: {fileID: 21300000, guid: 5e5691a27c4e12e43848939aa211a393, type: 3}
-  epicFrame: {fileID: 21300000, guid: fda9cdb55b3e6dc4b932d3a33df0c40f, type: 3}
-  legendaryFrame: {fileID: 21300000, guid: 0a210cf35e9cbd344ac3ec22ea1ce4c1, type: 3}
+  commonFrame: {fileID: 21300000, guid: 026f9ff8c6d16e947a173157ede79a1b, type: 3}
+  rareFrame: {fileID: 21300000, guid: be01e642111c5de49a6392d4584503fd, type: 3}
+  epicFrame: {fileID: 21300000, guid: cf4ea02dce943224eb79903d9dc5cc3a, type: 3}
+  legendaryFrame: {fileID: 21300000, guid: 4270b6c938ca88b4c88cd6fcb3186d5b, type: 3}
   isOnField: 0
   parentAfterDrag: {fileID: 0}
   hasAttacked: 0
+  attacksThisTurn: 0
+  isManualHighlight: 0
   canBypassIntercept: 0
   bypassCostThreshold: 0
   bypassAllowedMainCat: 3
