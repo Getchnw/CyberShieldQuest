@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -21,6 +22,21 @@ public class CollectionManager : MonoBehaviour
     {
         LoadCardLibrary();
         RefreshUI();
+        
+        // 🔥 ฟังการเปลี่ยนแปลง inventory
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnInventoryChanged += RefreshUI;
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        // 🔥 ลบ listener เวลาออกจาก scene
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnInventoryChanged -= RefreshUI;
+        }
     }
 
     void Update()
@@ -71,18 +87,18 @@ public class CollectionManager : MonoBehaviour
     void OnCraftButton(CardData card)
     {
         int cost = CraftingSystem.GetCraftCost(card.rarity);
-        ConfirmAction($"Create  {card.cardName} \nCost: {cost} Scrap?", () => CraftProcess(card));
+        ConfirmAction($"Create  {card.cardName} \nCost: {cost} Scrap?", () => StartCoroutine(CraftProcess(card)));
     }
 
     void OnDismantleButton(CardData card)
     {
         int val = CraftingSystem.GetDismantleValue(card.rarity);
-        ConfirmAction($"Dismantle {card.cardName} \nGain: {val} Scrap?", () => DismantleProcess(card));
+        ConfirmAction($"Dismantle {card.cardName} \nGain: {val} Scrap?", () => StartCoroutine(DismantleProcess(card)));
     }
 
-    // --- Process จริงๆ ---
+    // --- Process จริงๆ (Coroutine) ---
 
-    void CraftProcess(CardData card)
+    IEnumerator CraftProcess(CardData card)
     {
         int cost = CraftingSystem.GetCraftCost(card.rarity);
         if (GameManager.Instance.CurrentGameData.profile.scrap >= cost)
@@ -91,16 +107,18 @@ public class CollectionManager : MonoBehaviour
             GameManager.Instance.AddCardToInventory(card.card_id, 1);
             GameManager.Instance.SaveCurrentGame();
 
-            // แจ้งให้ DailyQuestManager รู้ว่ามีการ Craft แล้ว
             DailyQuestManager.Instance.UpdateProgress(QuestType.Card, 1, "craft");
 
-            // อัปเดตหน้าจอ (ทั้ง Grid และ Popup)
-            RefreshUI();
-            detailPopup.RefreshView();
+            // 🔥 ปิด confirm + detail popup
+            confirmPopup?.Close();
+            detailPopup?.Close();
+            
+            // ให้ Save มีเวลา execute
+            yield return null;
         }
     }
 
-    void DismantleProcess(CardData card)
+    IEnumerator DismantleProcess(CardData card)
     {
         int owned = GameManager.Instance.GetCardAmount(card.card_id);
         if (owned > 0)
@@ -110,10 +128,14 @@ public class CollectionManager : MonoBehaviour
             GameManager.Instance.AddCardToInventory(card.card_id, -1);
             GameManager.Instance.SaveCurrentGame();
 
-            // แจ้งให้ DailyQuestManager รู้ว่ามีการ Dismantle แล้ว
             DailyQuestManager.Instance.UpdateProgress(QuestType.Card, 1, "scrap");
-            RefreshUI();
-            detailPopup.RefreshView();
+            
+            // 🔥 ปิด confirm + detail popup
+            confirmPopup?.Close();
+            detailPopup?.Close();
+            
+            // ให้ Save มีเวลา execute
+            yield return null;
         }
     }
 

@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     public event System.Action<int> OnGoldChanged;
     public event System.Action<int> OnExperienceChanged;
     public event System.Action<int> OnLevelChanged;
+    public event System.Action OnInventoryChanged; // 🔥 เตือนเมื่อ inventory เปลี่ยน
     [Header("Leveling System")]
     [Tooltip("กราฟกำหนดค่า EXP ที่ต้องใช้ในแต่ละเลเวล (แกน X=Level, แกน Y=Exp Required)")]
     public AnimationCurve experienceCurve;
@@ -199,6 +200,9 @@ public class GameManager : MonoBehaviour
         }
 
         Debug.Log($"Added card {cardID} (Qty: {quantity}) to inventory.");
+        
+        // 🔥 แจ้งเตือน UI ที่ฟังว่า inventory เปลี่ยน
+        OnInventoryChanged?.Invoke();
     }
 
     //Save storyId
@@ -557,14 +561,25 @@ public class GameManager : MonoBehaviour
     public int GetCardAmount(string cardID)
     {
         // ถ้ายังไม่โหลดข้อมูล ให้ตอบว่ามี 0 ใบ
-        if (CurrentGameData == null) return 0;
+        if (CurrentGameData == null)
+        {
+            Debug.LogWarning($"❌ GetCardAmount({cardID}): CurrentGameData is NULL!");
+            return 0;
+        }
 
         // ค้นหาการ์ดในกระเป๋า (Inventory) ที่มี ID ตรงกัน
         // (ใช้ FirstOrDefault จำเป็นต้องมี using System.Linq; ด้านบนไฟล์)
         var item = CurrentGameData.cardInventory.FirstOrDefault(x => x.card_id == cardID);
+        int result = item != null ? item.quantity : 0;
+        
+        // Debug log to see what's returned for crafted cards
+        if (cardID.Contains("Fire") || cardID.Contains("Ice"))
+        {
+            Debug.Log($"📊 GetCardAmount({cardID}): {result} (Total inventory items: {CurrentGameData.cardInventory.Count})");
+        }
         
         // ถ้าเจอ -> ส่งจำนวนกลับไป (item.quantity)
         // ถ้าไม่เจอ -> ส่ง 0 กลับไป
-        return item != null ? item.quantity : 0;
+        return result;
     }
 }

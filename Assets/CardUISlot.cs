@@ -51,6 +51,12 @@ public class CardUISlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
 
         if (amountText != null) amountText.text = (amount >= 0) ? $"x{amount}" : "";
         if (amount == 0) cardImage.color = Color.gray;
+        
+        // 🔥 Debug log
+        if (data.card_id.Contains("Fire") || data.card_id.Contains("Ice"))
+        {
+            Debug.Log($"🖼️ CardUISlot.Setup({data.card_id}): Displayed amount = {amount}");
+        }
 
         btn.onClick.RemoveAllListeners();
     }

@@ -11,6 +11,7 @@ public class ConfirmationPopup : MonoBehaviour
     public Button cancelButton;         // ปุ่มยกเลิก
 
     private Action onConfirmAction;     // เก็บคำสั่งที่จะทำ
+    private bool isProcessing = false;  // 🔥 ป้องกันการกดซ้ำ
 
     void Start()
     {
@@ -27,10 +28,24 @@ public class ConfirmationPopup : MonoBehaviour
         gameObject.SetActive(true);
         messageText.text = message;
         onConfirmAction = confirmAction; // เก็บคำสั่งไว้ก่อน (เช่น CraftCard)
+        
+        // 🔥 รีเซ็ตสถานะและเปิด raycast ของปุ่ม
+        isProcessing = false;
+        confirmButton.interactable = true;
+        cancelButton.interactable = true;
     }
 
     void OnConfirmClicked()
     {
+        // 🔥 ถ้ากำลังประมวลผลอยู่ ห้ามกดซ้ำ
+        if (isProcessing) return;
+        
+        isProcessing = true;
+        confirmButton.interactable = false;
+        cancelButton.interactable = false;
+        
+        Debug.Log($"[ConfirmationPopup] Confirmed: {messageText.text}");
+        
         // เรียกคำสั่งที่เก็บไว้
         onConfirmAction?.Invoke();
         Close();

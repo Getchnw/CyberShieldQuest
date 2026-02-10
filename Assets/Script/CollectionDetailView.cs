@@ -45,6 +45,12 @@ public class CollectionDetailView : MonoBehaviour
         gameObject.SetActive(true);
         RefreshView(); // อัปเดตข้อมูล
         
+        // 🔥 ฟังการเปลี่ยนแปลง inventory เพื่ออัปเดต UI
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnInventoryChanged += RefreshView;
+        }
+        
         // 🔥 Debug: แสดงสถานะตัวแปร
         Debug.Log($"[CollectionDetailView] Opened: {card.cardName} | onCraftAction={onCraftAction != null} | onDismantleAction={onDismantleAction != null}");
     }
@@ -120,6 +126,12 @@ public class CollectionDetailView : MonoBehaviour
 
     public void Close()
     {
+        // 🔥 ลบ listener เมื่อปิด popup
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnInventoryChanged -= RefreshView;
+        }
+        
         gameObject.SetActive(false);
     }
 
