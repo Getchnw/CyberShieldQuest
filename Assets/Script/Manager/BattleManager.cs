@@ -30,10 +30,10 @@ public class BattleManager : MonoBehaviour
     public int enemyCurrentPP;
 
     [Header("--- Field Slots (ลากใส่ให้ครบ!) ---")]
-    public Transform[] playerMonsterSlots; 
-    public Transform[] playerEquipSlots;   
-    public Transform[] enemyMonsterSlots;  
-    public Transform[] enemyEquipSlots;    
+    public Transform[] playerMonsterSlots;
+    public Transform[] playerEquipSlots;
+    public Transform[] enemyMonsterSlots;
+    public Transform[] enemyEquipSlots;
 
     [Header("--- Deck & Hand ---")]
     public List<CardData> deckList = new List<CardData>();
@@ -51,9 +51,9 @@ public class BattleManager : MonoBehaviour
     public TextMeshProUGUI enemyPPText;
     public TextMeshProUGUI turnText;
     public GameObject endTurnButton;
-    
+
     // 🔥 ปุ่มรับดาเมจ (ถ้าลืมลากใส่ เกมจะข้ามขั้นตอนถามไปเลย กันค้าง)
-    public GameObject takeDamageButton; 
+    public GameObject takeDamageButton;
 
     [Header("--- Effects ---")]
     public Transform playerSpot;
@@ -146,27 +146,27 @@ public class BattleManager : MonoBehaviour
     public bool IsMulliganPhase() => isMulliganPhase;
 
     // --- ตัวแปร Logic ภายใน ---
-    private BattleCardUI currentAttackerBot; 
-    private bool playerHasMadeChoice = false; 
+    private BattleCardUI currentAttackerBot;
+    private bool playerHasMadeChoice = false;
     private List<CardData> enemyDeckList = new List<CardData>();
     private Dictionary<string, CardData> cardLookupCache = null;
     private Dictionary<string, CardData> cardNameLookupCache = null;
     private int lastDestroyedAtkSum = 0;
-    
+
     // 🔥 Sacrifice System
     private bool sacrificeConfirmed = false;
     private BattleCardUI newCardToSacrifice = null;
     private BattleCardUI targetCardToReplace = null;
-    
+
     // 🔥 Mulligan System
     private int playerMulliganLeft = 1;
     private int enemyMulliganLeft = 1;
     private bool playerFirstTurn = false; // true = ผู้เล่นเริ่มต้น
-    
+
     // 🎴 Deck Visualization
     private List<GameObject> playerDeckVisuals = new List<GameObject>();
     private List<GameObject> enemyDeckVisuals = new List<GameObject>();
-    
+
     // 🪦 Graveyard System (เก็บการ์ดที่ถูกทำลาย/discard)
     private List<CardData> playerGraveyard = new List<CardData>();
     private List<CardData> enemyGraveyard = new List<CardData>();
@@ -249,10 +249,10 @@ public class BattleManager : MonoBehaviour
     void Start()
     {
         state = BattleState.START;
-        
+
         // 📊 เริ่มต้นสถิติใหม่
         currentBattleStats.Initialize();
-        
+
         // ตั้งค่าพาเนล pause/log/handreveal ให้ปิดไว้ก่อน
         if (pausePanel) pausePanel.SetActive(false);
         if (logPanel) logPanel.SetActive(false);
@@ -311,7 +311,7 @@ public class BattleManager : MonoBehaviour
 
         if (takeDamageButton) takeDamageButton.SetActive(false);
         if (resultPanel) resultPanel.SetActive(false);
-        
+
         // 🎴 สร้างการแสดงผลเด็ค
         CreateDeckVisualization();
 
@@ -327,7 +327,7 @@ public class BattleManager : MonoBehaviour
         if (!mulliganReady)
         {
             Debug.LogWarning("⚠️ Mulligan UI ไม่พร้อม (เช็ค cardPrefab / mulliganSlots) -> ข้าม Mulligan แล้วจั่วเข้ามือเลย");
-            
+
             // 🔥 เช็คว่า cardPrefab มีไหม ถ้าไม่มีก็ยังไม่สามารถจั่วได้
             if (cardPrefab == null)
             {
@@ -347,7 +347,7 @@ public class BattleManager : MonoBehaviour
 
             yield break;
         }
-        
+
         // 🔥 ตรวจสอบเพิ่มเติม ว่า cardPrefab มี BattleCardUI component ไหม
         if (cardPrefab.GetComponent<BattleCardUI>() == null)
         {
@@ -430,48 +430,48 @@ public class BattleManager : MonoBehaviour
 
         int slotIndex = 0;
         int cardsDrawn = 0;
-        
-        for(int i=0; i<n && slotIndex < slots.Length && cardsDrawn < n; i++) 
-        { 
+
+        for (int i = 0; i < n && slotIndex < slots.Length && cardsDrawn < n; i++)
+        {
             // 🔥 หาช่องว่างข้างหน้า
             while (slotIndex < slots.Length && slots[slotIndex].childCount > 0)
             {
                 slotIndex++;
             }
-            
+
             // ถ้าหมดช่องว่าง ออกลูป
             if (slotIndex >= slots.Length) break;
-            
-            CardData d = deckList[0]; 
+
+            CardData d = deckList[0];
             deckList.RemoveAt(0);
-            
+
             Transform targetSlot = slots[slotIndex];
             if (targetSlot == null)
             {
                 slotIndex++;
                 continue;
             }
-            
-            if(cardPrefab)
+
+            if (cardPrefab)
             {
                 // 🔥 สร้างการ์ดโดยตรงใน targetSlot (ไม่แสดงที่ deck position)
                 GameObject cardObj = Instantiate(cardPrefab, targetSlot);
                 BattleCardUI ui = cardObj.GetComponent<BattleCardUI>();
                 if (ui == null) continue;
-                
+
                 ui.Setup(d);
                 ui.parentAfterDrag = targetSlot;
                 cardObj.transform.localPosition = Vector3.zero;
                 cardObj.transform.localScale = Vector3.one;
-                
+
                 Debug.Log($"✅ {ui.name} เข้า slot โดยตรง!");
-                
+
                 // พักระหว่างการ์ด
                 yield return new WaitForSeconds(0.5f);
                 slotIndex++;
             }
         }
-        
+
         // 🎴 อัพเดทการแสดงผลเด็ค
         UpdateDeckVisualization();
     }
@@ -479,16 +479,16 @@ public class BattleManager : MonoBehaviour
     void ArrangeCardsIntoMulliganSlots()
     {
         if (mulliganCenterArea == null || mulliganSlots == null) return;
-        
+
         // หาการ์ดทั้งหมดใน mulliganCenterArea
         BattleCardUI[] cards = mulliganCenterArea.GetComponentsInChildren<BattleCardUI>();
-        
+
         // วางลงใน mulliganSlots ตามลำดับ
         int slotIndex = 0;
         foreach (var card in cards)
         {
             if (slotIndex >= mulliganSlots.Length) break;
-            
+
             Transform targetSlot = mulliganSlots[slotIndex];
             if (targetSlot != null && targetSlot.childCount == 0)
             {
@@ -497,26 +497,26 @@ public class BattleManager : MonoBehaviour
                 card.transform.localScale = Vector3.one;
                 card.SetMulliganSelect(false);
                 card.parentAfterDrag = targetSlot;
-                
+
                 // เช็ค raycast target ของ Image และ CanvasGroup
                 Image img = card.GetComponent<Image>();
                 if (img != null) img.raycastTarget = true;
-                
+
                 CanvasGroup cg = card.GetComponent<CanvasGroup>();
-                if (cg != null) 
-                { 
+                if (cg != null)
+                {
                     cg.blocksRaycasts = true;
                     cg.interactable = true;
                 }
-                
+
                 slotIndex++;
             }
         }
-        
+
         // เปิด mask/overflow ของ mulliganCenterArea เพื่อไม่ให้ block raycast
         RectMask2D mask = mulliganCenterArea.GetComponent<RectMask2D>();
         if (mask != null) mask.enabled = false;
-        
+
         CanvasGroup centerCG = mulliganCenterArea.GetComponent<CanvasGroup>();
         if (centerCG != null)
         {
@@ -535,11 +535,11 @@ public class BattleManager : MonoBehaviour
             if (mulliganText) mulliganText.text = "Mulligan Left: " + playerMulliganLeft;
         }
         if (mulliganHintText) mulliganHintText.text = "ลากการ์ดที่ต้องการเปลี่ยนไปช่องด้านล่าง แล้วกดปุ่ม Mulligan";
-        
+
         // 🔥 เปิด mulligan slots และ swap slots
         ShowMulliganSlots();
     }
-    
+
     // 🔥 เปิด mulligan UI slots
     void ShowMulliganSlots()
     {
@@ -550,11 +550,11 @@ public class BattleManager : MonoBehaviour
                 if (slot != null)
                 {
                     slot.gameObject.SetActive(true);
-                    
+
                     // เปิด Image กลับ
                     Image img = slot.GetComponent<Image>();
                     if (img != null) img.enabled = true;
-                    
+
                     // ตั้ง CanvasGroup
                     CanvasGroup cg = slot.GetComponent<CanvasGroup>();
                     if (cg != null)
@@ -565,7 +565,7 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
-        
+
         if (mulliganSwapSlots != null)
         {
             foreach (var slot in mulliganSwapSlots)
@@ -573,11 +573,11 @@ public class BattleManager : MonoBehaviour
                 if (slot != null)
                 {
                     slot.gameObject.SetActive(true);
-                    
+
                     // เปิด Image กลับ
                     Image img = slot.GetComponent<Image>();
                     if (img != null) img.enabled = true;
-                    
+
                     // ตั้ง CanvasGroup
                     CanvasGroup cg = slot.GetComponent<CanvasGroup>();
                     if (cg != null)
@@ -588,15 +588,15 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
-        
+
         if (mulliganCenterArea != null)
         {
             mulliganCenterArea.gameObject.SetActive(true);
-            
+
             // เปิด Image กลับ
             Image img = mulliganCenterArea.GetComponent<Image>();
             if (img != null) img.enabled = true;
-            
+
             // ตั้ง CanvasGroup
             CanvasGroup cg = mulliganCenterArea.GetComponent<CanvasGroup>();
             if (cg != null)
@@ -624,12 +624,12 @@ public class BattleManager : MonoBehaviour
             muliganPanel.SetActive(false);
             Debug.Log("✅ ปิด muliganPanel");
         }
-        
+
         if (playerMulliganButton) playerMulliganButton.gameObject.SetActive(false);
         if (playerMulliganConfirmButton) playerMulliganConfirmButton.gameObject.SetActive(false);
         if (mulliganText) mulliganText.text = string.Empty;
         if (mulliganHintText) mulliganHintText.text = string.Empty;
-        
+
         // 🔥 ปิด Canvas Group ของ mulligan UI เพื่อไม่ให้ block raycast
         if (mulliganCenterArea != null)
         {
@@ -640,15 +640,15 @@ public class BattleManager : MonoBehaviour
                 cg.blocksRaycasts = false;
                 cg.interactable = false;
             }
-            
+
             // ปิด Image component ถ้ามี (แถบดำมักเกิดจาก Image)
             Image img = mulliganCenterArea.GetComponent<Image>();
             if (img != null) img.enabled = false;
-            
+
             mulliganCenterArea.gameObject.SetActive(false);
             Debug.Log("✅ ซ่อน mulliganCenterArea");
         }
-        
+
         // 🔥 ซ่อนช่อง mulligan slots ทั้งหมด
         if (mulliganSlots != null && mulliganSlots.Length > 0)
         {
@@ -666,26 +666,26 @@ public class BattleManager : MonoBehaviour
                 mulliganSlotsParent.gameObject.SetActive(false);
                 Debug.Log($"✅ ซ่อน {mulliganSlotsParent.name}");
             }
-            
+
             foreach (var slot in mulliganSlots)
             {
                 if (slot != null)
                 {
                     Image slotImg = slot.GetComponent<Image>();
                     if (slotImg != null) slotImg.enabled = false;
-                    
+
                     CanvasGroup slotCg = slot.GetComponent<CanvasGroup>();
                     if (slotCg != null)
                     {
                         slotCg.alpha = 0f;
                         slotCg.blocksRaycasts = false;
                     }
-                    
+
                     slot.gameObject.SetActive(false);
                 }
             }
         }
-        
+
         // 🔥 ซ่อนช่อง mulligan swap slots ทั้งหมด
         if (mulliganSwapSlots != null && mulliganSwapSlots.Length > 0)
         {
@@ -703,21 +703,21 @@ public class BattleManager : MonoBehaviour
                 mulliganSwapParent.gameObject.SetActive(false);
                 Debug.Log($"✅ ซ่อน {mulliganSwapParent.name}");
             }
-            
+
             foreach (var slot in mulliganSwapSlots)
             {
                 if (slot != null)
                 {
                     Image swapImg = slot.GetComponent<Image>();
                     if (swapImg != null) swapImg.enabled = false;
-                    
+
                     CanvasGroup swapCg = slot.GetComponent<CanvasGroup>();
                     if (swapCg != null)
                     {
                         swapCg.alpha = 0f;
                         swapCg.blocksRaycasts = false;
                     }
-                    
+
                     slot.gameObject.SetActive(false);
                 }
             }
@@ -759,9 +759,9 @@ public class BattleManager : MonoBehaviour
     void OnPlayerMulliganConfirm()
     {
         if (!isMulliganPhase) return; // 🔥 ป้องกัน double-click
-        
+
         Debug.Log("🎴 ผู้เล่นยืนยัน mulligan - เริ่มกระบวนการ...");
-        
+
         // 🔥 เช็คว่ามีการ์ดใน swap slots ไหม
         int cardsInSwap = 0;
         if (mulliganSwapSlots != null)
@@ -771,7 +771,7 @@ public class BattleManager : MonoBehaviour
                 if (slot != null && slot.childCount > 0) cardsInSwap++;
             }
         }
-        
+
         if (cardsInSwap > 0)
         {
             Debug.Log($"🎴 พบการ์ด {cardsInSwap} ใบใน swap slots -> เริ่มเปลี่ยนการ์ด");
@@ -782,43 +782,43 @@ public class BattleManager : MonoBehaviour
             Debug.Log("🎴 ไม่มีการ์ดใน swap slots -> ขึ้นมือเลย");
             ReturnMulliganCardsToHand();
             Debug.Log("🎴 ขั้น 1: ย้ายการ์ดจาก mulligan slots เข้ามือเสร็จ");
-            
+
             HidePlayerMulliganUI();
             Debug.Log("🎴 ขั้น 2: ซ่อน mulligan UI เสร็จ");
-            
+
             isMulliganPhase = false;
-            
+
             // 🔥 รอ 1 frame ให้ Unity rebuild layout ก่อนจัดการ์ด
             StartCoroutine(ArrangeCardsAfterFrame());
         }
     }
-    
+
     // 🔥 Coroutine สำหรับยืนยันพร้อมเปลี่ยนการ์ด
     IEnumerator ConfirmWithReplacement()
     {
         int replaced = ReplaceSelectedMulliganCards();
         Debug.Log($"🎴 คืนการ์ด {replaced} ใบเข้าเด็คและสับแล้ว");
-        
+
         if (replaced > 0)
         {
             // จั่วการ์ดใหม่เข้า mulliganSlots
             yield return StartCoroutine(DrawCardsToSlots(replaced, mulliganSlots));
             Debug.Log($"🎴 จั่วการ์ดใหม่ {replaced} ใบเข้า mulligan slots แล้ว");
         }
-        
+
         // ย้ายการ์ดทั้งหมดขึ้นมือ
         ReturnMulliganCardsToHand();
         Debug.Log("🎴 ย้ายการ์ดทั้งหมดเข้ามือแล้ว");
-        
+
         HidePlayerMulliganUI();
         Debug.Log("🎴 ซ่อน mulligan UI แล้ว");
-        
+
         isMulliganPhase = false;
-        
+
         // 🔥 รอ 1 frame ให้ Unity rebuild layout ก่อนจัดการ์ด
         yield return StartCoroutine(ArrangeCardsAfterFrame());
     }
-    
+
     // 🔥 จัดการ์ดหลังจาก layout rebuild เสร็จ
     IEnumerator ArrangeCardsAfterFrame()
     {
@@ -826,7 +826,7 @@ public class BattleManager : MonoBehaviour
         ArrangeCardsInHand();
         Debug.Log("🎴 ขั้น 3: จัดการ์ดในมือเสร็จ (หลัง 1 frame)");
     }
-    
+
     // 🔥 จัดการ์ดในมือ: ใช้ HorizontalLayoutGroup ถ้ามี (ง่ายและเสถียรกว่า)
     void ArrangeCardsInHand()
     {
@@ -853,7 +853,7 @@ public class BattleManager : MonoBehaviour
             layout.childControlHeight = true;
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
-            
+
             Debug.Log($"🎴 HLG Settings: spacing={layout.spacing}, controlW={layout.childControlWidth}, controlH={layout.childControlHeight}, expandW={layout.childForceExpandWidth}");
 
             // ให้แต่ละการ์ดมี LayoutElement เพื่อกำหนด preferred size
@@ -878,7 +878,7 @@ public class BattleManager : MonoBehaviour
                 le.minHeight = 0f;
                 le.flexibleWidth = 0f;
                 le.flexibleHeight = 0f;
-                
+
                 Debug.Log($"🎴 Card[{card.name}]: LE(prefW={le.preferredWidth}, prefH={le.preferredHeight}), localPos={rt?.localPosition}");
 
                 var img = card.GetComponent<Image>();
@@ -900,7 +900,7 @@ public class BattleManager : MonoBehaviour
                 UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(handRect);
                 Canvas.ForceUpdateCanvases(); // 🔥 บังคับให้ Canvas อัพเดททันที
             }
-            
+
             // 🔥 Debug: แสดงตำแหน่งสุดท้ายของการ์ดแต่ละใบ
             Debug.Log("🎴 === ตำแหน่งการ์ดหลัง layout ===");
             for (int i = 0; i < cardsInHand.Length; i++)
@@ -909,7 +909,7 @@ public class BattleManager : MonoBehaviour
                 if (rt != null)
                     Debug.Log($"🎴 Card[{i}] {cardsInHand[i].name}: localPos={rt.localPosition}, anchoredPos={rt.anchoredPosition}");
             }
-            
+
             Debug.Log($"✅ จัดการ์ดในมือด้วย HorizontalLayoutGroup (spacing={handSpacing}, count={cardsInHand.Length})");
             return;
         }
@@ -1072,17 +1072,17 @@ public class BattleManager : MonoBehaviour
                     {
                         var child = slot.GetChild(0);
                         var cardUI = child.GetComponent<BattleCardUI>();
-                        
+
                         // ย้ายการ์ดไปที่มือจริง
                         child.SetParent(handArea, false);
-                        
+
                         // ล้าง state mulligan
                         if (cardUI != null)
                         {
                             cardUI.SetMulliganSelect(false);
                             cardUI.parentAfterDrag = handArea;
                         }
-                        
+
                         Debug.Log($"✅ ย้ายการ์ดจาก mulliganSlot → handArea");
                     }
                 }
@@ -1100,16 +1100,16 @@ public class BattleManager : MonoBehaviour
                     {
                         var child = slot.GetChild(0);
                         var cardUI = child.GetComponent<BattleCardUI>();
-                        
+
                         // ย้ายกลับไปมือ
                         child.SetParent(handArea, false);
-                        
+
                         if (cardUI != null)
                         {
                             cardUI.SetMulliganSelect(false);
                             cardUI.parentAfterDrag = handArea;
                         }
-                        
+
                         Debug.Log($"✅ ย้ายการ์ดจาก mulliganSwapSlot → handArea");
                     }
                 }
@@ -1125,11 +1125,11 @@ public class BattleManager : MonoBehaviour
                 card.transform.SetParent(handArea, false);
                 card.SetMulliganSelect(false);
                 card.parentAfterDrag = handArea;
-                
+
                 Debug.Log($"✅ ย้ายการ์ดจาก mulliganCenterArea → handArea");
             }
         }
-        
+
         Debug.Log("✅ ย้ายการ์ด mulligan ทั้งหมดเข้ามือ");
     }
 
@@ -1144,7 +1144,7 @@ public class BattleManager : MonoBehaviour
         }
         return null;
     }
-    
+
     // 🔥 หาช่อง mulliganSlots ว่าง
     public Transform GetFreeMulliganSlot()
     {
@@ -1195,10 +1195,10 @@ public class BattleManager : MonoBehaviour
 
         state = BattleState.PLAYERTURN;
         turnCount++;
-        
+
         // 📊 บันทึกสถิติ: จำนวนเทิร์น
         currentBattleStats.turnsPlayed = turnCount;
-        
+
         maxPP = Mathf.Clamp(turnCount, 1, 10);
         currentPP = maxPP;
 
@@ -1211,7 +1211,7 @@ public class BattleManager : MonoBehaviour
         // กฎจั่ว: ถ้ามือ >= 5 จั่ว 1, ถ้ามือน้อยกว่า 5 จั่วให้ครบ 5
         int handCount = handArea != null ? handArea.GetComponentsInChildren<BattleCardUI>().Length : 0;
         int drawAmount = handCount >= 5 ? 1 : Mathf.Max(0, 5 - handCount);
-        
+
         AddBattleLog($"\n=== PLAYER TURN {turnCount} START === HP:{currentHP}/{maxHP} | PP:{currentPP}/{maxPP} | Draw:{drawAmount}");
         DrawCard(drawAmount);
         UpdateUI();
@@ -1237,7 +1237,7 @@ public class BattleManager : MonoBehaviour
 
         int selectedIndex = PlayerPrefs.GetInt("SelectedDeckIndex", 0);
         if (selectedIndex < 0 || selectedIndex >= data.decks.Count) selectedIndex = 0;
-        
+
         Debug.Log($"🎴 โหลดเด็คที่เลือก: index {selectedIndex} (PlayerPrefs 'SelectedDeckIndex')");
 
         DeckData selectedDeck = data.decks[selectedIndex];
@@ -1420,14 +1420,14 @@ public class BattleManager : MonoBehaviour
     IEnumerator PayCostAndSummon(BattleCardUI cardUI, Transform parentSlot, int cost)
     {
         currentPP -= cost;
-        
+
         // 📊 บันทึกสถิติ: PP ใช้ไป + การ์ดที่เล่น
         currentBattleStats.totalPPSpent += cost;
         currentBattleStats.RecordCardPlayed(cardUI.GetData());
-        
+
         cardUI.transform.SetParent(parentSlot);
         cardUI.transform.localPosition = Vector3.zero;
-        
+
         cardUI.isOnField = true;
         // 🔥 EquipSpell ไม่มี Summoning Sickness
         if (cardUI.GetData().type != CardType.EquipSpell)
@@ -1442,7 +1442,7 @@ public class BattleManager : MonoBehaviour
             }
         }
         cardUI.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม 
-        
+
         // 🔥 แก้: ตรวจสอบให้แน่ใจว่าการ์ดแสดงหน้าไม่ใช่หลัง
         var cardImage = cardUI.GetComponent<Image>();
         if (cardImage != null && cardUI.GetData() != null && cardUI.GetData().artwork != null)
@@ -1454,16 +1454,16 @@ public class BattleManager : MonoBehaviour
         // แสดงกรอบเมื่อการ์ดหงายหน้า
         cardUI.SetFrameVisible(true);
 
-        if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
 
         // บันทึก log พร้อมแสดง ATK/HP
         CardData playedCard = cardUI.GetData();
         AddBattleLog($"Player plays {playedCard.cardName} ({playedCard.type}) ATK:{playedCard.atk} HP:{playedCard.hp} cost {cost}");
         Debug.Log($"🔥 PlayCard Debug: cardName={playedCard.cardName}, atk={playedCard.atk}, hp={playedCard.hp}");
-        
+
         // 🔥 ทริกเกอร์ OnDeploy Effects (รอให้เสร็จก่อนไป)
         yield return StartCoroutine(ResolveEffects(cardUI, EffectTrigger.OnDeploy, isPlayer: true));
-        
+
         UpdateUI();
     }
 
@@ -1481,12 +1481,12 @@ public class BattleManager : MonoBehaviour
         }
 
         currentPP -= cardUI.GetCost();
-        
+
         // 📊 บันทึกสถิติ: PP ใช้ไป + การ์ดที่เล่น + Spell Cast
         currentBattleStats.totalPPSpent += cardUI.GetCost();
         currentBattleStats.RecordCardPlayed(cardUI.GetData());
         currentBattleStats.spellsCast++;
-        
+
         AddBattleLog($"Player casts {cardUI.GetData().cardName}");
 
         // 🎇 ลงสนามการ์ดเวทย์ก่อน (แสดงให้เห็นบนสนาม)
@@ -1527,7 +1527,7 @@ public class BattleManager : MonoBehaviour
                     // เทพอกพ/ดูมือ is ok ก็ว่า ok (ต้องการ discard/reveal ได้)
                     break;
 
-                // effect อื่นๆ ถือว่า OK
+                    // effect อื่นๆ ถือว่า OK
             }
         }
 
@@ -1573,7 +1573,7 @@ public class BattleManager : MonoBehaviour
         // 🪦 ส่งเวทย์ลงสุสาน (Spell ใช้ไปแล้ว)
         SendToGraveyard(spellData, isPlayer);
         Destroy(cardUI.gameObject);
-        if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
         UpdateUI();
     }
 
@@ -1634,7 +1634,7 @@ public class BattleManager : MonoBehaviour
 
         // ปล่อยเวทย์ลงไปสุสาน
         Destroy(spellCard.gameObject);
-        if(AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
         UpdateUI();
     }
 
@@ -1645,14 +1645,14 @@ public class BattleManager : MonoBehaviour
         if (cardDetailView != null)
         {
             cardDetailView.Open(spellData);
-            
+
             string casterName = isPlayer ? "คุณ" : "บอท";
             string spellMsg = $"🎇 {casterName} ใช้เวทย์: {spellData.cardName}";
             Debug.Log(spellMsg);
 
             // แสดง popup 2-3 วินาที
             yield return new WaitForSeconds(2f);
-            
+
             // ปิด detail view โดยการคลิกอื่น หรือให้มันปิดเองตามระยะเวลา
             // (ถ้า cardDetailView มีปุ่มปิด)
         }
@@ -1667,19 +1667,19 @@ public class BattleManager : MonoBehaviour
         if (state != BattleState.PLAYERTURN) return;
 
         attacker.attacksThisTurn++;
-        
+
         // ถ้าโจมตีครบครั้งแล้ว ให้ปิดการโจมตี
         if (attacker.attacksThisTurn >= attacker.GetMaxAttacksPerTurn())
         {
             attacker.hasAttacked = true;
         }
-        
+
         // 🟣 เปลี่ยนสีเป็นเทาหลังโจมตี (ยกเว้นถ้าสูญเสีย category)
         if (!attacker.hasLostCategory)
         {
             attacker.GetComponent<Image>().color = Color.gray;
         }
-        
+
         int attackDamage = attacker.GetModifiedATK(isPlayerAttack: true); // 🔥 ใช้ ModifiedATK แทน
         AddBattleLog($"Player attacks with {attacker.GetData().cardName} (ATK:{attackDamage}) [{attacker.attacksThisTurn}/{attacker.GetMaxAttacksPerTurn()}]");
 
@@ -1697,7 +1697,7 @@ public class BattleManager : MonoBehaviour
 
         // ถ้าการ์ดถูกทำลายระหว่าง OnStrike ให้หยุด
         if (attacker == null || attacker.GetData() == null) yield break;
-        
+
         // 🚀 ตรวจสอบว่าการ์ดนี้ข้ามการกันได้หรือไม่ (ต้องเช็คว่ามีโล่บอทที่สามารถกันได้หรือไม่)
         bool canBypassAll = false;
         if (attacker.canBypassIntercept)
@@ -1729,50 +1729,50 @@ public class BattleManager : MonoBehaviour
             canBypassAll = !hasInterceptableShield;
             Debug.Log($"📊 hasInterceptableShield={hasInterceptableShield}, canBypassAll={canBypassAll}");
         }
-        
+
         // 🔥 ถ้าข้ามการกันได้ทั้งหมด โจมตีตรงไปที่บอทโดยตรง
         if (canBypassAll)
         {
             Debug.Log($"🚀 {attacker.GetData().cardName} bypasses intercept - direct damage!");
             AddBattleLog($"{attacker.GetData().cardName} bypasses intercept - {damage} direct damage");
-            
+
             // 📊 บันทึกสถิติ: การข้ามการกัน
             currentBattleStats.interceptionsBlocked++;
-            
+
             // พุ่งไป
             yield return StartCoroutine(MoveToTarget(attacker.transform, enemySpot.position, 0.3f));
-            
+
             EnemyTakeDamage(damage);
-            
+
             // ทริกเกอร์ OnStrikeHit
             yield return StartCoroutine(ResolveEffects(attacker, EffectTrigger.OnStrikeHit, isPlayer: true));
-            
+
             // รีเซ็ต bypass status หลังโจมตี
             attacker.canBypassIntercept = false;
             attacker.bypassCostThreshold = 0;
             attacker.bypassAllowedMainCat = MainCategory.General;
             attacker.bypassAllowedSubCat = SubCategory.General;
-            
+
             yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
-            
+
             if (enemyCurrentHP <= 0)
             {
                 Debug.Log("🎉 ศัตรูตายแล้ว -> Win!");
                 StartCoroutine(EndBattle(true));
             }
-            
+
             UpdateUI();
             yield break;
         }
-        
+
         // พุ่งไป (เร็วขึ้น 0.3 วินาที)
         yield return StartCoroutine(MoveToTarget(attacker.transform, enemySpot.position, 0.3f));
 
         // 🛡️ เช็คว่ามีการ์ดที่ต้องกันบังคับหรือไม่
         bool hasMustIntercept = HasMustInterceptCard(false); // defenderIsPlayer = false (บอท)
-        
+
         BattleCardUI botShield = null;
-        
+
         if (hasMustIntercept)
         {
             // หาการ์ดที่ mustIntercept = true
@@ -1781,7 +1781,7 @@ public class BattleManager : MonoBehaviour
             {
                 Debug.Log($"🛡️ {botShield.GetData().cardName} is forced to intercept!");
                 AddBattleLog($"{botShield.GetData().cardName} is forced to intercept");
-                
+
                 // รีเซ็ต mustIntercept หลังการกัน
                 botShield.mustIntercept = false;
             }
@@ -1791,7 +1791,7 @@ public class BattleManager : MonoBehaviour
             // ✅ ให้ผู้เล่นเลือกโล่ฝั่งบอทว่าจะออกมากัน (ถ้ามี)
             List<BattleCardUI> selectableShields = new List<BattleCardUI>();
             Debug.Log($"🔍 Checking bot shields for interception. Attacker: {attacker.GetData().cardName}, canBypass: {attacker.canBypassIntercept}");
-            
+
             foreach (Transform slot in enemyEquipSlots)
             {
                 if (slot.childCount > 0)
@@ -1835,7 +1835,7 @@ public class BattleManager : MonoBehaviour
         {
             Debug.Log($"🛡️ บอทกันด้วย {botShield.GetData().cardName} ({botShield.GetData().subCategory})");
             AddBattleLog($"Bot blocks with {botShield.GetData().cardName} ({botShield.GetData().subCategory})");
-            if(AudioManager.Instance) AudioManager.Instance.PlaySFX("Block");
+            if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Block");
 
             // 🔥 ตรวจสอบ null ก่อนเช็คประเภท
             if (attacker == null || attacker.GetData() == null || botShield.GetData() == null)
@@ -1874,10 +1874,10 @@ public class BattleManager : MonoBehaviour
         {
             Debug.Log($"💥 ไม่มีโล่ -> บอทรับดาเมจ {damage}");
             EnemyTakeDamage(damage);
-            
+
             // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ) (รอให้เสร็จก่อน)
             yield return StartCoroutine(ResolveEffects(attacker, EffectTrigger.OnStrikeHit, isPlayer: true));
-            
+
             yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
         }
 
@@ -1898,7 +1898,7 @@ public class BattleManager : MonoBehaviour
     IEnumerator EnemyTurn()
     {
         if (isEnding) yield break;
-        
+
         AddBattleLog($"\n=== BOT TURN {turnCount} START === HP:{enemyCurrentHP}/{enemyMaxHP} | PP:{enemyCurrentPP}/{enemyMaxPP}");
 
         // เด็คหมด -> ผู้เล่นชนะ
@@ -1956,7 +1956,7 @@ public class BattleManager : MonoBehaviour
         // 🔥 ลอง Monster (สามารถ Sacrifice ได้ถ้าช่องเต็ม)
         Transform freeMonSlot = GetFreeSlot(CardType.Monster, false);
         var bestMonster = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.Monster && enemyCurrentPP >= c.GetData().cost);
-        
+
         if (bestMonster != null)
         {
             if (freeMonSlot != null)
@@ -1975,7 +1975,7 @@ public class BattleManager : MonoBehaviour
         // 🔥 ลอง EquipSpell (สามารถ Sacrifice ได้ถ้าช่องเต็ม)
         Transform freeEqSlot = GetFreeSlot(CardType.EquipSpell, false);
         var bestEquip = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.EquipSpell && enemyCurrentPP >= c.GetData().cost);
-        
+
         if (bestEquip != null)
         {
             if (freeEqSlot != null)
@@ -2014,14 +2014,14 @@ public class BattleManager : MonoBehaviour
                 if (oldCard != null && oldCard.GetData() != null)
                 {
                     CardData oldData = oldCard.GetData();
-                    
+
                     // บอทจะสังเวยถ้า:
                     // 1. การ์ดใหม่แรงกว่า (ATK+HP มากกว่า)
                     // 2. หรือ cost ต่างกันไม่เกิน 2 PP
                     int newPower = newData.atk + newData.hp;
                     int oldPower = oldData.atk + oldData.hp;
                     int diff = newData.cost - oldData.cost;
-                    
+
                     if (newPower > oldPower && diff <= 2 && enemyCurrentPP >= Mathf.Max(0, diff))
                     {
                         if (weakestCard == null || oldPower < (weakestCard.GetData().atk + weakestCard.GetData().hp))
@@ -2059,7 +2059,7 @@ public class BattleManager : MonoBehaviour
 
         // ทำลายการ์ดเก่า
         DestroyCardToGraveyard(oldCard);
-        
+
         yield return new WaitForSeconds(0.2f);
 
         // ลงการ์ดใหม่
@@ -2108,13 +2108,13 @@ public class BattleManager : MonoBehaviour
         {
             ui.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
 
-                    // 🔥 เช็คว่ามีสกิล Rush หรือไม่ (Bot)
-                    bool hasRush = ui.GetData().effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.Rush);
-                    if (hasRush)
-                    {
-                        ui.hasAttacked = false;
-                        AddBattleLog($"💨 <color=red>Bot's {ui.GetData().cardName}</color> มีสกิล Rush!");
-                    }
+            // 🔥 เช็คว่ามีสกิล Rush หรือไม่ (Bot)
+            bool hasRush = ui.GetData().effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.Rush);
+            if (hasRush)
+            {
+                ui.hasAttacked = false;
+                AddBattleLog($"💨 <color=red>Bot's {ui.GetData().cardName}</color> มีสกิล Rush!");
+            }
         }
         ui.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม
         var img = ui.GetComponent<Image>();
@@ -2169,20 +2169,20 @@ public class BattleManager : MonoBehaviour
                 if (monster != null && monster.CanAttackNow())
                 {
                     currentAttackerBot = monster;
-                    
+
                     // นับจำนวนครั้งที่โจมตี
                     monster.attacksThisTurn++;
                     if (monster.attacksThisTurn >= monster.GetMaxAttacksPerTurn())
                     {
                         monster.hasAttacked = true;
                     }
-                    
+
                     // 🟣 เปลี่ยนสีเป็นเทาหลังโจมตี (ยกเว้นถ้าสูญเสีย category)
                     if (!monster.hasLostCategory)
                     {
                         monster.GetComponent<Image>().color = Color.gray;
                     }
-                    
+
                     Vector3 startPos = monster.transform.position;
                     // กัน Error: ถ้าลืมลาก PlayerSpot ให้วิ่งไปที่ (0,0,0)
                     Vector3 targetPos = (playerSpot != null) ? playerSpot.position : Vector3.zero;
@@ -2226,29 +2226,29 @@ public class BattleManager : MonoBehaviour
                         canBypassAll = !hasInterceptableShield;
                         Debug.Log($"📊 hasInterceptableShield={hasInterceptableShield}, canBypassAll={canBypassAll}");
                     }
-                    
+
                     // 1. พุ่งมา (เร็วขึ้น 0.3 วินาที)
                     yield return StartCoroutine(MoveToTarget(monster.transform, targetPos, 0.3f));
-                    
+
                     // 🔥 ถ้าบอทข้ามการกันได้ทั้งหมด โจมตีตรงไปที่ผู้เล่นโดยตรง
                     if (canBypassAll)
                     {
                         int botDamage = monster.GetModifiedATK(isPlayerAttack: false); // 🔥 ใช้ ModifiedATK
                         Debug.Log($"🚀 Bot {monster.GetData().cardName} bypasses intercept - direct damage!");
                         AddBattleLog($"Bot {monster.GetData().cardName} bypasses intercept - {botDamage} direct damage");
-                        
+
                         yield return new WaitForSeconds(0.2f);
                         PlayerTakeDamage(botDamage);
-                        
+
                         // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ - ข้ามการกัน)
                         yield return StartCoroutine(ResolveEffects(monster, EffectTrigger.OnStrikeHit, isPlayer: false));
-                        
+
                         // รีเซ็ต bypass status
                         monster.canBypassIntercept = false;
                         monster.bypassCostThreshold = 0;
                         monster.bypassAllowedMainCat = MainCategory.General;
                         monster.bypassAllowedSubCat = SubCategory.General;
-                        
+
                         // ดึงกลับ
                         if (monster != null && monster.gameObject != null && monster.transform != null)
                         {
@@ -2258,7 +2258,7 @@ public class BattleManager : MonoBehaviour
                                 monster.transform.localPosition = Vector3.zero;
                             }
                         }
-                        
+
                         if (state == BattleState.LOST) break;
                         continue; // ไปยังมอนสเตอร์ตัวถัดไป
                     }
@@ -2275,12 +2275,12 @@ public class BattleManager : MonoBehaviour
                         {
                             Debug.Log($"🛡️ {forcedShield.GetData().cardName} is forced to intercept bot's attack!");
                             AddBattleLog($"{forcedShield.GetData().cardName} forced to block {monster.GetData().cardName}");
-                            
+
                             // ประมวลผลการกัน
                             CardData attackerData = monster.GetData();
                             CardData shieldData = forcedShield.GetData();
                             bool match = (monster.GetModifiedSubCategory() == forcedShield.GetModifiedSubCategory());
-                            
+
                             if (match)
                             {
                                 // ประเภทตรง → ทำลายทั้งคู่
@@ -2298,10 +2298,10 @@ public class BattleManager : MonoBehaviour
                                 DestroyCardToGraveyard(forcedShield);
                                 Debug.Log($"✅ กันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก ไม่เสีย HP");
                             }
-                            
+
                             // รีเซ็ต mustIntercept
                             forcedShield.mustIntercept = false;
-                            
+
                             playerHasMadeChoice = true;
                         }
                     }
@@ -2323,19 +2323,19 @@ public class BattleManager : MonoBehaviour
                         // 🔥 ปิด Highlight ทั้งหมด
                         ClearAllShieldHighlights();
 
-                        if(takeDamageButton) takeDamageButton.SetActive(false);
+                        if (takeDamageButton) takeDamageButton.SetActive(false);
                     }
                     else
                     {
                         // ตีเลย
-                        if(playerHasShield && takeDamageButton == null) Debug.LogError("⚠️ ลืกลากปุ่ม TakeDamageButton!");
-                        
+                        if (playerHasShield && takeDamageButton == null) Debug.LogError("⚠️ ลืกลากปุ่ม TakeDamageButton!");
+
                         yield return new WaitForSeconds(0.2f);
-                        if(monster != null)
+                        if (monster != null)
                         {
                             int botDamage = monster.GetModifiedATK(isPlayerAttack: false); // 🔥 ใช้ ModifiedATK
                             PlayerTakeDamage(botDamage);
-                            
+
                             // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ - ไม่ถูกกัน)
                             yield return StartCoroutine(ResolveEffects(monster, EffectTrigger.OnStrikeHit, isPlayer: false));
                         }
@@ -2345,7 +2345,7 @@ public class BattleManager : MonoBehaviour
                     if (monster != null && monster.gameObject != null && monster.transform != null)
                     {
                         yield return StartCoroutine(MoveToTarget(monster.transform, startPos, 0.25f));
-                        if (monster != null && monster.transform != null) 
+                        if (monster != null && monster.transform != null)
                         {
                             monster.transform.localPosition = Vector3.zero; // Snap (check again)
                         }
@@ -2412,10 +2412,10 @@ public class BattleManager : MonoBehaviour
         }
 
         PlayerTakeDamage(currentAttackerBot.GetData().atk);
-        
+
         // 🔥 ทริกเกอร์ OnStrikeHit Effects สำหรับบอท (หลังโจมตีสำเร็จ - ผู้เล่นไม่กัน)
         StartCoroutine(ResolveEffects(currentAttackerBot, EffectTrigger.OnStrikeHit, isPlayer: false));
-        
+
         playerHasMadeChoice = true;
         if (takeDamageButton) takeDamageButton.SetActive(false);
     }
@@ -2425,7 +2425,7 @@ public class BattleManager : MonoBehaviour
         if (state != BattleState.DEFENDER_CHOICE) return;
 
         // 🔥 ตรวจสอบ null ก่อนเช็คประเภท
-        if (currentAttackerBot == null || currentAttackerBot.GetData() == null || 
+        if (currentAttackerBot == null || currentAttackerBot.GetData() == null ||
             myShield == null || myShield.GetData() == null)
         {
             Debug.LogWarning("OnPlayerSelectBlocker: null card data detected!");
@@ -2441,7 +2441,7 @@ public class BattleManager : MonoBehaviour
             ShowDamagePopupString("Cannot Block!", myShield.transform);
             return; // ไม่อนุญาตให้กัน
         }
-        
+
         // 🚫 ตรวจสอบว่าโล่นี้ถูก bypass หรือไม่ (ใช้ฟังก์ชันเดียวกับที่เช็คตอน highlight)
         if (currentAttackerBot.canBypassIntercept)
         {
@@ -2464,12 +2464,12 @@ public class BattleManager : MonoBehaviour
 
         CardData attackerData = currentAttackerBot.GetData();
         CardData shieldData = myShield.GetData();
-        
+
         Debug.Log($"🛡️ ตรวจสอบการกัน: โจมตี={attackerData.cardName} ({attackerData.subCategory}), โล่={shieldData.cardName} ({shieldData.subCategory})");
-        
+
         // 📊 บันทึกสถิติ: การกันสำเร็จ
         currentBattleStats.interceptionsSuccessful++;
-        
+
         bool match = (currentAttackerBot.GetModifiedSubCategory() == myShield.GetModifiedSubCategory());
 
         if (match)
@@ -2483,18 +2483,18 @@ public class BattleManager : MonoBehaviour
         {
             ShowDamagePopupString("Shield Break!", myShield.transform);
             DestroyCardToGraveyard(myShield);
-            
+
             // 🔥 ประเภทไม่ตรง → โล่แตก แต่ไม่เสีย HP (ปกป้องสำเร็จ)
             Debug.Log($"✅ กันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก แต่ไม่เสีย HP");
         }
-        
+
         // 🛡️ รีเซ็ต mustIntercept หลังการกัน
         if (myShield.mustIntercept)
         {
             myShield.mustIntercept = false;
             Debug.Log($"🔄 Reset mustIntercept for {shieldData.cardName}");
         }
-        
+
         // 🔥 เซ็ตแล้วหลัง logic กันค้าง
         playerHasMadeChoice = true;
         if (takeDamageButton) takeDamageButton.SetActive(false);
@@ -2512,14 +2512,14 @@ public class BattleManager : MonoBehaviour
     IEnumerator MoveToTarget(Transform obj, Vector3 target, float duration)
     {
         // 🔥 ตรวจสอบ object ก่อน - ถ้า null หรือ destroy ไปแล้วให้หยุดทันที
-        if (obj == null) 
+        if (obj == null)
         {
             Debug.Log("⚠️ MoveToTarget: obj เป็น null → ข้าม");
             yield break;
         }
 
         // duration = เวลาที่ใช้ (เช่น 0.2 วินาที คือเร็วมาก)
-        if (duration <= 0f) duration = 0.1f; 
+        if (duration <= 0f) duration = 0.1f;
 
         Vector3 startPos = obj.position;
         float elapsedTime = 0f;
@@ -2543,7 +2543,7 @@ public class BattleManager : MonoBehaviour
         if (obj != null)
         {
             obj.position = target;
-            
+
             // 🔥 เพิ่ม: Shake effect ตอนถึงเป้าหมาย (Impact)
             if (obj != null) // เช็คอีกครั้งเผื่อ destroy ระหว่างรอ
             {
@@ -2599,7 +2599,7 @@ public class BattleManager : MonoBehaviour
 
     public Transform GetFreeSlot(CardType type, bool isPlayer)
     {
-        Transform[] slots = isPlayer 
+        Transform[] slots = isPlayer
             ? (type == CardType.Monster ? playerMonsterSlots : playerEquipSlots)
             : (type == CardType.Monster ? enemyMonsterSlots : enemyEquipSlots);
 
@@ -2612,7 +2612,7 @@ public class BattleManager : MonoBehaviour
     {
         if (card == null || card.transform.parent == null) return false;
         Transform parent = card.transform.parent;
-        
+
         // เช็คว่าอยู่ใน Monster Slots ของผู้เล่น
         if (playerMonsterSlots != null)
         {
@@ -2621,7 +2621,7 @@ public class BattleManager : MonoBehaviour
                 if (parent == slot) return true;
             }
         }
-        
+
         // เช็คว่าอยู่ใน Equip Slots ของผู้เล่น
         if (playerEquipSlots != null)
         {
@@ -2630,7 +2630,7 @@ public class BattleManager : MonoBehaviour
                 if (parent == slot) return true;
             }
         }
-        
+
         return false;
     }
 
@@ -2680,14 +2680,14 @@ public class BattleManager : MonoBehaviour
     {
         // คำนวณเปอร์เซ็นต์ HP ของบอท
         float hpPercent = (float)enemyCurrentHP / enemyMaxHP;
-        
+
         // 1. HP ต่ำมาก (< 30%) → กันแน่นอน (100%)
         if (hpPercent < 0.3f)
         {
             Debug.Log($"🩸 HP ต่ำมาก ({hpPercent:P0}) → กันแน่นอน!");
             return true;
         }
-        
+
         // 2. HP ปานกลาง (30-60%) → กัน 70% ของเวลา
         if (hpPercent < 0.6f)
         {
@@ -2695,7 +2695,7 @@ public class BattleManager : MonoBehaviour
             Debug.Log($"⚠️ HP ปานกลาง ({hpPercent:P0}) → กัน {(shouldBlock ? "✓" : "✗")}");
             return shouldBlock;
         }
-        
+
         // 3. HP สูง (> 60%) → กันเฉพาะบางครั้ง (40%)
         // แต่ถ้ามีโล่ที่ตรงประเภท เพิ่มโอกาสเป็น 60%
         bool hasMatchingShield = false;
@@ -2711,7 +2711,7 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
-        
+
         float blockChance = hasMatchingShield ? 0.6f : 0.4f;
         bool willBlock = Random.value < blockChance;
         Debug.Log($"💚 HP สูง ({hpPercent:P0}) → โอกาสกัน {blockChance:P0} → {(willBlock ? "กัน ✓" : "ปล่อยเข้า ✗")}");
@@ -2732,17 +2732,18 @@ public class BattleManager : MonoBehaviour
             if (slot.childCount > 0)
             {
                 var c = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (c) {
+                if (c)
+                {
                     c.hasAttacked = false;
                     c.attacksThisTurn = 0; // รีเซ็ตจำนวนครั้งที่โจมตี
                     c.canBypassIntercept = false; // รีเซ็ต Bypass ตอนเริ่มเทิร์น
                     c.bypassCostThreshold = 0;
                     c.bypassAllowedMainCat = MainCategory.General;
                     c.bypassAllowedSubCat = SubCategory.General;
-                    
+
                     // 🕒 ลดจำนวนเทิร์น category loss และคืน category ถ้าหมดเวลา
                     c.ProcessCategoryLossDuration();
-                    
+
                     // 🔥 แก้: ตรวจสอบ Image ก่อน และให้แน่ใจว่าแสดงหน้าการ์ด
                     var img = c.GetComponent<Image>();
                     if (img != null && !c.hasLostCategory) // 🟣 ห้ามทับสีม่วง
@@ -2757,17 +2758,18 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
-        
+
         // 🔥 รีเซ็ต Equip ผู้เล่น
         foreach (Transform slot in playerEquipSlots)
         {
             if (slot.childCount > 0)
             {
                 var c = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (c) {
+                if (c)
+                {
                     c.cannotIntercept = false; // รีเซ็ตการปิดการกัน (สำหรับ DisableIntercept)
-                    // mustIntercept จะรีเซ็ตหลังการกันสำเร็จ ไม่ต้องรีเซ็ตทุกเทิร์น
-                    
+                                               // mustIntercept จะรีเซ็ตหลังการกันสำเร็จ ไม่ต้องรีเซ็ตทุกเทิร์น
+
                     // 🕒 ลดจำนวนเทิร์น category loss และคืน category ถ้าหมดเวลา
                     c.ProcessCategoryLossDuration();
                 }
@@ -2784,17 +2786,18 @@ public class BattleManager : MonoBehaviour
             if (slot.childCount > 0)
             {
                 var c = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (c) {
+                if (c)
+                {
                     c.hasAttacked = false;
                     c.attacksThisTurn = 0; // รีเซ็ตจำนวนครั้งที่โจมตี
                     c.canBypassIntercept = false; // รีเซ็ต Bypass
                     c.bypassCostThreshold = 0;
                     c.bypassAllowedMainCat = MainCategory.General;
                     c.bypassAllowedSubCat = SubCategory.General;
-                    
+
                     // 🕒 ลดจำนวนเทิร์น category loss และคืน category ถ้าหมดเวลา
                     c.ProcessCategoryLossDuration();
-                    
+
                     // 🟣 คืนสี (ยกเว้นถ้าสูญเสีย category)
                     if (!c.hasLostCategory)
                     {
@@ -2803,16 +2806,17 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
-        
+
         // 🔥 รีเซ็ต Equip บอท
         foreach (Transform slot in enemyEquipSlots)
         {
             if (slot.childCount > 0)
             {
                 var c = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (c) {
+                if (c)
+                {
                     c.cannotIntercept = false; // รีเซ็ตการปิดการกัน
-                    
+
                     // 🕒 ลดจำนวนเทิร์น category loss และคืน category ถ้าหมดเวลา
                     c.ProcessCategoryLossDuration();
                 }
@@ -2822,8 +2826,8 @@ public class BattleManager : MonoBehaviour
 
     // --- Standard Functions (แบบ Safe Mode) ---
 
-    public void DrawCard(int n, Transform parentOverride = null) 
-    { 
+    public void DrawCard(int n, Transform parentOverride = null)
+    {
         StartCoroutine(DrawCardWithAnimation(n, parentOverride));
     }
 
@@ -2843,22 +2847,22 @@ public class BattleManager : MonoBehaviour
         AddBattleLog($"Player draws {n} card(s) | Deck: {deckList.Count}");
 
         Transform targetParent = parentOverride != null ? parentOverride : handArea;
-        
+
         // 🔴 Debug: เช็ค handArea และ cardPrefab
         if (!handArea) Debug.LogError("❌ handArea ยังไม่ถูกตั้งค่า!");
         if (!cardPrefab) Debug.LogError("❌ cardPrefab ยังไม่ถูกตั้งค่า!");
         if (!targetParent) Debug.LogError("❌ targetParent เป็น null!");
 
-        for(int i=0;i<n;i++) 
-        { 
-            CardData d=deckList[0]; 
-            deckList.RemoveAt(0); 
-            
-            if(targetParent && cardPrefab)
+        for (int i = 0; i < n; i++)
+        {
+            CardData d = deckList[0];
+            deckList.RemoveAt(0);
+
+            if (targetParent && cardPrefab)
             {
                 // 🎴 หาตำแหน่งเด็ค - ใช้ deckPileTransform ก่อน ถ้าไม่มีใช้ default
                 Vector3 startPos = Vector3.zero;
-                
+
                 if (deckPileTransform != null)
                 {
                     startPos = deckPileTransform.position;
@@ -2871,47 +2875,47 @@ public class BattleManager : MonoBehaviour
                     else
                         startPos = new Vector3(-500, 0, 0); // default position
                 }
-                
+
                 Debug.Log($"✅ DrawCard #{i}: {d.cardName}, startPos={startPos}, targetParent={targetParent.name}");
-                
+
                 // 🔥 สร้างที่เด็ค world position แล้ว SetParent พร้อมเก็บตำแหน่ง
                 var ui = Instantiate(cardPrefab, startPos, Quaternion.identity).GetComponent<BattleCardUI>();
-                
+
                 if (ui == null)
                 {
                     Debug.LogError("❌ cardPrefab ไม่มี BattleCardUI component!");
                     yield break;
                 }
-                
+
                 // 🔥 ตั้ง parent พร้อมเก็บตำแหน่ง world (worldPositionStays = true)
                 Canvas canvas = FindObjectOfType<Canvas>();
                 if (canvas != null)
                 {
                     ui.transform.SetParent(canvas.transform, worldPositionStays: true);
                 }
-                
+
                 ui.transform.localScale = Vector3.zero; // เริ่มจากเล็ก
                 ui.Setup(d);
-                
+
                 // อนิเมชั่นบินเข้ามา + ขยาย
                 float duration = 0.3f;
                 float elapsed = 0f;
                 Vector3 endPos = targetParent.position;
-                
+
                 while (elapsed < duration && ui != null)
                 {
                     elapsed += Time.deltaTime;
                     float t = elapsed / duration;
-                    
+
                     // Ease-out curve
                     float easeT = 1f - Mathf.Pow(1f - t, 3);
-                    
+
                     ui.transform.position = Vector3.Lerp(startPos, endPos, easeT);
                     ui.transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, easeT);
-                    
+
                     yield return null;
                 }
-                
+
                 // Snap เข้า parent สุดท้าย และปรับตำแหน่ง
                 if (ui != null)
                 {
@@ -2928,10 +2932,10 @@ public class BattleManager : MonoBehaviour
                         ui.transform.localPosition = Vector3.zero;
                         ui.transform.localScale = Vector3.one;
                     }
-                    
+
                     if (isMulliganPhase) ui.SetMulliganSelect(false); // reset highlight
                 }
-                
+
                 // พักเล็กน้อยระหว่างการ์ด
                 yield return new WaitForSeconds(0.1f);
             }
@@ -2940,20 +2944,20 @@ public class BattleManager : MonoBehaviour
                 Debug.LogError($"❌ ไม่สามารถวาดการ์ดได้! targetParent={targetParent}, cardPrefab={cardPrefab}");
             }
         }
-        
+
         // 🔥 จัดการ์ดในมือหลังจากจั่วเสร็จ (ถ้าเป็นการจั่วเข้ามือ)
         if (targetParent == handArea && !isMulliganPhase)
         {
             ArrangeCardsInHand();
             Debug.Log("✅ จัดการ์ดในมือหลังจากจั่วเสร็จ");
         }
-        
+
         // 🎴 อัพเดทการแสดงผลเด็ค
         UpdateDeckVisualization();
     }
 
-    IEnumerator DrawEnemyCard(int n) 
-    { 
+    IEnumerator DrawEnemyCard(int n)
+    {
         if (enemyDeckList.Count < n)
         {
             Debug.LogWarning("⚠️ Deck empty while drawing (enemy)");
@@ -2964,16 +2968,16 @@ public class BattleManager : MonoBehaviour
 
         AddBattleLog($"Bot draws {n} card(s) | Deck: {enemyDeckList.Count}");
 
-        for(int i=0;i<n;i++) 
+        for (int i = 0; i < n; i++)
         {
             CardData cardData = enemyDeckList[0];
             enemyDeckList.RemoveAt(0);
-            
-            if(cardPrefab && enemyHandArea) 
+
+            if (cardPrefab && enemyHandArea)
             {
                 // หาตำแหน่งเด็คบอท
                 Vector3 startPos = Vector3.zero;
-                
+
                 if (enemyDeckPileTransform != null)
                 {
                     startPos = enemyDeckPileTransform.position;
@@ -2987,7 +2991,7 @@ public class BattleManager : MonoBehaviour
                 {
                     startPos = new Vector3(500, 0, 0); // default position ขวาบน
                 }
-                
+
                 // สร้างการ์ดจริง (ต้องเพื่อให้บอทรู้ว่าการ์ดนั้นคืออะไร)
                 GameObject cardObj = Instantiate(cardPrefab, startPos, Quaternion.identity);
                 Canvas canvas = FindObjectOfType<Canvas>();
@@ -2995,13 +2999,13 @@ public class BattleManager : MonoBehaviour
                 {
                     cardObj.transform.SetParent(canvas.transform, worldPositionStays: true);
                 }
-                
+
                 BattleCardUI ui = cardObj.GetComponent<BattleCardUI>();
-                if(ui != null)
+                if (ui != null)
                 {
                     cardObj.transform.localScale = Vector3.zero;
                     ui.Setup(cardData);
-                    
+
                     // ซ่อนรูปการ์ดแสดงแค่หลังการ์ด
                     var img = cardObj.GetComponent<Image>();
                     if (img != null)
@@ -3016,106 +3020,142 @@ public class BattleManager : MonoBehaviour
                     }
                     // ซ่อนกรอบสำหรับการ์ดหลัง
                     ui.SetFrameVisible(false);
-                    
+
                     // อนิเมชั่นบินไปมือบอท
                     float duration = 0.3f;
                     float elapsed = 0f;
                     Vector3 endPos = enemyHandArea.position;
-                    
+
                     while (elapsed < duration)
                     {
                         elapsed += Time.deltaTime;
                         float t = elapsed / duration;
                         float easeT = 1f - Mathf.Pow(1f - t, 3);
-                        
+
                         cardObj.transform.position = Vector3.Lerp(startPos, endPos, easeT);
                         cardObj.transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, easeT);
-                        
+
                         yield return null;
                     }
-                    
+
                     // Snap เข้ามือบอท
                     cardObj.transform.SetParent(enemyHandArea, false);
                     cardObj.transform.localScale = Vector3.one;
-                    
+
                     // ตั้งค่าการ์ดบอท
                     var cg = cardObj.GetComponent<CanvasGroup>();
-                    if(cg == null) cg = cardObj.AddComponent<CanvasGroup>();
+                    if (cg == null) cg = cardObj.AddComponent<CanvasGroup>();
                     cg.interactable = false; // ไม่ให้บอทเล่นจากมือ
                     cg.blocksRaycasts = false; // ไม่ให้คลิก
-                    
+
                     var le = cardObj.GetComponent<LayoutElement>();
-                    if(le == null) le = cardObj.AddComponent<LayoutElement>();
+                    if (le == null) le = cardObj.AddComponent<LayoutElement>();
                     le.preferredWidth = handCardPreferredSize.x;
                     le.preferredHeight = handCardPreferredSize.y;
                 }
-                
+
                 // พักเล็กน้อยระหว่างการ์ด
                 yield return new WaitForSeconds(0.1f);
             }
         }
 
         ArrangeEnemyHand();
-        
+
         // 🎴 อัพเดทการแสดงผลเด็ค
         UpdateDeckVisualization();
     }
 
-    void ShuffleList(List<CardData> list) 
-    { 
-        for(int i=0; i<list.Count; i++) 
-        { 
-            CardData t=list[i]; 
-            int r=Random.Range(i,list.Count); 
-            list[i]=list[r]; 
-            list[r]=t; 
-        } 
+    void ShuffleList(List<CardData> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            CardData t = list[i];
+            int r = Random.Range(i, list.Count);
+            list[i] = list[r];
+            list[r] = t;
+        }
     }
 
-    void PlayerTakeDamage(int d) 
-    { 
-        currentHP=Mathf.Max(0, currentHP-d); 
-        
+    void PlayerTakeDamage(int d)
+    {
+        currentHP = Mathf.Max(0, currentHP - d);
+
         // 📊 บันทึกสถิติ: ดาเมจที่ได้รับ
         currentBattleStats.totalDamageTaken += d;
-        
+
         AddBattleLog($"Player takes {d} damage | HP: {currentHP + d} -> {currentHP}");
-        
+
         // Safe Check
-        if(playerSpot) ShowDamagePopupString($"-{d}", playerSpot);
-        if(AudioManager.Instance)AudioManager.Instance.PlaySFX("Damage");
+        if (playerSpot) ShowDamagePopupString($"-{d}", playerSpot);
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Damage");
         StartCoroutine(ScreenShake(0.15f, 6f));
-        
-        UpdateUI(); 
-        
-        if(currentHP<=0)
+
+        UpdateUI();
+
+        if (currentHP <= 0)
         {
             Debug.Log("LOSE (HP=0)");
             AddBattleLog("Player HP reaches 0 - LOSE");
             StartCoroutine(EndBattle(false));
-        } 
+        }
     }
 
-    void EnemyTakeDamage(int d) 
-    { 
-        enemyCurrentHP=Mathf.Max(0, enemyCurrentHP-d); 
-        
+    void EnemyTakeDamage(int d)
+    {
+        enemyCurrentHP = Mathf.Max(0, enemyCurrentHP - d);
+
         // 📊 บันทึกสถิติ: ดาเมจที่ทำให้ศัตรู
         currentBattleStats.totalDamageDealt += d;
-        
+
         AddBattleLog($"Bot takes {d} damage | HP: {enemyCurrentHP + d} -> {enemyCurrentHP}");
-        
-        if(enemySpot) ShowDamagePopupString($"-{d}", enemySpot);
-        if(AudioManager.Instance)AudioManager.Instance.PlaySFX("Damage");
+
+        if (enemySpot) ShowDamagePopupString($"-{d}", enemySpot);
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Damage");
         StartCoroutine(ScreenShake(0.12f, 5f));
         UpdateUI();
-        
-        if(enemyCurrentHP<=0)
+
+        if (enemyCurrentHP <= 0)
         {
             Debug.Log("WIN (enemy HP=0)");
             AddBattleLog("Bot HP reaches 0 - WIN");
             StartCoroutine(EndBattle(true));
-        } 
+        }
+    }
+
+    // DAILY QUEST UPDATE
+    void CheckBattleDailyQuests(BattleStatistics stats)
+    {
+        Debug.Log("[CheckBattleDailyQuests] Called with stats=" + (stats != null ? "valid" : "NULL"));
+
+        if (DailyQuestManager.Instance == null)
+        {
+            Debug.LogWarning("❌ [CheckBattleDailyQuests] DailyQuestManager.Instance is NULL! Cannot update quests.");
+            return;
+        }
+
+        Debug.Log("🏆 Checking Daily Quests from Battle Stats...");
+
+        Debug.Log($"📊 Battle Stats: Victory={stats.victory}, CardsPlayed={stats.totalCardsPlayed}, DamageDealt={stats.totalDamageDealt}");
+        //ไม่สนแพ้ชนะ แค่จบเกมก็นับ 1
+        DailyQuestManager.Instance.UpdateProgress(QuestType.Stage, 1, "play_1");
+
+        // เล่นชนะ 1 ครั้ง
+        if (stats.victory)
+        {
+            DailyQuestManager.Instance.UpdateProgress(QuestType.Stage, 1, "win_1");
+        }
+
+        // เควสใช้การ์ด
+        if (stats.totalCardsPlayed > 0)
+        {
+            DailyQuestManager.Instance.UpdateProgress(QuestType.Stage, stats.totalCardsPlayed, "use_card_20");
+        }
+
+        // เควสทำดาเมจ
+        if (stats.totalDamageDealt > 0)
+        {
+            DailyQuestManager.Instance.UpdateProgress(QuestType.Stage, stats.totalDamageDealt, "damage_50");
+        }
     }
 
     IEnumerator EndBattle(bool playerWin)
@@ -3129,17 +3169,22 @@ public class BattleManager : MonoBehaviour
         int deckRemaining = deckList != null ? deckList.Count : 0;
         int handSize = handArea != null ? handArea.childCount : 0;
         currentBattleStats.Finalize(playerWin, currentHP, enemyCurrentHP, turnCount, deckRemaining, handSize);
-        
+
         // เก็บสถิติไว้ให้เข้าถึงได้จากภายนอก
         LastBattleStats = currentBattleStats;
-        
+
+        // อัพเดทเควสรายวัน
+        Debug.Log("[EndBattle] About to call CheckBattleDailyQuests with stats...");
+        CheckBattleDailyQuests(LastBattleStats);
+        Debug.Log("[EndBattle] CheckBattleDailyQuests completed.");
+
         // 💾 บันทึกลงประวัติ
         if (BattleHistory.Instance != null)
         {
             BattleHistory.Instance.AddBattleResult(currentBattleStats);
             Debug.Log($"💾 Battle result saved to history (Total: {BattleHistory.Instance.GetTotalBattles()})");
         }
-        
+
         // ⭐ ตรวจสอบและบันทึกดาว (ถ้าชนะ และมี StageID)
         if (playerWin)
         {
@@ -3149,7 +3194,7 @@ public class BattleManager : MonoBehaviour
                 int starsEarned = CalculateStarsForCurrentStage(currentBattleStats, currentStageID);
                 Debug.Log($"Earned {starsEarned}/3 stars for stage {currentStageID}");
                 Debug.Log($"[DEBUG] Stats - Victory: {currentBattleStats.victory}, Turns: {currentBattleStats.turnsPlayed}, Spells: {currentBattleStats.spellsCast}");
-                
+
                 // บันทึกลง GameManager
                 if (GameManager.Instance != null)
                 {
@@ -3157,10 +3202,10 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
-        
+
         // แสดงสถิติใน Console
         Debug.Log("\n" + currentBattleStats.GetSummary());
-        
+
         // เพิ่มสถิติใน Battle Log
         AddBattleLog("\n=== BATTLE STATISTICS ===");
         AddBattleLog($"Result: {(playerWin ? "VICTORY" : "DEFEAT")} | Turns: {turnCount}");
@@ -3232,16 +3277,16 @@ public class BattleManager : MonoBehaviour
         if (popup) popup.Setup(t);
     }
 
-    void UpdateUI() 
-    { 
+    void UpdateUI()
+    {
         // ใส่ ? กัน Error
-        if(playerHPBar)playerHPBar.value=currentHP; 
-        if(enemyHPBar)enemyHPBar.value=enemyCurrentHP; 
-        if(ppText)ppText.text=$"{currentPP}/{maxPP} PP"; 
-        if(enemyPPText)enemyPPText.text=$"{enemyCurrentPP}/{enemyMaxPP} PP";
-        if(playerHPText)playerHPText.text=$"{currentHP}/{maxHP}"; 
-        if(enemyHPText)enemyHPText.text=$"{enemyCurrentHP}/{enemyMaxHP}"; 
-        
+        if (playerHPBar) playerHPBar.value = currentHP;
+        if (enemyHPBar) enemyHPBar.value = enemyCurrentHP;
+        if (ppText) ppText.text = $"{currentPP}/{maxPP} PP";
+        if (enemyPPText) enemyPPText.text = $"{enemyCurrentPP}/{enemyMaxPP} PP";
+        if (playerHPText) playerHPText.text = $"{currentHP}/{maxHP}";
+        if (enemyHPText) enemyHPText.text = $"{enemyCurrentHP}/{enemyMaxHP}";
+
         // 🎴 อัพเดทจำนวนการ์ดในเด็ค
         UpdateDeckCountUI();
         UpdateGraveyardCountUI();
@@ -3311,7 +3356,7 @@ public class BattleManager : MonoBehaviour
         if (costToPay > 0 && currentPP < costToPay)
         {
             Debug.Log($"⚠️ PP ไม่พอ ({currentPP}/{costToPay})");
-            if (sacrificeMessageText) 
+            if (sacrificeMessageText)
                 sacrificeMessageText.text = $"PP ไม่พอ! ต้องการ {costToPay} PP แต่มีแค่ {currentPP} PP";
             return;
         }
@@ -3354,13 +3399,13 @@ public class BattleManager : MonoBehaviour
         {
             newCard.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
 
-                    // 🔥 เช็คว่ามีสกิล Rush หรือไม่ (Sacrifice)
-                    bool hasRush = newData.effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.Rush);
-                    if (hasRush)
-                    {
-                        newCard.hasAttacked = false;
-                        AddBattleLog($"💨 <color=cyan>{newData.cardName}</color> มีสกิล Rush! สามารถโจมตีได้ทันที");
-                    }
+            // 🔥 เช็คว่ามีสกิล Rush หรือไม่ (Sacrifice)
+            bool hasRush = newData.effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.Rush);
+            if (hasRush)
+            {
+                newCard.hasAttacked = false;
+                AddBattleLog($"💨 <color=cyan>{newData.cardName}</color> มีสกิล Rush! สามารถโจมตีได้ทันที");
+            }
         }
         // 🟣 ตั้งสี (ยกเว้นถ้าสูญเสีย category)
         if (!newCard.hasLostCategory)
@@ -3396,7 +3441,7 @@ public class BattleManager : MonoBehaviour
         {
             ClearDeckVisualization(playerDeckVisuals);
             int cardsToShow = Mathf.Min(deckList.Count, deckVisualizationCount);
-            
+
             for (int i = 0; i < cardsToShow; i++)
             {
                 GameObject cardBack = Instantiate(cardBackPrefab, deckPileTransform);
@@ -3417,7 +3462,7 @@ public class BattleManager : MonoBehaviour
         {
             ClearDeckVisualization(enemyDeckVisuals);
             int cardsToShow = Mathf.Min(enemyDeckList.Count, deckVisualizationCount);
-            
+
             for (int i = 0; i < cardsToShow; i++)
             {
                 GameObject cardBack = Instantiate(cardBackPrefab, enemyDeckPileTransform);
@@ -3531,7 +3576,7 @@ public class BattleManager : MonoBehaviour
     // ========================================================
     // 🔥 EFFECT RESOLUTION SYSTEM
     // ========================================================
-    
+
     /// <summary>วน effects ทั้งหมดของการ์ดตามเงื่อนไข trigger ที่กำหนด (รอให้แต่ละ effect เสร็จก่อนไปยัง effect ถัดไป)</summary>
     IEnumerator ResolveEffects(BattleCardUI sourceCard, EffectTrigger triggerType, bool isPlayer)
     {
@@ -3616,7 +3661,8 @@ public class BattleManager : MonoBehaviour
         bool completed = false;
 
         // เรียก StartSelectingTarget กับ callback ที่เซ็ต completed เป็น true
-        StartSelectingTarget(targets, selectCount, (selectedCards) => {
+        StartSelectingTarget(targets, selectCount, (selectedCards) =>
+        {
             result = selectedCards;
             completed = true;
         });
@@ -3635,7 +3681,7 @@ public class BattleManager : MonoBehaviour
     {
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
         int destroyedAtkSum = 0;
-        
+
         // 🔥 ตรวจสอบโหมดการทำลาย
         if (effect.destroyMode == DestroyMode.DestroyAll)
         {
@@ -3657,15 +3703,15 @@ public class BattleManager : MonoBehaviour
         {
             // 📋 โหมด SelectTarget: ให้ผู้เล่นเลือก หรือบอทเลือกอัตโนมัติ
             int maxDestroy = effect.value > 0 ? effect.value : targets.Count;
-            
+
             Debug.Log($"🎯 SelectTarget Mode: พบเป้าหมาย {targets.Count} ใบ, ต้องเลือก {maxDestroy} ใบ");
-            
+
             // 🔥 ผู้เล่นต้องเลือกเป้าหมายเสมอถ้ามีเป้าหมาย
             if (isPlayer && maxDestroy > 0 && targets.Count > 0)
             {
                 // 🔥 รอให้ผู้เล่นเลือกเป้าหมาย ก่อนไปยัง effect ถัดไป
                 yield return StartCoroutine(WaitForTargetSelection(targets, maxDestroy));
-                
+
                 int destroyCount = 0;
                 foreach (var target in selectedTargets)
                 {
@@ -3719,16 +3765,16 @@ public class BattleManager : MonoBehaviour
             Debug.LogError("❌ ApplyHeal: CardData เป็น null!");
             yield break;
         }
-        
+
         Debug.Log($"🔍 ApplyHeal: sourceCard.name={sourceCard.name}, cardName={cardData.cardName}, cardData.atk={cardData.atk}, cardData.hp={cardData.hp}");
-        
+
         int atkValue = cardData.atk;
         int hpValue = cardData.hp;
-        
+
         Debug.Log($"🔍 atkValue={atkValue}, hpValue={hpValue}, effect.value={effect.value}");
-        
+
         int healAmount = effect.value;
-        
+
         if (healAmount <= 0)
         {
             if (lastDestroyedAtkSum > 0)
@@ -3749,9 +3795,9 @@ public class BattleManager : MonoBehaviour
                 healAmount = 0; // ไม่มีข้อมูลให้ใช้
             }
         }
-        
+
         Debug.Log($"🔍 Final healAmount={healAmount}");
-        
+
         if (effect.targetType == TargetType.Self)
         {
             if (isPlayer)
@@ -3788,7 +3834,7 @@ public class BattleManager : MonoBehaviour
                 AddBattleLog($"Enemy healed Player {healAmount} HP");
             }
         }
-        
+
         UpdateUI();
         yield break;
     }
@@ -3813,7 +3859,7 @@ public class BattleManager : MonoBehaviour
 
         // 🔥 ตรวจสอบว่าต้องการสร้าง Token ฝั่งไหน
         bool summonOnPlayerSide = isPlayer; // Default: สร้างฝั่งเดียวกับผู้เล่นการ์ด
-        
+
         if (effect.targetType == TargetType.EnemyPlayer
             || effect.targetType == TargetType.EnemyMonster
             || effect.targetType == TargetType.EnemyEquip
@@ -3827,7 +3873,7 @@ public class BattleManager : MonoBehaviour
         {
             summonOnPlayerSide = isPlayer; // สร้างฝั่งตัวเอง
         }
-        
+
         Debug.Log($"🎯 SummonToken: sourceCard from {(isPlayer ? "Player" : "Bot")}, targetType={effect.targetType}, will summon on {(summonOnPlayerSide ? "Player" : "Bot")} side");
 
         // จำนวน token ที่จะ summon (ใช้ effect.value ถ้าระบุ, ไม่ให้ 1)
@@ -3865,12 +3911,12 @@ public class BattleManager : MonoBehaviour
             // 🔥 สำคัญที่สุด: ต้อง Setup ก่อนแล้วค่อย SetParent
             tokenUI.Setup(tokenData);
             Debug.Log($"✅ Token Setup สำเร็จ: name={tokenUI.GetData()?.cardName}, atk={tokenUI.GetData()?.atk}, hp={tokenUI.GetData()?.hp}");
-            
+
             // ตั้งตำแหน่ง - SetParent หลัง Setup
             tokenUI.transform.SetParent(freeSlot, false);
             tokenUI.transform.localPosition = Vector3.zero;
             tokenUI.transform.localScale = Vector3.one;
-            
+
             tokenUI.isOnField = true; // ✅ Token อยู่บนสนาม
             tokenUI.hasAttacked = true; // Summoning Sickness
             tokenUI.UpdateCardSize(); // ปรับขนาดการ์ด
@@ -3895,7 +3941,7 @@ public class BattleManager : MonoBehaviour
             }
 
             summoned++;
-            
+
             Debug.Log($"🎯 Token สร้างสำเร็จ: {tokenData.cardName} (Slot: {freeSlot.name}) - GetData()={tokenUI.GetData()?.cardName}, isOnField={tokenUI.isOnField}, hasAttacked={tokenUI.hasAttacked}, onPlayerSide={summonOnPlayerSide}");
             AddBattleLog($"{(summonOnPlayerSide ? "Player" : "Bot")} summons {tokenData.cardName} (Token)");
         }
@@ -3944,11 +3990,11 @@ public class BattleManager : MonoBehaviour
     {
         // กำหนดจำนวนการ์ดที่จะดู (ถ้าไม่ระบุ value ให้ดูทั้งหมด)
         int revealCount = effect.value > 0 ? effect.value : 99;
-        
+
         // เลือกมือของฝ่ายตรงข้าม
         Transform targetHand = null;
         string targetName = "";
-        
+
         if (effect.targetType == TargetType.EnemyHand)
         {
             if (isPlayer)
@@ -3975,7 +4021,7 @@ public class BattleManager : MonoBehaviour
         // รวบรวมการ์ดที่จะแสดง
         List<CardData> cardsToReveal = new List<CardData>();
         int actualCount = Mathf.Min(revealCount, targetHand.childCount);
-        
+
         for (int i = 0; i < actualCount; i++)
         {
             var cardUI = targetHand.GetChild(i).GetComponent<BattleCardUI>();
@@ -3997,7 +4043,7 @@ public class BattleManager : MonoBehaviour
     void ApplyDiscardDeck(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         int discardCount = effect.value > 0 ? effect.value : 1;
-        
+
         if (effect.targetType == TargetType.EnemyDeck && !isPlayer)
         {
             for (int i = 0; i < discardCount && enemyDeckList.Count > 0; i++)
@@ -4042,7 +4088,7 @@ public class BattleManager : MonoBehaviour
     void ApplyModifyStat(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
-        
+
         foreach (var target in targets)
         {
             if (target != null && target.GetData() != null)
@@ -4050,7 +4096,7 @@ public class BattleManager : MonoBehaviour
                 // 🔥 หากใช้ value ได้แสดงว่า value คือพลังที่ต้องลด
                 // ถ้า value = 0 หรือติดค่าตามจำนวนสุสาน ให้คำนวณจากสุสาน
                 int graveyardBoost = GetGraveyardCount(!isPlayer); // นับสุสานของฝ่ายตรงข้าม
-                
+
                 target.GetData().atk = Mathf.Max(0, target.GetData().atk - graveyardBoost);
                 target.GetData().cost = 0;
                 Debug.Log($"⚠️ ModifyStat: {target.GetData().cardName} ATK->{target.GetData().atk} (Graveyard boost: {graveyardBoost}) Cost->0");
@@ -4061,27 +4107,27 @@ public class BattleManager : MonoBehaviour
     IEnumerator ApplyZeroStats(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
-        
+
         // 🔥 ถ้ามีหลายเป้าหมาย ให้ผู้เล่นเลือก 1 ตัว
         if (targets.Count > 1)
         {
             Debug.Log($"🎯 ZeroStats: มี {targets.Count} เป้าหมาย ให้เลือก 1 ตัว");
-            
+
             // Highlight เป้าหมายที่เลือกได้
             foreach (var t in targets)
             {
                 t.SetHighlight(true);
             }
-            
+
             // รอให้ผู้เล่นเลือก
             yield return StartCoroutine(WaitForTargetSelection(targets, selectCount: 1));
-            
+
             // ลบ Highlight
             foreach (var t in targets)
             {
                 t.SetHighlight(false);
             }
-            
+
             // ใช้เป้าหมายที่เลือก
             if (selectedTargets != null && selectedTargets.Count > 0)
             {
@@ -4093,7 +4139,7 @@ public class BattleManager : MonoBehaviour
                 yield break;
             }
         }
-        
+
         // ตั้งค่า Cost = 0 และ ATK = 0
         foreach (var target in targets)
         {
@@ -4157,20 +4203,20 @@ public class BattleManager : MonoBehaviour
         int costThreshold = effect.value;
         MainCategory allowedMainCat = effect.bypassAllowedMainCat;
         SubCategory allowedSubCat = effect.bypassAllowedSubCat;
-        
+
         // ตั้ง bypass ให้กับ sourceCard เท่านั้น
         sourceCard.canBypassIntercept = true;
         sourceCard.bypassCostThreshold = costThreshold;
         sourceCard.bypassAllowedMainCat = allowedMainCat;
         sourceCard.bypassAllowedSubCat = allowedSubCat;
-        
+
         string thresholdText = costThreshold == -1 ? "all" : (costThreshold == 0 ? "nothing" : $"cost < {costThreshold}");
         string categoryText = "";
         if (allowedMainCat != MainCategory.General)
             categoryText = $" (except {allowedMainCat})";
         else if (allowedSubCat != SubCategory.General)
             categoryText = $" (except {allowedSubCat})";
-        
+
         Debug.Log($"🚀 {sourceCard.GetData().cardName} gained Bypass Intercept ({thresholdText}{categoryText})!");
         AddBattleLog($"{sourceCard.GetData().cardName} gained Bypass Intercept ({thresholdText}{categoryText})");
     }
@@ -4299,23 +4345,23 @@ public class BattleManager : MonoBehaviour
     IEnumerator ApplyRemoveCategory(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
-        
+
         if (targets.Count == 0)
         {
             Debug.Log("⚠️ RemoveCategory: ไม่มีเป้าหมาย");
             yield break;
         }
-        
+
         // 🔥 value = 0 → ทำทุกใบ, value >= 1 → เลือกตามจำนวน
         bool removeAll = (effect.value == 0);
         int selectCount = removeAll ? targets.Count : Mathf.Clamp(effect.value, 1, targets.Count);
-        
+
         // 🕒 duration = 0 → ตลอด, duration >= 1 → จำนวนเทิร์น
         int duration = effect.duration;
         string durationText = (duration == 0) ? "permanent" : $"{duration} turn(s)";
-        
+
         Debug.Log($"🎯 RemoveCategory: value={effect.value}, removeAll={removeAll}, targets={targets.Count}, selectCount={selectCount}, duration={duration} ({durationText})");
-        
+
         // 🔥 ถ้าเป็นโหมดทำทุกใบ (value = 0) → ไม่ต้องเลือก ทำทันที
         if (removeAll)
         {
@@ -4333,12 +4379,12 @@ public class BattleManager : MonoBehaviour
             }
             yield break;
         }
-        
+
         // ผู้เล่น: ให้เลือกเป้าหมาย EquipSpell ที่จะสูญเสียประเภท
         if (isPlayer && targets.Count > 0)
         {
             yield return StartCoroutine(WaitForTargetSelection(targets, selectCount));
-            
+
             foreach (var target in selectedTargets)
             {
                 if (target != null && target.GetData() != null)
@@ -4350,11 +4396,11 @@ public class BattleManager : MonoBehaviour
                     AddBattleLog($"{target.GetData().cardName} lost its category ({originalCat} → General) for {durationText}");
                 }
             }
-            
+
             selectedTargets.Clear();
             yield break;
         }
-        
+
         // บอทหรือกรณีไม่ต้องเลือก: เลือกอัตโนมัติ
         int applied = 0;
         foreach (var target in targets)
@@ -4373,32 +4419,32 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>เช็คว่าฝั่งป้องกันมีการ์ดที่ต้องกันบังคับหรือไม่</summary>
-        /// <summary>หาการ์ดแรกที่มี mustIntercept = true (เช็คเฉพาะ EquipSlots เท่านั้น)</summary>
-        BattleCardUI GetMustInterceptCard(bool defenderIsPlayer)
+    /// <summary>หาการ์ดแรกที่มี mustIntercept = true (เช็คเฉพาะ EquipSlots เท่านั้น)</summary>
+    BattleCardUI GetMustInterceptCard(bool defenderIsPlayer)
+    {
+        Transform[] equipSlots = defenderIsPlayer ? playerEquipSlots : enemyEquipSlots;
+
+        // หาจากอุปกรณ์เท่านั้น (ไม่เช็คมอนสเตอร์)
+        foreach (var slot in equipSlots)
         {
-            Transform[] equipSlots = defenderIsPlayer ? playerEquipSlots : enemyEquipSlots;
-        
-            // หาจากอุปกรณ์เท่านั้น (ไม่เช็คมอนสเตอร์)
-            foreach (var slot in equipSlots)
+            if (slot != null && slot.childCount > 0)
             {
-                if (slot != null && slot.childCount > 0)
+                var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (card != null && card.mustIntercept)
                 {
-                    var card = slot.GetChild(0).GetComponent<BattleCardUI>();
-                    if (card != null && card.mustIntercept)
-                    {
-                        return card;
-                    }
+                    return card;
                 }
             }
-        
-            return null;
         }
 
-        /// <summary>เช็คว่าฝั่งป้องกันมีการ์ดที่ต้องกันบังคับหรือไม่ (เช็คเฉพาะ EquipSlots เท่านั้น)</summary>
+        return null;
+    }
+
+    /// <summary>เช็คว่าฝั่งป้องกันมีการ์ดที่ต้องกันบังคับหรือไม่ (เช็คเฉพาะ EquipSlots เท่านั้น)</summary>
     bool HasMustInterceptCard(bool defenderIsPlayer)
     {
         Transform[] equipSlots = defenderIsPlayer ? playerEquipSlots : enemyEquipSlots;
-        
+
         // เช็คอุปกรณ์เท่านั้น (ไม่เช็คมอนสเตอร์)
         foreach (var slot in equipSlots)
         {
@@ -4411,7 +4457,7 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
-        
+
         return false;
     }
 
@@ -4467,7 +4513,7 @@ public class BattleManager : MonoBehaviour
                 // isPlayer = true → เป้าหมายคือมอนสเตอร์ของศัตรู (บอท)
                 // isPlayer = false (บอท) → เป้าหมายคือมอนสเตอร์ของผู้เล่น
                 Transform[] targetMonsterSlots = isPlayer ? enemyMonsterSlots : playerMonsterSlots;
-                
+
                 if (targetMonsterSlots != null)
                 {
                     foreach (var slot in targetMonsterSlots)
@@ -4491,7 +4537,7 @@ public class BattleManager : MonoBehaviour
 
             case TargetType.EnemyEquip:
                 Transform[] targetEquipSlots = isPlayer ? enemyEquipSlots : playerEquipSlots;
-                
+
                 if (targetEquipSlots != null)
                 {
                     foreach (var slot in targetEquipSlots)
@@ -4581,13 +4627,13 @@ public class BattleManager : MonoBehaviour
     void DestroyCardToGraveyard(BattleCardUI card)
     {
         if (card == null) return;
-        
+
         var cardData = card.GetData();
         if (cardData == null) return;
-        
+
         bool ownerIsPlayer = IsCardOwnedByPlayer(card);
         string cardType = (cardData.type == CardType.EquipSpell) ? "EQUIP" : "MONSTER";
-        
+
         // 📊 บันทึกสถิติ: การ์ดที่ถูกทำลาย
         if (ownerIsPlayer)
         {
@@ -4605,10 +4651,10 @@ public class BattleManager : MonoBehaviour
                 currentBattleStats.monstersDefeated++;
             }
         }
-        
+
         Debug.Log($"💥 DestroyCardToGraveyard: {cardData.cardName} ({cardType}) -> {(ownerIsPlayer ? "Player" : "Bot")} Graveyard");
         AddBattleLog($"Card destroyed: {cardData.cardName} ({cardType})");
-        
+
         SendToGraveyard(cardData, ownerIsPlayer);
         Destroy(card.gameObject);
         UpdateGraveyardCountUI();
@@ -4636,7 +4682,7 @@ public class BattleManager : MonoBehaviour
                 Debug.Log($"❌ SubCategory ไม่ตรง: card={cardData.subCategory} vs effect={effect.targetSubCat}");
                 return false;
             }
-            
+
             // ถ้าระบุ SubCategory แต่ MainCategory เป็น General = ยอมรับทุก MainCategory ที่มี SubCategory นี้
             if (effect.targetMainCat == MainCategory.General)
             {
@@ -4959,7 +5005,7 @@ public class BattleManager : MonoBehaviour
             Debug.LogError("❌ Graveyard List Root ยังไม่ได้ assign ใน Inspector!");
             return;
         }
-        
+
         if (cards == null) return;
 
         Debug.Log($"🪦 PopulateGraveyardList: root={root.name}, cardCount={cards.Count}");
@@ -4974,7 +5020,7 @@ public class BattleManager : MonoBehaviour
         {
             gridLayout = root.gameObject.AddComponent<GridLayoutGroup>();
         }
-        
+
         gridLayout.childAlignment = TextAnchor.UpperLeft;
         gridLayout.spacing = new Vector2(8f, 8f); // ระยะห่างระหว่างการ์ด
         gridLayout.cellSize = new Vector2(180f, 220f); // ขนาดของแต่ละช่อง
@@ -5008,7 +5054,7 @@ public class BattleManager : MonoBehaviour
                 if (ui != null)
                 {
                     ui.Setup(card);
-                    
+
                     // ตั้ง CanvasGroup ให้คลิกได้แน่นอน
                     var cg = ui.GetComponent<CanvasGroup>();
                     if (cg == null) cg = ui.gameObject.AddComponent<CanvasGroup>();
@@ -5022,20 +5068,21 @@ public class BattleManager : MonoBehaviour
                     {
                         img.raycastTarget = true;
                     }
-                    
+
                     CardData cardData = card; // capture ค่าสำหรับ lambda
-                    
+
                     // ใช้ EventTrigger (PointerClick) แทน Button ที่อาจไม่ทำงาน
                     var eventTrigger = item.GetComponent<EventTrigger>();
                     if (eventTrigger == null) eventTrigger = item.AddComponent<EventTrigger>();
-                    
+
                     // ล้างเหตุการณ์เก่า
                     eventTrigger.triggers.Clear();
-                    
+
                     // เพิ่ม PointerClick trigger
                     EventTrigger.Entry entry = new EventTrigger.Entry();
                     entry.eventID = EventTriggerType.PointerClick;
-                    entry.callback.AddListener((data) => {
+                    entry.callback.AddListener((data) =>
+                    {
                         if (cardDetailView != null)
                         {
                             cardDetailView.Open(cardData);
@@ -5047,7 +5094,7 @@ public class BattleManager : MonoBehaviour
                         }
                     });
                     eventTrigger.triggers.Add(entry);
-                    
+
                     successCount++;
                 }
                 else
@@ -5056,7 +5103,7 @@ public class BattleManager : MonoBehaviour
                 }
             }
             Debug.Log($"✅ สร้างการ์ดสุสาน {successCount}/{cards.Count} ใบ");
-            
+
             // รีเฟรชเลย์เอาต์เพื่อให้ ScrollRect ปรับขนาดทันที
             LayoutRebuilder.ForceRebuildLayoutImmediate(root as RectTransform);
             return;
@@ -5247,7 +5294,7 @@ public class BattleManager : MonoBehaviour
                         }
                         img.raycastTarget = true;
                     }
-                    
+
                     // ตั้ง CanvasGroup ให้คลิกได้ (แต่ไม่ให้ลากได้)
                     var cg = ui.GetComponent<CanvasGroup>();
                     if (cg == null) cg = ui.gameObject.AddComponent<CanvasGroup>();
@@ -5267,7 +5314,8 @@ public class BattleManager : MonoBehaviour
                     // เพิ่ม PointerClick trigger
                     EventTrigger.Entry entry = new EventTrigger.Entry();
                     entry.eventID = EventTriggerType.PointerClick;
-                    entry.callback.AddListener((data) => {
+                    entry.callback.AddListener((data) =>
+                    {
                         if (cardDetailView != null)
                         {
                             cardDetailView.Open(cardData);
@@ -5279,7 +5327,7 @@ public class BattleManager : MonoBehaviour
                         }
                     });
                     eventTrigger.triggers.Add(entry);
-                    
+
                     // 🔥 ยืนยันว่า EventTrigger ทำงาน
                     Debug.Log($"✅ Card setup: {card.cardName} | Image: {(img != null && img.sprite != null ? "OK" : "MISSING")} | EventTrigger: OK");
 
@@ -5325,7 +5373,7 @@ public class BattleManager : MonoBehaviour
         isSelectingTarget = true;
         availableTargets = new List<BattleCardUI>(targets);
         selectedTargets.Clear();
-        
+
         if (targetSelectionPanel == null)
         {
             Debug.LogError("❌ targetSelectionPanel ยังไม่ถูกตั้ง! ไม่สามารถเลือกเป้าหมายได้");
@@ -5383,15 +5431,15 @@ public class BattleManager : MonoBehaviour
             if (target != null)
             {
                 target.SetHighlight(true); // ฮาइไลท์
-                
+
                 // เพิ่ม Listener ให้คลิกได้
                 var btn = target.GetComponent<Button>();
                 if (btn == null) btn = target.gameObject.AddComponent<Button>();
-                
+
                 btn.onClick.RemoveAllListeners();
                 BattleCardUI selectedTarget = target;
                 btn.onClick.AddListener(() => HandleTargetClick(selectedTarget, selectCount, onComplete));
-                
+
                 Debug.Log($"✅ เลือกได้: {target.GetData().cardName}");
             }
         }
@@ -5410,7 +5458,7 @@ public class BattleManager : MonoBehaviour
         if (selectCount == 1)
         {
             Debug.Log($"🎯 ผู้เล่นเลือก: {target.GetData().cardName}");
-            
+
             // 🔥 ลบปุ่มทั้งหมดจากการ์ด
             foreach (var t in availableTargets)
             {
@@ -5504,30 +5552,30 @@ public class BattleManager : MonoBehaviour
     {
         // ค้นหา StageData จาก StageManager ที่อยู่ใน Scene Stage Selection
         // เนื่องจากอยู่คนละ Scene ต้องใช้ข้อมูลที่เก็บไว้หรือ Load จาก Resources
-        
+
         // วิธีที่ 1: ใช้ข้อมูลจาก GameManager (ถ้ามี)
         // วิธีที่ 2: ใช้ค่าเริ่มต้น เช่น ชนะ = 1 ดาว, เงื่อนไขเพิ่มเติม = +1, +1
-        
+
         // ตอนนี้ใช้วิธีง่ายๆ ก่อน: ให้ตรวจสอบ Achievement flags
         int stars = 0;
-        
+
         // ดาวที่ 1: ชนะ
         if (stats.victory)
             stars++;
-        
+
         // ดาวที่ 2: เทิร์นน้อย (ต้องชนะภายใน 12 เทิร์น)
         if (stats.victory && stats.turnsPlayed <= 12)
             stars++;
-        
+
         // ดาวที่ 3: ใช้ Spell อย่างน้อย 3 ครั้ง
         if (stats.victory && stats.spellsCast >= 3)
             stars++;
-        
+
         Debug.Log($"[STARS] Condition 1 (Victory): {stats.victory}");
         Debug.Log($"[STARS] Condition 2 (Turns <= 12): {(stats.victory && stats.turnsPlayed <= 12)} (Turns: {stats.turnsPlayed})");
         Debug.Log($"[STARS] Condition 3 (Spells >= 3): {(stats.victory && stats.spellsCast >= 3)} (Spells: {stats.spellsCast})");
         Debug.Log($"[STARS] Total: {stars}/3 Stars");
-        
+
         return Mathf.Clamp(stars, 0, 3);
     }
 
@@ -5546,24 +5594,28 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"🔍 Check Bypass: Shield={shieldData.cardName} (Cost={shieldCost}, MainCat={shieldData.mainCategory}, SubCat={shieldData.subCategory}) | Threshold={costThreshold}, AllowedMainCat={allowedMainCat}, AllowedSubCat={allowedSubCat}");
 
         // value = 0 → ไม่ข้ามไม่ได้เลย
-        if (costThreshold == 0) {
+        if (costThreshold == 0)
+        {
             Debug.Log($"→ Threshold=0, CANNOT bypass");
             return false;
         }
 
         // value = -1 → ข้ามทั้งหมด (ไม่เช็ค category)
-        if (costThreshold == -1) {
+        if (costThreshold == -1)
+        {
             Debug.Log($"→ Threshold=-1, CAN bypass all");
             return true;
         }
 
         // 🔥 ตรวจสอบว่าโล่ตรงกับ Category ที่อนุญาต → ถ้าตรง = ไม่ถูกข้าม (สามารถ Intercept ได้)
-        if (allowedMainCat != MainCategory.General && shieldData.mainCategory == allowedMainCat) {
+        if (allowedMainCat != MainCategory.General && shieldData.mainCategory == allowedMainCat)
+        {
             Debug.Log($"→ Shield matches AllowedMainCat={allowedMainCat}, CANNOT bypass (Shield can intercept)");
             return false;
         }
-        
-        if (allowedSubCat != SubCategory.General && shield.GetModifiedSubCategory() == allowedSubCat) {
+
+        if (allowedSubCat != SubCategory.General && shield.GetModifiedSubCategory() == allowedSubCat)
+        {
             Debug.Log($"→ Shield matches AllowedSubCat={allowedSubCat}, CANNOT bypass (Shield can intercept)");
             return false;
         }

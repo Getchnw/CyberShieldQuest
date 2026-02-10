@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class DailyQuestManager : MonoBehaviour
 {
@@ -11,12 +12,56 @@ public class DailyQuestManager : MonoBehaviour
     [SerializeField] private GameObject questPrefab;
     public TextMeshProUGUI goldText;
 
-    private void Awake() { Instance = this; }
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // ห้ามทำลายเมื่อเปลี่ยนฉาก
+
+        }
+        else
+        {
+            Destroy(gameObject); // ถ้ามีตัวซ้ำ (เวลากลับมาหน้าเมนู) ให้ลบตัวใหม่ทิ้ง
+        }
+    }
 
     private void Start()
     {
         CheckDailyReset();
     }
+
+    public void RegisterUI(Transform container, TextMeshProUGUI goldRef)
+    {
+        this.contentContainer = container;
+        this.goldText = goldRef;
+        Debug.Log("✅ UI เชื่อมต่อสำเร็จ! เริ่มวาดรายการเควส...");
+
+        CreateUI(); // วาด UI ทันทีที่หน้าต่างเปิด
+    }
+
+    // void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    // {
+    //     // พยายามหา Content Container ใหม่ทุกครั้งโดยการ "ค้นหาจากชื่อ"
+    //     // (ต้องตั้งชื่อ GameObject ในฉาก Home ให้ตรงกับชื่อนี้เป๊ะๆ)
+    //     GameObject foundContainer = GameObject.Find("QuestListContent");
+
+    //     if (foundContainer != null)
+    //     {
+    //         contentContainer = foundContainer.transform;
+    //         Debug.Log("✅ เจอ Quest Container แล้ว! เชื่อมต่อสำเร็จ");
+
+    //         // หา Text เงินด้วย (ถ้ามี)
+    //         GameObject foundGold = GameObject.Find("GoldText");
+    //         if (foundGold != null) goldText = foundGold.GetComponent<TextMeshProUGUI>();
+
+    //         CreateUI(); // วาด UI ใหม่ทันทีเพราะกลับมาหน้าเมนูแล้ว
+    //     }
+    //     else
+    //     {
+    //         contentContainer = null; // ถ้าหาไม่เจอ (เช่น อยู่ฉาก Battle) ให้เป็น null ไว้
+    //     }
+    // }
 
     public void CheckDailyReset()
     {
@@ -50,6 +95,11 @@ public class DailyQuestManager : MonoBehaviour
 
     private void CreateUI()
     {
+        if (contentContainer == null)
+        {
+            Debug.LogWarning("❌ Quest Container not found in the scene. Cannot create Daily Quest UI.");
+            return;
+        }
         // ล้างของเก่า
         foreach (Transform t in contentContainer) Destroy(t.gameObject);
 
@@ -77,13 +127,22 @@ public class DailyQuestManager : MonoBehaviour
         foreach (var savedQ in activeQuests)
         {
             DailyQuestsData def = GameContentDatabase.Instance.GetQuestByID(savedQ.questID);
-
+            if (def == null)
+            {
+                Debug.LogWarning($"Quest ID '{savedQ.questID}' not found in DB.");
+                continue;
+            }
             if (def.type != type) continue;
             bool isMatchkey = (def.conditionKey == conditionKey) || string.IsNullOrEmpty(def.conditionKey) || string.IsNullOrEmpty(def.conditionKey);
-            if (!isMatchkey) continue;
+            if (!isMatchkey)
+            {
+                Debug.Log($"Quest ID '{savedQ.questID}' conditionKey '{def.conditionKey}' does not match '{conditionKey}'.");
+                continue;
+            }
             // เช็คว่าประเภทตรงกัน และยังไม่เต็ม
             if (isMatchkey && savedQ.currentAmount < def.targetAmount && !savedQ.isClaimed)
             {
+                Debug.Log($"อัปเดตเควส {def.questID} เพิ่ม {amount} จาก {savedQ.currentAmount} / {def.targetAmount}");
                 savedQ.currentAmount += amount;
                 if (savedQ.currentAmount > def.targetAmount) savedQ.currentAmount = def.targetAmount;
                 isChanged = true;
@@ -93,7 +152,10 @@ public class DailyQuestManager : MonoBehaviour
         if (isChanged)
         {
             GameManager.Instance.SaveCurrentGame();
-            CreateUI(); // รีเฟรชหน้าจอ
+            if (contentContainer != null)
+            {
+                CreateUI();
+            }
         }
     }
 

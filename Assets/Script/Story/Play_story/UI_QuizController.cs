@@ -372,8 +372,9 @@ public class UI_QuizController : MonoBehaviour
                         GameObject newCard = Instantiate(CardSlotPrefab, cardGridContainer);
 
                         // ดึงรูปมาแสดง
-                        Image icon = newCard.transform.Find("cardPic")?.GetComponent<Image>();
-                        TextMeshProUGUI nameText = newCard.GetComponentInChildren<TextMeshProUGUI>();
+                        Image icon = newCard.GetComponent<Image>();
+                        TextMeshProUGUI nameText = newCard.transform.Find("cardName")?.GetComponentInChildren<TextMeshProUGUI>();
+                        nameText.gameObject.SetActive(true);
                         if (icon != null) icon.sprite = cardItem.card.artwork; // ใส่รูปการ์ด
                         if (nameText != null) nameText.text = $"{cardItem.card.cardName} x{cardItem.amount} {statusText}"; else nameText.text = "";
                         if (!isClaimed)

@@ -58,13 +58,13 @@ public class QuestItemUI : MonoBehaviour
         {
             // กรณีทำครบแล้ว แต่ยังไม่รับ
             claimButton.interactable = isComplete; // กดได้เมื่อทำครบ
-            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "Claim";
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "<color=green>Claim</color>";
             claimButton.onClick.AddListener(OnClaimClicked);
         }
         else
         {
             // กรณียังไม่ครบ
-            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "Go";
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "<color=yellow>Go to Quest</color>";
             claimButton.onClick.AddListener(() => GotoQuest(myStaticData.targetScene));
         }
     }
