@@ -39,6 +39,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public SubCategory bypassAllowedSubCat = SubCategory.General; // SubCategory ที่สามารถ Intercept ได้ (General = ข้ามทั้งหมด)
     public bool mustIntercept = false; // การ์ดนี้ต้องกันการโจมตีถัดไปบังคับ
     public bool cannotIntercept = false; // การ์ดนี้ไม่สามารถกันการโจมตีได้ในเทิร์นนี้
+    public bool hasLostCategory = false; // Category lost from effect (independent of ATK/HP = 0)
+    public int categoryLostTurnsRemaining = 0; // จำนวนเทิร์นที่เหลือก่อนคืน category: 0 = ไม่เสีย, -1 = ตลอด, >= 1 = จำนวนเทิร์น
     
     // 🎈 ตัวแปรสำหรับอนิเมชั่นลอย
     private float floatTime = 0f;
@@ -87,6 +89,12 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             if (BattleManager.Instance != null && BattleManager.Instance.state == BattleState.DEFENDER_CHOICE)
             {
                 return; // ปล่อยให้ HighlightInterceptableShields() จัดการ
+            }
+
+            // 🟣 ถ้าการ์ดสูญเสีย Category แล้ว ให้คงสีม่วงไว้ (ห้ามแตะ)
+            if (hasLostCategory)
+            {
+                return;
             }
 
             bool shouldHighlight = false;
@@ -222,6 +230,56 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
 
         return baseATK;
+    }
+
+    /// <summary>
+    /// Returns the effective SubCategory of this card.
+    /// If hasLostCategory is true or ATK/HP are both 0, returns General instead.
+    /// </summary>
+    public SubCategory GetModifiedSubCategory()
+    {
+        if (_cardData == null) return SubCategory.General;
+        
+        // Category lost from effect
+        if (hasLostCategory) return SubCategory.General;
+        
+        // Category lost when ATK and HP are both 0
+        if (_cardData.atk == 0 && _cardData.hp == 0) return SubCategory.General;
+        
+        return _cardData.subCategory;
+    }
+
+    /// <summary>
+    /// Removes the SubCategory of this card (sets hasLostCategory flag).
+    /// Visual feedback: Apply magenta/purple tint when category is lost.
+    /// </summary>
+    /// <param name="duration">0 = permanent (forever), >= 1 = number of turns</param>
+    public void RemoveSubCategory(int duration = 0)
+    {
+        hasLostCategory = true;
+        
+        // Set duration: 0 = permanent (-1 internally), >= 1 = turn count
+        categoryLostTurnsRemaining = (duration == 0) ? -1 : duration;
+        
+        // Apply magenta/purple tint as strong visual feedback for lost category
+        // Use a distinct color different from other states (gray=summoning sickness, white=normal, bright=ready)
+        Color categoryLostColor = new Color(1f, 0.5f, 1f, 1f); // Magenta/Pink-Purple
+        
+        // Change artwork image color (main visual)
+        if (artworkImage != null)
+        {
+            artworkImage.color = categoryLostColor;
+        }
+        
+        // Also change main Image component if exists
+        var img = GetComponent<Image>();
+        if (img != null && img != artworkImage)
+        {
+            img.color = categoryLostColor;
+        }
+        
+        string durationText = (duration == 0) ? "permanent" : $"{duration} turn(s)";
+        Debug.Log($"[RemoveSubCategory] {(_cardData != null ? _cardData.cardName : "Unknown")} lost its category → {durationText} (turnsRemaining={categoryLostTurnsRemaining})");
     }
 
     void CreateUIElementsIfNeeded()
@@ -739,7 +797,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     void UpdateMulliganHighlight()
     {
-        if (artworkImage)
+        if (artworkImage && !hasLostCategory) // 🟣 ห้ามทับสีม่วงถ้าสูญเสีย category
         {
             artworkImage.color = mulliganSelected ? Color.yellow : Color.white;
         }
@@ -749,7 +807,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public void SetHighlight(bool highlight)
     {
         isManualHighlight = highlight; // บอก Update() ว่าห้ามแตะสี
-        if (artworkImage)
+        if (artworkImage && !hasLostCategory) // 🟣 ห้ามทับสีม่วงถ้าสูญเสีย category
         {
             // ฮาไลท์ = สีเหลือง, ปกติ = สีขาว
             artworkImage.color = highlight ? new Color(1f, 1f, 0.5f) : Color.white;
@@ -763,8 +821,12 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         hasAttacked = false;
         attacksThisTurn = 0; // รีเซ็ตจำนวนครั้งที่โจมตี
         isManualHighlight = false; // รีเซ็ต manual highlight
+        
+        // 🟣 ลดจำนวนเทิร์นที่เหลือของ category loss (ถ้ามี)
+        ProcessCategoryLossDuration();
+        
         // เปลี่ยนสีกลับเป็นปกติ และตรวจสอบให้แสดงหน้าการ์ด
-        if(artworkImage) 
+        if(artworkImage && !hasLostCategory) // 🟣 ห้ามทับสีม่วงถ้าสูญเสีย category
         {
             artworkImage.color = Color.white;
             // 🔥 แก้: ตรวจสอบให้แน่ใจว่าแสดงหน้าการ์ด
@@ -772,6 +834,45 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             {
                 artworkImage.sprite = _cardData.artwork;
             }
+        }
+    }
+    
+    /// <summary>
+    /// ลดจำนวนเทิร์นที่เหลือของ category loss และคืน category เมื่อหมดเวลา
+    /// เรียกตอนเริ่มเทิร์นของการ์ด
+    /// </summary>
+    public void ProcessCategoryLossDuration()
+    {
+        // ถ้าไม่ได้สูญเสีย category หรือเป็นแบบถาวร (-1) ไม่ต้องทำอะไร
+        if (!hasLostCategory || categoryLostTurnsRemaining == -1)
+        {
+            return;
+        }
+        
+        // ลดจำนวนเทิร์น
+        categoryLostTurnsRemaining--;
+        
+        Debug.Log($"[ProcessCategoryLossDuration] {(_cardData != null ? _cardData.cardName : "Unknown")} - Turns remaining: {categoryLostTurnsRemaining}");
+        
+        // ถ้าหมดเวลา (categoryLostTurnsRemaining == 0) ให้คืน category
+        if (categoryLostTurnsRemaining <= 0)
+        {
+            hasLostCategory = false;
+            categoryLostTurnsRemaining = 0;
+            
+            // คืนสีเป็นปกติ (ขาว)
+            if (artworkImage != null)
+            {
+                artworkImage.color = Color.white;
+            }
+            
+            var img = GetComponent<Image>();
+            if (img != null && img != artworkImage)
+            {
+                img.color = Color.white;
+            }
+            
+            Debug.Log($"✅ [RestoreCategory] {(_cardData != null ? _cardData.cardName : "Unknown")} category restored!");
         }
     }
 

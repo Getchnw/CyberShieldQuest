@@ -9,7 +9,7 @@ public enum Rarity { Common, Rare, Epic, Legendary } // 🔥 ความหา�
 
 public enum EffectTrigger { None, OnDeploy, OnStrike, OnStrikeHit, Continuous, OnIntercept, OnDestroyed }
 public enum TargetType { Self, EnemyPlayer, EnemyMonster, EnemyEquip, EnemyHand, EnemyDeck, AllGlobal }
-public enum ActionType { None, Destroy, DisableAttack, DisableAbility, RevealHand, RevealHandMultiple, DiscardDeck, SummonToken, ModifyStat, ControlEquip, HealHP, ForceIntercept, BypassIntercept, DisableIntercept, DrawCard, Rush, DoubleStrike, GraveyardATK, ZeroStats }
+public enum ActionType { None, Destroy, DisableAttack, DisableAbility, RevealHand, RevealHandMultiple, DiscardDeck, SummonToken, ModifyStat, ControlEquip, HealHP, ForceIntercept, BypassIntercept, DisableIntercept, DrawCard, Rush, DoubleStrike, GraveyardATK, ZeroStats, RemoveCategory }
 public enum DestroyMode { SelectTarget, DestroyAll } // 🔥 โหมดการทำลาย: เลือกเป้าหมาย vs ทำลายทั้งหมด
 
 [System.Serializable]
@@ -20,6 +20,7 @@ public struct CardEffect {
     public MainCategory targetMainCat;
     public SubCategory targetSubCat;
     public int value;
+    public int duration; // 🔥 ระยะเวลา (เทิร์น): 0 = ตลอด, >= 1 = จำนวนเทิร์นที่กำหนด (ใช้กับ RemoveCategory, ForceIntercept, DisableIntercept)
     public DestroyMode destroyMode; // 🔥 โหมดการทำลาย (ใช้เมื่อ action = Destroy)
     public string tokenCardId; // 🔥 card_id ของ Token ที่จะ summon (ใช้เมื่อ action = SummonToken)
     public MainCategory bypassAllowedMainCat; // 🔥 MainCategory ที่สามารถ Intercept ได้ (ใช้กับ BypassIntercept, General = ข้าวทั้งหมด)

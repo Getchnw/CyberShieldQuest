@@ -882,7 +882,8 @@ public class BattleManager : MonoBehaviour
                 Debug.Log($"🎴 Card[{card.name}]: LE(prefW={le.preferredWidth}, prefH={le.preferredHeight}), localPos={rt?.localPosition}");
 
                 var img = card.GetComponent<Image>();
-                if (img) img.color = Color.white;
+                // 🟣 ตั้งสีขาว (ยกเว้นถ้าการ์ดสูญเสีย category)
+                if (img && !card.hasLostCategory) img.color = Color.white;
 
                 var cg = card.GetComponent<CanvasGroup>();
                 if (cg)
@@ -934,7 +935,8 @@ public class BattleManager : MonoBehaviour
             card.transform.localRotation = Quaternion.identity;
 
             var img = card.GetComponent<Image>();
-            if (img) img.color = Color.white;
+            // 🟣 ตั้งสีขาว (ยกเว้นถ้าการ์ดสูญเสีย category)
+            if (img && !card.hasLostCategory) img.color = Color.white;
             var cg = card.GetComponent<CanvasGroup>();
             if (cg)
             {
@@ -996,7 +998,8 @@ public class BattleManager : MonoBehaviour
                 le.flexibleHeight = 0f;
 
                 var img = card.GetComponent<Image>();
-                if (img) img.color = Color.white;
+                // 🟣 ตั้งสีขาว (ยกเว้นถ้าการ์ดสูญเสีย category)
+                if (img && !card.hasLostCategory) img.color = Color.white;
 
                 var cg = card.GetComponent<CanvasGroup>();
                 if (cg)
@@ -1671,7 +1674,11 @@ public class BattleManager : MonoBehaviour
             attacker.hasAttacked = true;
         }
         
-        attacker.GetComponent<Image>().color = Color.gray;
+        // 🟣 เปลี่ยนสีเป็นเทาหลังโจมตี (ยกเว้นถ้าสูญเสีย category)
+        if (!attacker.hasLostCategory)
+        {
+            attacker.GetComponent<Image>().color = Color.gray;
+        }
         
         int attackDamage = attacker.GetModifiedATK(isPlayerAttack: true); // 🔥 ใช้ ModifiedATK แทน
         AddBattleLog($"Player attacks with {attacker.GetData().cardName} (ATK:{attackDamage}) [{attacker.attacksThisTurn}/{attacker.GetMaxAttacksPerTurn()}]");
@@ -1813,7 +1820,7 @@ public class BattleManager : MonoBehaviour
                 if (attackerData != null)
                 {
                     // เลือกโล่ที่ประเภทตรงก่อนเพื่อทำลายมอนสเตอร์ผู้เล่น
-                    botShield = selectableShields.FirstOrDefault(s => s != null && s.GetData() != null && s.GetData().subCategory == attackerData.subCategory);
+                    botShield = selectableShields.FirstOrDefault(s => s != null && s.GetModifiedSubCategory() == attacker.GetModifiedSubCategory());
                 }
 
                 // ถ้าไม่มีประเภทตรง ให้เลือกโล่ตัวแรกที่ใช้ได้
@@ -1840,7 +1847,7 @@ public class BattleManager : MonoBehaviour
 
             CardData attackerData = attacker.GetData();
             CardData shieldData = botShield.GetData();
-            bool match = (attackerData.subCategory == shieldData.subCategory);
+            bool match = (attacker.GetModifiedSubCategory() == botShield.GetModifiedSubCategory());
 
             if (match)
             {
@@ -2170,7 +2177,11 @@ public class BattleManager : MonoBehaviour
                         monster.hasAttacked = true;
                     }
                     
-                    monster.GetComponent<Image>().color = Color.gray;
+                    // 🟣 เปลี่ยนสีเป็นเทาหลังโจมตี (ยกเว้นถ้าสูญเสีย category)
+                    if (!monster.hasLostCategory)
+                    {
+                        monster.GetComponent<Image>().color = Color.gray;
+                    }
                     
                     Vector3 startPos = monster.transform.position;
                     // กัน Error: ถ้าลืมลาก PlayerSpot ให้วิ่งไปที่ (0,0,0)
@@ -2268,7 +2279,7 @@ public class BattleManager : MonoBehaviour
                             // ประมวลผลการกัน
                             CardData attackerData = monster.GetData();
                             CardData shieldData = forcedShield.GetData();
-                            bool match = (attackerData.subCategory == shieldData.subCategory);
+                            bool match = (monster.GetModifiedSubCategory() == forcedShield.GetModifiedSubCategory());
                             
                             if (match)
                             {
@@ -2459,7 +2470,7 @@ public class BattleManager : MonoBehaviour
         // 📊 บันทึกสถิติ: การกันสำเร็จ
         currentBattleStats.interceptionsSuccessful++;
         
-        bool match = (attackerData.subCategory == shieldData.subCategory);
+        bool match = (currentAttackerBot.GetModifiedSubCategory() == myShield.GetModifiedSubCategory());
 
         if (match)
         {
@@ -2638,7 +2649,7 @@ public class BattleManager : MonoBehaviour
             if (slot.childCount > 0)
             {
                 var s = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (s != null && s.GetData() != null && !s.cannotIntercept && !s.canBypassIntercept && s.GetData().subCategory == cat)
+                if (s != null && s.GetData() != null && !s.cannotIntercept && !s.canBypassIntercept && s.GetModifiedSubCategory() == cat)
                 {
                     Debug.Log($"🛡️ บอทเลือกกันด้วย {s.GetData().cardName} (ประเภทตรง)");
                     return s;
@@ -2693,7 +2704,7 @@ public class BattleManager : MonoBehaviour
             if (slot.childCount > 0)
             {
                 var s = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (s != null && s.GetData() != null && s.GetData().subCategory == attackerCategory)
+                if (s != null && s.GetData() != null && s.GetModifiedSubCategory() == attackerCategory)
                 {
                     hasMatchingShield = true;
                     break;
@@ -2728,9 +2739,13 @@ public class BattleManager : MonoBehaviour
                     c.bypassCostThreshold = 0;
                     c.bypassAllowedMainCat = MainCategory.General;
                     c.bypassAllowedSubCat = SubCategory.General;
+                    
+                    // 🕒 ลดจำนวนเทิร์น category loss และคืน category ถ้าหมดเวลา
+                    c.ProcessCategoryLossDuration();
+                    
                     // 🔥 แก้: ตรวจสอบ Image ก่อน และให้แน่ใจว่าแสดงหน้าการ์ด
                     var img = c.GetComponent<Image>();
-                    if (img != null)
+                    if (img != null && !c.hasLostCategory) // 🟣 ห้ามทับสีม่วง
                     {
                         img.color = Color.white; // คืนสี
                         // ตรวจสอบว่าแสดงหน้าการ์ดถูกต้อง
@@ -2752,6 +2767,9 @@ public class BattleManager : MonoBehaviour
                 if (c) {
                     c.cannotIntercept = false; // รีเซ็ตการปิดการกัน (สำหรับ DisableIntercept)
                     // mustIntercept จะรีเซ็ตหลังการกันสำเร็จ ไม่ต้องรีเซ็ตทุกเทิร์น
+                    
+                    // 🕒 ลดจำนวนเทิร์น category loss และคืน category ถ้าหมดเวลา
+                    c.ProcessCategoryLossDuration();
                 }
             }
         }
@@ -2773,7 +2791,15 @@ public class BattleManager : MonoBehaviour
                     c.bypassCostThreshold = 0;
                     c.bypassAllowedMainCat = MainCategory.General;
                     c.bypassAllowedSubCat = SubCategory.General;
-                    c.GetComponent<Image>().color = Color.white; // คืนสี
+                    
+                    // 🕒 ลดจำนวนเทิร์น category loss และคืน category ถ้าหมดเวลา
+                    c.ProcessCategoryLossDuration();
+                    
+                    // 🟣 คืนสี (ยกเว้นถ้าสูญเสีย category)
+                    if (!c.hasLostCategory)
+                    {
+                        c.GetComponent<Image>().color = Color.white;
+                    }
                 }
             }
         }
@@ -2786,6 +2812,9 @@ public class BattleManager : MonoBehaviour
                 var c = slot.GetChild(0).GetComponent<BattleCardUI>();
                 if (c) {
                     c.cannotIntercept = false; // รีเซ็ตการปิดการกัน
+                    
+                    // 🕒 ลดจำนวนเทิร์น category loss และคืน category ถ้าหมดเวลา
+                    c.ProcessCategoryLossDuration();
                 }
             }
         }
@@ -3333,7 +3362,11 @@ public class BattleManager : MonoBehaviour
                         AddBattleLog($"💨 <color=cyan>{newData.cardName}</color> มีสกิล Rush! สามารถโจมตีได้ทันที");
                     }
         }
-        newCard.GetComponent<Image>().color = Color.white; // ไม่เป็นสีเทา
+        // 🟣 ตั้งสี (ยกเว้นถ้าสูญเสีย category)
+        if (!newCard.hasLostCategory)
+        {
+            newCard.GetComponent<Image>().color = Color.white; // ไม่เป็นสีเทา
+        }
         newCard.UpdateCardSize(); // 🔥 ปรับขนาดการ์ดบนสนาม
         // แสดงกรอบเมื่อการ์ดหงายหน้า
         newCard.SetFrameVisible(true);
@@ -3564,6 +3597,9 @@ public class BattleManager : MonoBehaviour
                 break;
             case ActionType.DisableIntercept:
                 yield return StartCoroutine(ApplyDisableIntercept(sourceCard, effect, isPlayer));
+                break;
+            case ActionType.RemoveCategory:
+                yield return StartCoroutine(ApplyRemoveCategory(sourceCard, effect, isPlayer));
                 break;
             default:
                 Debug.LogWarning($"⚠️ Action type {effect.action} not implemented yet");
@@ -4251,6 +4287,85 @@ public class BattleManager : MonoBehaviour
                 target.cannotIntercept = true;
                 Debug.Log($"🚫 {target.GetData().cardName} cannot intercept this turn!");
                 AddBattleLog($"{target.GetData().cardName} cannot intercept (disabled)");
+                applied++;
+                if (applied >= selectCount) break;
+            }
+        }
+    }
+
+    /// <summary>ลบ Category ของการ์ดเป้าหมาย (ทำให้การ์ดเป็น General)
+    /// value = 0: ทำทุกใบของฝ่ายตรงข้าม | value >= 1: เลือกตามจำนวนนั้น
+    /// duration = 0: ตลอด | duration >= 1: จำนวนเทิร์น</summary>
+    IEnumerator ApplyRemoveCategory(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
+        
+        if (targets.Count == 0)
+        {
+            Debug.Log("⚠️ RemoveCategory: ไม่มีเป้าหมาย");
+            yield break;
+        }
+        
+        // 🔥 value = 0 → ทำทุกใบ, value >= 1 → เลือกตามจำนวน
+        bool removeAll = (effect.value == 0);
+        int selectCount = removeAll ? targets.Count : Mathf.Clamp(effect.value, 1, targets.Count);
+        
+        // 🕒 duration = 0 → ตลอด, duration >= 1 → จำนวนเทิร์น
+        int duration = effect.duration;
+        string durationText = (duration == 0) ? "permanent" : $"{duration} turn(s)";
+        
+        Debug.Log($"🎯 RemoveCategory: value={effect.value}, removeAll={removeAll}, targets={targets.Count}, selectCount={selectCount}, duration={duration} ({durationText})");
+        
+        // 🔥 ถ้าเป็นโหมดทำทุกใบ (value = 0) → ไม่ต้องเลือก ทำทันที
+        if (removeAll)
+        {
+            Debug.Log($"⚡ RemoveCategory All: ลบประเภทการ์ด {targets.Count} ใบทันที ({durationText})");
+            foreach (var target in targets)
+            {
+                if (target != null && target.GetData() != null)
+                {
+                    SubCategory originalCat = target.GetModifiedSubCategory();
+                    target.RemoveSubCategory(duration);
+                    ShowDamagePopupString("Lost Category!", target.transform);
+                    Debug.Log($"🔴 {target.GetData().cardName} lost its category! ({originalCat} → General) for {durationText}");
+                    AddBattleLog($"{target.GetData().cardName} lost its category ({originalCat} → General) for {durationText}");
+                }
+            }
+            yield break;
+        }
+        
+        // ผู้เล่น: ให้เลือกเป้าหมาย EquipSpell ที่จะสูญเสียประเภท
+        if (isPlayer && targets.Count > 0)
+        {
+            yield return StartCoroutine(WaitForTargetSelection(targets, selectCount));
+            
+            foreach (var target in selectedTargets)
+            {
+                if (target != null && target.GetData() != null)
+                {
+                    SubCategory originalCat = target.GetModifiedSubCategory();
+                    target.RemoveSubCategory(duration);
+                    ShowDamagePopupString("Lost Category!", target.transform);
+                    Debug.Log($"🔴 {target.GetData().cardName} lost its category! ({originalCat} → General) for {durationText}");
+                    AddBattleLog($"{target.GetData().cardName} lost its category ({originalCat} → General) for {durationText}");
+                }
+            }
+            
+            selectedTargets.Clear();
+            yield break;
+        }
+        
+        // บอทหรือกรณีไม่ต้องเลือก: เลือกอัตโนมัติ
+        int applied = 0;
+        foreach (var target in targets)
+        {
+            if (target != null && target.GetData() != null)
+            {
+                SubCategory originalCat = target.GetModifiedSubCategory();
+                target.RemoveSubCategory(duration);
+                ShowDamagePopupString("Lost Category!", target.transform);
+                Debug.Log($"🔴 {target.GetData().cardName} lost its category! ({originalCat} → General) for {durationText}");
+                AddBattleLog($"{target.GetData().cardName} lost its category ({originalCat} → General) for {durationText}");
                 applied++;
                 if (applied >= selectCount) break;
             }
@@ -5448,7 +5563,7 @@ public class BattleManager : MonoBehaviour
             return false;
         }
         
-        if (allowedSubCat != SubCategory.General && shieldData.subCategory == allowedSubCat) {
+        if (allowedSubCat != SubCategory.General && shield.GetModifiedSubCategory() == allowedSubCat) {
             Debug.Log($"→ Shield matches AllowedSubCat={allowedSubCat}, CANNOT bypass (Shield can intercept)");
             return false;
         }
