@@ -34,12 +34,19 @@ public class CollectionDetailView : MonoBehaviour
 
     public void Open(CardData card, Action<CardData> onCraft, Action<CardData> onDismantle)
     {
-        gameObject.SetActive(true);
         currentCard = card;
         onCraftAction = onCraft;
         onDismantleAction = onDismantle;
 
+        // 🔥 ลบ listeners เก่าก่อน
+        if (craftButton != null) craftButton.onClick.RemoveAllListeners();
+        if (dismantleButton != null) dismantleButton.onClick.RemoveAllListeners();
+
+        gameObject.SetActive(true);
         RefreshView(); // อัปเดตข้อมูล
+        
+        // 🔥 Debug: แสดงสถานะตัวแปร
+        Debug.Log($"[CollectionDetailView] Opened: {card.cardName} | onCraftAction={onCraftAction != null} | onDismantleAction={onDismantleAction != null}");
     }
 
     public void RefreshView()
@@ -72,8 +79,19 @@ public class CollectionDetailView : MonoBehaviour
         craftCostText.text = $"Craft\n-{craftCost} Scrap";
         craftButton.interactable = (playerScrap >= craftCost);
         
+        // 🔥 ลบ listeners เก่า + เพิ่ม listeners ใหม่
         craftButton.onClick.RemoveAllListeners();
-        craftButton.onClick.AddListener(() => onCraftAction?.Invoke(currentCard));
+        if (onCraftAction != null)
+        {
+            craftButton.onClick.AddListener(() => {
+                Debug.Log($"[Craft Button] Clicked - Card: {currentCard.cardName}");
+                onCraftAction?.Invoke(currentCard);
+            });
+        }
+        else
+        {
+            Debug.LogWarning($"[CollectionDetailView] onCraftAction is NULL! Cannot craft {currentCard.cardName}");
+        }
 
         // 4. ตั้งค่าปุ่ม Dismantle
         int dismantleVal = CraftingSystem.GetDismantleValue(currentCard.rarity);
@@ -81,8 +99,23 @@ public class CollectionDetailView : MonoBehaviour
         dismantleValText.text = $"Dismantle\n+{dismantleVal} Scrap";
         dismantleButton.interactable = (owned > 0); // ต้องมีของถึงจะย่อยได้
         
+        // 🔥 ลบ listeners เก่า + เพิ่ม listeners ใหม่
         dismantleButton.onClick.RemoveAllListeners();
-        dismantleButton.onClick.AddListener(() => onDismantleAction?.Invoke(currentCard));
+        if (onDismantleAction != null)
+        {
+            dismantleButton.onClick.AddListener(() => {
+                Debug.Log($"[Dismantle Button] Clicked - Card: {currentCard.cardName}");
+                onDismantleAction?.Invoke(currentCard);
+            });
+        }
+        else
+        {
+            Debug.LogWarning($"[CollectionDetailView] onDismantleAction is NULL! Cannot dismantle {currentCard.cardName}");
+        }
+
+        // 🔥 Rebuild Layout เพื่อให้ UI settle อย่างถูกต้องตอนครั้งแรก
+        LayoutRebuilder.ForceRebuildLayoutImmediate(GetComponent<RectTransform>());
+        Canvas.ForceUpdateCanvases();
     }
 
     public void Close()
