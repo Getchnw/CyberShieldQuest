@@ -42,7 +42,13 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public bool hasLostCategory = false; // Category lost from effect (independent of ATK/HP = 0)
     public int categoryLostTurnsRemaining = 0; // จำนวนเทิร์นที่เหลือก่อนคืน category: 0 = ไม่เสีย, -1 = ตลอด, >= 1 = จำนวนเทิร์น
     
-    // 🎈 ตัวแปรสำหรับอนิเมชั่นลอย
+    // � ตัวแปรสำหรับ ControlEquip (Equip Spell ที่ถูกควบคุม)
+    public bool isControlled = false; // การ์ดนี้กำลังถูกควบคุมโดยฝ่ายตรงข้าม
+    public int controlledTurnsRemaining = 0; // จำนวนเทิร์นที่เหลือของการควบคุม: 0 = ไม่ถูกควบคุม, -1 = ตลอด, >= 1 = จำนวนเทิร์น
+    public Transform originalEquipSlot = null; // ตำแหน่ง slot เดิมที่ควรคืนการ์ดไป
+    public bool originalOwnerIsPlayer = true; // เจ้าของดั้งเดิมของการ์ด (ใช้เมื่อส่งให้สุสาน)
+    
+    // �🎈 ตัวแปรสำหรับอนิเมชั่นลอย
     private float floatTime = 0f;
     private Vector3 originalPosition = Vector3.zero;
     private bool isFloating = false;
@@ -97,10 +103,20 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 return;
             }
 
+            // 🚫 ถ้า EquipSpell ไม่สามารถ Intercept ได้ ให้แสดงสีแดงอ่อน (ห้ามแตะ)
+            if (_cardData.type == CardType.EquipSpell && cannotIntercept)
+            {
+                if (artworkImage.color != new Color(1f, 0.5f, 0.5f, 1f))
+                {
+                    artworkImage.color = new Color(1f, 0.5f, 0.5f, 1f); // แดงอ่อน - Cannot Intercept
+                }
+                return;
+            }
+
             bool shouldHighlight = false;
             bool shouldBeDark = false; // Monster ที่มี summoning sickness
 
-            // EquipSpell สว่างตลอดเวลา
+            // EquipSpell สว่างตลอดเวลา (ยกเว้นถ้า cannotIntercept)
             if (_cardData.type == CardType.EquipSpell)
             {
                 shouldHighlight = true;
@@ -821,9 +837,13 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         hasAttacked = false;
         attacksThisTurn = 0; // รีเซ็ตจำนวนครั้งที่โจมตี
         isManualHighlight = false; // รีเซ็ต manual highlight
+        cannotIntercept = false; // 🚫 รีเซ็ตการปิดการกัน ให้กันได้ใหม่
         
         // 🟣 ลดจำนวนเทิร์นที่เหลือของ category loss (ถ้ามี)
         ProcessCategoryLossDuration();
+        
+        // 🎮 ลดจำนวนเทิร์นที่เหลือของการควบคุม (ถ้ามี)
+        ProcessControlDuration();
         
         // เปลี่ยนสีกลับเป็นปกติ และตรวจสอบให้แสดงหน้าการ์ด
         if(artworkImage && !hasLostCategory) // 🟣 ห้ามทับสีม่วงถ้าสูญเสีย category
@@ -873,6 +893,33 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             }
             
             Debug.Log($"✅ [RestoreCategory] {(_cardData != null ? _cardData.cardName : "Unknown")} category restored!");
+        }
+    }
+
+    /// <summary>
+    /// ลดจำนวนเทิร์นที่เหลือของการควบคุม (Control) และคืนการ์ดเมื่อหมดเวลา
+    /// เรียกตอนสิ้นเทิร์นของการ์ด OwnerEquipSpell
+    /// </summary>
+    public void ProcessControlDuration()
+    {
+        // ถ้าไม่ถูกควบคุมหรือเป็นแบบถาวร (-1) ไม่ต้องทำอะไร
+        if (!isControlled || controlledTurnsRemaining == -1)
+        {
+            return;
+        }
+        
+        // ลดจำนวนเทิร์น
+        controlledTurnsRemaining--;
+        
+        Debug.Log($"[ProcessControlDuration] {(_cardData != null ? _cardData.cardName : "Unknown")} - Turns remaining: {controlledTurnsRemaining}");
+        
+        // ถ้าหมดเวลา (controlledTurnsRemaining == 0) ให้คืนการ์ดกลับ
+        if (controlledTurnsRemaining <= 0)
+        {
+            if (BattleManager.Instance != null)
+            {
+                BattleManager.Instance.ReturnControlledEquip(this);
+            }
         }
     }
 

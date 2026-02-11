@@ -37,5 +37,8 @@ MonoBehaviour:
     targetMainCat: 3
     targetSubCat: 0
     value: 1
+    duration: 2
     destroyMode: 0
     tokenCardId: 
+    bypassAllowedMainCat: 0
+    bypassAllowedSubCat: 0

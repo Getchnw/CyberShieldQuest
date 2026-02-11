@@ -1374,6 +1374,8 @@ public class BattleManager : MonoBehaviour
         if (state != BattleState.PLAYERTURN) return;
 
         if (endTurnButton) endTurnButton.SetActive(false);
+        // 🎮 นับ Control duration ตอนจบเทิร์นผู้เล่น
+        ProcessControlDurationsForAllEquips();
         StartCoroutine(EnemyTurn());
     }
 
@@ -1933,6 +1935,9 @@ public class BattleManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         if (isEnding || state == BattleState.WON || state == BattleState.LOST) yield break;
+
+        // 🎮 นับ Control duration ตอนจบเทิร์นบอท
+        ProcessControlDurationsForAllEquips();
 
         if (state != BattleState.LOST) StartPlayerTurn();
     }
@@ -3646,6 +3651,9 @@ public class BattleManager : MonoBehaviour
             case ActionType.RemoveCategory:
                 yield return StartCoroutine(ApplyRemoveCategory(sourceCard, effect, isPlayer));
                 break;
+            case ActionType.ControlEquip:
+                yield return StartCoroutine(ApplyControlEquip(sourceCard, effect, isPlayer));
+                break;
             default:
                 Debug.LogWarning($"⚠️ Action type {effect.action} not implemented yet");
                 yield break;
@@ -4420,6 +4428,168 @@ public class BattleManager : MonoBehaviour
 
     /// <summary>เช็คว่าฝั่งป้องกันมีการ์ดที่ต้องกันบังคับหรือไม่</summary>
     /// <summary>หาการ์ดแรกที่มี mustIntercept = true (เช็คเฉพาะ EquipSlots เท่านั้น)</summary>
+    /// <summary>ควบคุม (Control) Equip Spell ของฝ่ายตรงข้าม x ใบ เป็นเวลา x เทิร์น</summary>
+    IEnumerator ApplyControlEquip(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
+
+        if (targets.Count == 0)
+        {
+            Debug.Log("⚠️ ControlEquip: ไม่มีเป้าหมาย");
+            yield break;
+        }
+
+        // 🔥 value = 0 → ควบคุมทั้งหมด, value >= 1 → เลือกตามจำนวน
+        bool controlAll = (effect.value == 0);
+        int selectCount = controlAll ? targets.Count : Mathf.Clamp(effect.value, 1, targets.Count);
+
+        // 🕐 duration = 0 → ตลอด, duration >= 1 → จำนวนเทิร์น
+        int duration = effect.duration;
+        string durationText = (duration == 0) ? "permanent" : $"{duration} turn(s)";
+
+        Debug.Log($"🎮 ControlEquip: value={effect.value}, controlAll={controlAll}, targets={targets.Count}, selectCount={selectCount}, duration={duration} ({durationText})");
+
+        // 🔥 ถ้าเป็นผู้เล่นต้องเลือกเป้าหมาย (เลือก Equip ที่จะควบคุม)
+        if (isPlayer && targets.Count > selectCount)
+        {
+            Debug.Log($"🎯 ControlEquip: ผู้เล่นต้องเลือก {selectCount} ใบจาก {targets.Count} เป้าหมาย");
+
+            // Highlight เป้าหมายที่เลือกได้
+            foreach (var t in targets)
+            {
+                t.SetHighlight(true);
+            }
+
+            // รอให้ผู้เล่นเลือก
+            yield return StartCoroutine(WaitForTargetSelection(targets, selectCount));
+
+            // ลบ Highlight
+            foreach (var t in targets)
+            {
+                t.SetHighlight(false);
+            }
+
+            // ใช้เป้าหมายที่เลือก
+            if (selectedTargets != null && selectedTargets.Count > 0)
+            {
+                targets = selectedTargets;
+            }
+            else
+            {
+                Debug.Log("⚠️ ไม่ได้เลือกเป้าหมาย ยกเลิก ControlEquip");
+                yield break;
+            }
+        }
+
+        // ควบคุมการ์ดแต่ละใบ และย้ายไปยังช่อง Equip ของฝ่ายตัวเอง
+        int controlled = 0;
+        foreach (var target in targets)
+        {
+            if (controlled >= selectCount) break;
+            if (target == null || target.GetData() == null) continue;
+
+            // ตรวจสอบว่ามีช่องว่างในช่อง Equip ของฝ่ายตัวเองหรือไม่
+            Transform freeSlot = GetFreeSlot(CardType.EquipSpell, isPlayer: isPlayer);
+
+            if (freeSlot != null)
+            {
+                // เก็บตำแหน่งเดิมและเจ้าของดั้งเดิม
+                Transform originalSlot = target.transform.parent;
+                bool originalOwner = IsCardOwnedByPlayer(target);
+                
+                // ควบคุมการ์ด
+                target.isControlled = true;
+                target.controlledTurnsRemaining = (duration == 0) ? -1 : duration;
+                target.originalEquipSlot = originalSlot;
+                target.originalOwnerIsPlayer = originalOwner;
+
+                // ย้ายการ์ดไปยังช่อง Equip ของฝ่ายตัวเอง
+                target.transform.SetParent(freeSlot, worldPositionStays: false);
+                target.transform.localPosition = Vector3.zero;
+                target.transform.localScale = Vector3.one;
+
+                ShowDamagePopupString("Controlled!", target.transform);
+                Debug.Log($"🎮 ControlEquip: {target.GetData().cardName} ถูกควบคุม! ({durationText}) - ย้ายไป {freeSlot.name}");
+                AddBattleLog($"  {target.GetData().cardName} is controlled! ({durationText})");
+                controlled++;
+            }
+            else
+            {
+                Debug.LogWarning($"⚠️ ControlEquip: ไม่มีช่อง Equip ว่างส าหรับการ์ด {target.GetData().cardName}");
+            }
+        }
+
+        if (controlled > 0)
+        {
+            UpdateUI();
+            Debug.Log($"✅ ControlEquip: ควบคุมการ์ด {controlled}/{selectCount} ใบ เป็นเวลา {durationText}");
+        }
+    }
+
+    /// <summary>คืนการ์ด Equip ที่ถูกควบคุมกลับไปยังตำแหน่งเดิม</summary>
+    public void ReturnControlledEquip(BattleCardUI card)
+    {
+        if (card == null || !card.isControlled) return;
+
+        Transform originalSlot = card.originalEquipSlot;
+        
+        if (originalSlot == null)
+        {
+            Debug.LogWarning($"⚠️ ReturnControlledEquip: {(card.GetData() != null ? card.GetData().cardName : "Unknown")} - originalSlot เป็น null");
+            return;
+        }
+
+        // ตรวจสอบว่าช่องเดิมยังว่างหรือไม่
+        if (originalSlot.childCount > 0)
+        {
+            // ช่องเดิมถูกใช้แล้ว ให้หาช่องว่างใหม่ของฝ่ายเจ้าของเดิม
+            Transform freeSlot = GetFreeSlot(CardType.EquipSpell, isPlayer: card.originalOwnerIsPlayer);
+            if (freeSlot == null)
+            {
+                Debug.LogWarning($"⚠️ ReturnControlledEquip: ไม่มีช่อง Equip ว่างสำหรับการ์ด");
+                return;
+            }
+            originalSlot = freeSlot;
+        }
+
+        // คืนข้อมูลการควบคุม
+        card.isControlled = false;
+        card.controlledTurnsRemaining = 0;
+        card.originalEquipSlot = null;
+
+        // ย้ายการ์ดกลับ
+        card.transform.SetParent(originalSlot, worldPositionStays: false);
+        card.transform.localPosition = Vector3.zero;
+        card.transform.localScale = Vector3.one;
+
+        ShowDamagePopupString("Control Ended", card.transform);
+        Debug.Log($"✅ ReturnControlledEquip: {(card.GetData() != null ? card.GetData().cardName : "Unknown")} - คืนการควบคุมแล้ว");
+        AddBattleLog($"{(card.GetData() != null ? card.GetData().cardName : "Card")} is no longer controlled (returned)");
+
+        UpdateUI();
+    }
+
+    void ProcessControlDurationsForAllEquips()
+    {
+        foreach (Transform slot in playerEquipSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                var c = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (c) c.ProcessControlDuration();
+            }
+        }
+
+        foreach (Transform slot in enemyEquipSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                var c = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (c) c.ProcessControlDuration();
+            }
+        }
+    }
+
     BattleCardUI GetMustInterceptCard(bool defenderIsPlayer)
     {
         Transform[] equipSlots = defenderIsPlayer ? playerEquipSlots : enemyEquipSlots;
@@ -4631,7 +4801,8 @@ public class BattleManager : MonoBehaviour
         var cardData = card.GetData();
         if (cardData == null) return;
 
-        bool ownerIsPlayer = IsCardOwnedByPlayer(card);
+        // 🎮 ถ้ากำลังถูกควบคุม ให้ใช้เจ้าของดั้งเดิม ไม่ใช่เจ้าของขณะนี้
+        bool ownerIsPlayer = card.isControlled ? card.originalOwnerIsPlayer : IsCardOwnedByPlayer(card);
         string cardType = (cardData.type == CardType.EquipSpell) ? "EQUIP" : "MONSTER";
 
         // 📊 บันทึกสถิติ: การ์ดที่ถูกทำลาย
