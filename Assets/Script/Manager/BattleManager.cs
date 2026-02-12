@@ -7,7 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public enum BattleState { START, PLAYERTURN, ENEMYTURN, DEFENDER_CHOICE, WON, LOST }
+public enum BattleState { START, PLAYERTURN, ENEMYTURN, DEFENDER_CHOICE, FORCED_DISCARD, WON, LOST }
 
 public class BattleManager : MonoBehaviour
 {
@@ -124,6 +124,13 @@ public class BattleManager : MonoBehaviour
     public TextMeshProUGUI handRevealTitleText; // ชื่อ Panel (เช่น "การ์ดบนมือฝ่ายตรงข้าม")
     public Button handRevealCloseButton; // ปุ่มปิด
 
+    [Header("--- Force Choose Discard Panel (บังคับให้เลือกทิ้งการ์ด) ---")]
+    public GameObject forceDiscardPanel; // Panel หลักให้เลือกการ์ดทิ้ง
+    public Transform forceDiscardListRoot; // Root สำหรับ spawn การ์ดบนมือที่เลือกได้
+    public TextMeshProUGUI forceDiscardTitleText; // ข้อความหัวข้อ (เช่น "เลือกการ์ดที่จะทิ้ง")
+    public TextMeshProUGUI forceDiscardCountText; // แสดงจำนวนที่ต้องเลือก (เช่น "0/2")
+    public Button forceDiscardConfirmButton; // ปุ่มยืนยันการทิ้ง
+
     [Header("--- Mulligan UI ---")]
     public GameObject muliganPanel; // Panel หลักของ mulligan
     public Button playerMulliganButton;
@@ -157,6 +164,12 @@ public class BattleManager : MonoBehaviour
     private bool sacrificeConfirmed = false;
     private BattleCardUI newCardToSacrifice = null;
     private BattleCardUI targetCardToReplace = null;
+
+    // 🔥 Force Choose Discard System
+    private bool isChoosingDiscard = false;
+    private List<BattleCardUI> selectedCardsToDiscard = new List<BattleCardUI>();
+    private int requiredDiscardCount = 0;
+    private bool discardConfirmed = false;
 
     // 🔥 Mulligan System
     private int playerMulliganLeft = 1;
@@ -1929,7 +1942,7 @@ public class BattleManager : MonoBehaviour
         ResetAllEnemyMonstersAttackState();
 
         yield return new WaitForSeconds(0.5f);
-        BotSummonPhase();
+        yield return StartCoroutine(BotSummonPhase());
         yield return new WaitForSeconds(0.5f);
         yield return StartCoroutine(BotAttackPhase());
         yield return new WaitForSeconds(0.5f);
@@ -1942,9 +1955,9 @@ public class BattleManager : MonoBehaviour
         if (state != BattleState.LOST) StartPlayerTurn();
     }
 
-    void BotSummonPhase()
+    IEnumerator BotSummonPhase()
     {
-        if (enemyHandArea == null) return;
+        if (enemyHandArea == null) yield break;
 
         // ลิสต์การ์ดในมือบอท (เฉพาะที่ยังไม่ลงสนาม)
         var handCards = enemyHandArea.GetComponentsInChildren<BattleCardUI>();
@@ -1953,7 +1966,7 @@ public class BattleManager : MonoBehaviour
         var spellCard = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.Spell && enemyCurrentPP >= c.GetData().cost);
         if (spellCard != null && CanCastSpell(spellCard.GetData(), isPlayer: false))
         {
-            StartCoroutine(BotCastSpell(spellCard));
+            yield return StartCoroutine(BotCastSpell(spellCard));
             enemyCurrentPP -= spellCard.GetData().cost;
             // 🔥 ลบ return ออก เพื่อให้บอทสามารถเล่นการ์ดอื่นต่อได้หลังใช้เวทย์
         }
@@ -1967,7 +1980,7 @@ public class BattleManager : MonoBehaviour
             if (freeMonSlot != null)
             {
                 // มีช่องว่าง → ลงปกติ
-                StartCoroutine(AnimateBotPlayCard(bestMonster, freeMonSlot));
+                yield return StartCoroutine(AnimateBotPlayCard(bestMonster, freeMonSlot));
                 enemyCurrentPP -= bestMonster.GetData().cost;
             }
             else
@@ -1986,7 +1999,7 @@ public class BattleManager : MonoBehaviour
             if (freeEqSlot != null)
             {
                 // มีช่องว่าง → ลงปกติ
-                StartCoroutine(AnimateBotPlayCard(bestEquip, freeEqSlot));
+                yield return StartCoroutine(AnimateBotPlayCard(bestEquip, freeEqSlot));
                 enemyCurrentPP -= bestEquip.GetData().cost;
             }
             else
@@ -3627,6 +3640,9 @@ public class BattleManager : MonoBehaviour
             case ActionType.DiscardDeck:
                 ApplyDiscardDeck(sourceCard, effect, isPlayer);
                 yield break;
+            case ActionType.ForceChooseDiscard:
+                yield return StartCoroutine(ApplyForceChooseDiscardCoroutine(sourceCard, effect, isPlayer));
+                break;
             case ActionType.DisableAttack:
                 ApplyDisableAttack(sourceCard, effect, isPlayer);
                 yield break;
@@ -4081,6 +4097,303 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    IEnumerator ApplyForceChooseDiscardCoroutine(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        int count = effect.value > 0 ? effect.value : 1;
+        Transform targetHandArea = null;
+        string targetName = "";
+
+        // กำหนด target (ตรงข้ามกับผู้ใช้สกิล)
+        if (effect.targetType == TargetType.EnemyHand && !isPlayer)
+        {
+            // บอทใช้สกิล → บังคับผู้เล่นทิ้งการ์ด
+            targetHandArea = handArea;
+            targetName = "Player";
+            Debug.Log($"🤖 BOT used skill - Player must discard {count} card(s)");
+        }
+        else if (effect.targetType == TargetType.EnemyHand && isPlayer)
+        {
+            // ผู้เล่นใช้สกิล → บังคับบอททิ้งการ์ด (AI เลือกทิ้งอัตโนมัติ)
+            targetHandArea = enemyHandArea;
+            targetName = "Enemy";
+            Debug.Log($"👤 PLAYER used skill - Enemy discards {count} card(s) randomly");
+        }
+
+        if (targetHandArea == null || targetHandArea.childCount == 0)
+        {
+            Debug.Log($"⚠️ {targetName} ไม่มีการ์ดบนมือให้ทิ้ง");
+            AddBattleLog($"{targetName} has no cards to discard");
+            yield break;
+        }
+
+        // จำกัดจำนวนที่ต้องทิ้งไม่เกินการ์ดที่มี
+        count = Mathf.Min(count, targetHandArea.childCount);
+
+        Debug.Log($"🗑️ Force {targetName} to choose {count} card(s) to discard");
+        AddBattleLog($"Force {targetName} to discard {count} card(s)");
+
+        if (targetName == "Player")
+        {
+            // ให้ผู้เล่นเลือกเอง
+            Debug.Log($"⏳ WAITING FOR PLAYER INPUT...");
+            yield return StartCoroutine(PlayerChooseDiscard(count));
+            Debug.Log($"✅ Player has made choice, continuing...");
+        }
+        else
+        {
+            // บอทเลือกอัตโนมัติ (สุ่มทิ้ง)
+            Debug.Log($"🤖 Enemy auto discarding...");
+            yield return StartCoroutine(EnemyAutoDiscard(count));
+            Debug.Log($"✅ Enemy has discarded, continuing...");
+        }
+    }
+
+    IEnumerator PlayerChooseDiscard(int count)
+    {
+        Debug.Log($"[PlayerChooseDiscard] ✅ STARTS");
+        
+        if (forceDiscardPanel == null)
+        {
+            Debug.LogError("❌ CRITICAL: forceDiscardPanel is NULL! Cannot show UI!");
+            yield break;
+        }
+
+        requiredDiscardCount = count;
+        selectedCardsToDiscard.Clear();
+        isChoosingDiscard = true;
+        discardConfirmed = false;
+
+        Debug.Log($"[PlayerChooseDiscard] Panel: {(forceDiscardPanel != null ? "YES" : "NO")}, Button: {(forceDiscardConfirmButton != null ? "YES" : "NO")}");
+
+        // เปิด Panel
+        forceDiscardPanel.SetActive(true);
+        yield return null; // รอให้ Panel activate
+        
+        Debug.Log($"[PlayerChooseDiscard] Panel activated: {forceDiscardPanel.activeSelf}");
+
+        // ตั้งค่า UI
+        if (forceDiscardTitleText) 
+        {
+            forceDiscardTitleText.text = $"Choose {count} card(s) to discard";
+            Debug.Log($"[PlayerChooseDiscard] Title set");
+        }
+        UpdateForceDiscardCountUI();
+
+        // สร้างการ์ดจากมือผู้เล่น
+        PopulateForceDiscardPanel();
+        yield return null; // รอให้ cards spawn
+        
+        Debug.Log($"[PlayerChooseDiscard] Cards populated: {forceDiscardListRoot.childCount} cards");
+
+        // เชื่อมต่อปุ่มยืนยัน
+        if (forceDiscardConfirmButton != null)
+        {
+            forceDiscardConfirmButton.onClick.RemoveAllListeners();
+            forceDiscardConfirmButton.onClick.AddListener(() => OnForceDiscardConfirm());
+            Debug.Log($"[PlayerChooseDiscard] ✅ Confirm button listener added and ready");
+        }
+        else
+        {
+            Debug.LogError("❌ forceDiscardConfirmButton is NULL!");
+        }
+
+        // รอจนกว่าผู้เล่นจะยืนยัน - WITH TIMEOUT
+        float startTime = Time.time;
+        float timeout = 300f; // 5 minutes timeout
+        int loopCount = 0;
+        
+        Debug.Log($"[PlayerChooseDiscard] ⏳ WAITING FOR PLAYER - Will wait up to {timeout}s (or Click Confirm button)");
+
+        while (!discardConfirmed)
+        {
+            loopCount++;
+            float elapsed = Time.time - startTime;
+            
+            if (loopCount % 300 == 0) // Log every ~5 seconds
+            {
+                Debug.Log($"[PlayerChooseDiscard] STILL WAITING... {elapsed:F1}s (discardConfirmed={discardConfirmed}, selected={selectedCardsToDiscard.Count}/{requiredDiscardCount})");
+            }
+            
+            if (elapsed > timeout)
+            {
+                Debug.LogError($"❌ TIMEOUT after {elapsed:F1}s: Player didn't confirm discard!");
+                break;
+            }
+            
+            yield return null;
+        }
+
+        float finalTime = Time.time - startTime;
+        Debug.Log($"✅ [PlayerChooseDiscard] CONFIRMED after {finalTime:F2}s - Destroying {selectedCardsToDiscard.Count} cards");
+
+        // ทำลายการ์ดที่เลือก
+        foreach (var card in selectedCardsToDiscard)
+        {
+            if (card != null && card.gameObject != null)
+            {
+                Debug.Log($"🗑️ Player discarded: {card.GetData().cardName}");
+                DestroyCardToGraveyard(card);
+            }
+        }
+
+        // ปิด Panel
+        forceDiscardPanel.SetActive(false);
+        isChoosingDiscard = false;
+        selectedCardsToDiscard.Clear();
+        discardConfirmed = false;
+        
+        Debug.Log($"✅ [PlayerChooseDiscard] COMPLETE - Ready to continue game");
+    }
+
+    IEnumerator EnemyAutoDiscard(int count)
+    {
+        if (enemyHandArea == null || enemyHandArea.childCount == 0) yield break;
+
+        for (int i = 0; i < count && enemyHandArea.childCount > 0; i++)
+        {
+            int randomIndex = Random.Range(0, enemyHandArea.childCount);
+            var card = enemyHandArea.GetChild(randomIndex).GetComponent<BattleCardUI>();
+            
+            if (card != null && card.GetData() != null)
+            {
+                Debug.Log($"🗑️ Enemy discarded: {card.GetData().cardName}");
+                DestroyCardToGraveyard(card);
+                yield return new WaitForSeconds(0.3f);
+            }
+        }
+    }
+
+    void PopulateForceDiscardPanel()
+    {
+        if (forceDiscardListRoot == null) 
+        {
+            Debug.LogError("❌ forceDiscardListRoot is NULL!");
+            return;
+        }
+
+        // ลบการ์ดเก่าออก
+        foreach (Transform child in forceDiscardListRoot)
+        {
+            Destroy(child.gameObject);
+        }
+
+        int cardCount = handArea.childCount;
+        Debug.Log($"[PopulateForceDiscardPanel] Creating {cardCount} card copies...");
+
+        // สร้างการ์ดใหม่จากมือผู้เล่น
+        foreach (Transform cardTransform in handArea)
+        {
+            BattleCardUI originalCard = cardTransform.GetComponent<BattleCardUI>();
+            if (originalCard == null) continue;
+
+            GameObject cardCopy = Instantiate(cardPrefab, forceDiscardListRoot);
+            BattleCardUI cardUI = cardCopy.GetComponent<BattleCardUI>();
+            
+            if (cardUI != null)
+            {
+                cardUI.Setup(originalCard.GetData());
+                cardUI.SetReferenceCard(originalCard); // เก็บ reference ของการ์ดจริง
+
+                // เพิ่ม button เพื่อเลือก/ยกเลิก
+                Button btn = cardCopy.GetComponent<Button>();
+                if (btn == null) btn = cardCopy.AddComponent<Button>();
+                
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(() => OnForceDiscardCardClick(cardUI));
+                
+                Debug.Log($"  - Card Created: {originalCard.GetData().cardName} (clickable: {btn.interactable})");
+            }
+        }
+        
+        Debug.Log($"[PopulateForceDiscardPanel] Done - {forceDiscardListRoot.childCount} cards ready");
+    }
+
+    public void OnForceDiscardCardClick(BattleCardUI cardUI)
+    {
+        if (!isChoosingDiscard) 
+        {
+            Debug.LogWarning("❌ OnForceDiscardCardClick called but not choosing!");
+            return;
+        }
+
+        BattleCardUI originalCard = cardUI.GetReferenceCard();
+        if (originalCard == null) 
+        {
+            Debug.LogError("❌ No reference card!");
+            return;
+        }
+
+        Debug.Log($"[OnForceDiscardCardClick] Clicked: {originalCard.GetData().cardName}");
+
+        // Toggle selection
+        if (selectedCardsToDiscard.Contains(originalCard))
+        {
+            selectedCardsToDiscard.Remove(originalCard);
+            cardUI.SetHighlight(false);
+            Debug.Log($"  → DESELECTED: {originalCard.GetData().cardName}");
+        }
+        else
+        {
+            if (selectedCardsToDiscard.Count < requiredDiscardCount)
+            {
+                selectedCardsToDiscard.Add(originalCard);
+                cardUI.SetHighlight(true);
+                Debug.Log($"  → SELECTED: {originalCard.GetData().cardName} ({selectedCardsToDiscard.Count}/{requiredDiscardCount})");
+            }
+            else
+            {
+                Debug.Log($"⚠️ Max cards selected already!");
+                ShowDamagePopupString($"Max {requiredDiscardCount} selected", cardUI.transform);
+                return;
+            }
+        }
+
+        UpdateForceDiscardCountUI();
+    }
+
+    void UpdateForceDiscardCountUI()
+    {
+        if (forceDiscardCountText)
+        {
+            forceDiscardCountText.text = $"{selectedCardsToDiscard.Count}/{requiredDiscardCount}";
+        }
+
+        // เปิด/ปิดปุ่มยืนยันตามจำนวนที่เลือก
+        if (forceDiscardConfirmButton)
+        {
+            bool canConfirm = (selectedCardsToDiscard.Count == requiredDiscardCount);
+            forceDiscardConfirmButton.interactable = canConfirm;
+            
+            // ปิด raycast ด้วยเมื่อยังไม่ครบ
+            CanvasGroup canvasGroup = forceDiscardConfirmButton.GetComponent<CanvasGroup>();
+            if (canvasGroup == null) canvasGroup = forceDiscardConfirmButton.gameObject.AddComponent<CanvasGroup>();
+            canvasGroup.blocksRaycasts = canConfirm;
+            
+            Debug.Log($"[UpdateForceDiscardCountUI] {selectedCardsToDiscard.Count}/{requiredDiscardCount} - Button: {(canConfirm ? "🟢 ACTIVE" : "🔴 DISABLED")}");
+        }
+    }
+
+    public void OnForceDiscardConfirm()
+    {
+        Debug.Log($"[OnForceDiscardConfirm] Called! isChoosingDiscard: {isChoosingDiscard}");
+        
+        if (!isChoosingDiscard) 
+        {
+            Debug.LogWarning("⚠️ Not in discard phase!");
+            return;
+        }
+        
+        if (selectedCardsToDiscard.Count != requiredDiscardCount)
+        {
+            Debug.LogError($"❌ SELECTION ERROR: Need {requiredDiscardCount} but selected {selectedCardsToDiscard.Count}!");
+            ShowDamagePopupString($"Select {requiredDiscardCount} cards!", transform);
+            return;
+        }
+
+        Debug.Log($"✅ [OnForceDiscardConfirm] CONFIRMED! Setting discardConfirmed = true");
+        discardConfirmed = true;
     }
 
     void ApplyDisableAttack(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)

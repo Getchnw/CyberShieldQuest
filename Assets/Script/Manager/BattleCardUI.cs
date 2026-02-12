@@ -48,10 +48,24 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public Transform originalEquipSlot = null; // ตำแหน่ง slot เดิมที่ควรคืนการ์ดไป
     public bool originalOwnerIsPlayer = true; // เจ้าของดั้งเดิมของการ์ด (ใช้เมื่อส่งให้สุสาน)
     
-    // �🎈 ตัวแปรสำหรับอนิเมชั่นลอย
+    // 🎮 ตัวแปรสำหรับอนิเมชั่นลอย
     private float floatTime = 0f;
     private Vector3 originalPosition = Vector3.zero;
     private bool isFloating = false;
+
+    // 🗑️ ตัวแปรสำหรับ Force Choose Discard
+    private BattleCardUI referenceCard = null; // เก็บ reference ของการ์ดจริง (สำหรับ UI ที่ copy มา)
+
+    public void SetReferenceCard(BattleCardUI original)
+    {
+        referenceCard = original;
+    }
+
+    public BattleCardUI GetReferenceCard()
+    {
+        return referenceCard;
+    }
+
     void Awake()
     {
         CreateUIElementsIfNeeded();
