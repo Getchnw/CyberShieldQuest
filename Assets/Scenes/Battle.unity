@@ -522,7 +522,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 492.66846, y: 194}
+  m_AnchoredPosition: {x: 492.67, y: -80}
   m_SizeDelta: {x: 169.337, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &73280855
@@ -555,8 +555,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 67f0843a8a8dffc4d8bf6271ac3fd99b, type: 2}
+  m_sharedMaterial: {fileID: 2678599976255894656, guid: 67f0843a8a8dffc4d8bf6271ac3fd99b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -616,7 +616,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 1.4599609, w: 0}
+  m_margin: {x: -2.807495, y: 0, z: 1.4599609, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -2393,8 +2393,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 488, y: -205}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: 488, y: -142.23267}
+  m_SizeDelta: {x: 160, y: 43.5346}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &434394775
 MonoBehaviour:
@@ -7359,7 +7359,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 49, y: -195}
+  m_AnchoredPosition: {x: 55, y: -130}
   m_SizeDelta: {x: 611.7605, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1133451598
@@ -7392,8 +7392,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 67f0843a8a8dffc4d8bf6271ac3fd99b, type: 2}
+  m_sharedMaterial: {fileID: 2678599976255894656, guid: 67f0843a8a8dffc4d8bf6271ac3fd99b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -10240,8 +10240,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 7, y: 80}
-  m_SizeDelta: {x: 1200, y: 500}
+  m_AnchoredPosition: {x: 62, y: 280}
+  m_SizeDelta: {x: 1200, y: 354.0102}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1597745120
 MonoBehaviour:
@@ -10299,7 +10299,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.78431374}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
