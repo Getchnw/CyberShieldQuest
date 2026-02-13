@@ -531,7 +531,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 24882698215444
-    m_Localized: 
+    m_Localized: ' '
     m_Metadata:
       m_Items: []
   - m_Id: 199256034205696
@@ -4033,6 +4033,744 @@ MonoBehaviour:
     m_Localized: Incorrect, because Salting is a defensive technique used to protect
       passwords by adding random data before hashing. It is not an attack and is
       unrelated to intercepting web traffic.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404691
+    m_Localized: "Correct, because Salting adds random data (a salt) to a password
+      before hashing. As a result, even if multiple users choose the same password,
+      their hashes will be different. This prevents Rainbow Tables\u2014precomputed
+      lookup tables\u2014from being used to crack passwords."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404692
+    m_Localized: Incorrect, because a Rainbow Table is an attack method, not a defense.
+      The question asks for the process used to prevent Rainbow Table attacks, so
+      this is not the correct answer.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404693
+    m_Localized: Incorrect, because SSL Stripper is a network-based attack that downgrades
+      https:// to http://. It is unrelated to password storage or hashing in a database.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404694
+    m_Localized: Correct, because a Rainbow Table is a precomputed database that
+      maps passwords to their hash values. When attackers obtain hashed passwords
+      from a breached database, they can quickly compare them against the Rainbow
+      Table to find the original password without recalculating each hash.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404695
+    m_Localized: Incorrect, because SSL Stripper is a network attack targeting encrypted
+      connections. It does not involve cracking or guessing passwords stored in a
+      database.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404696
+    m_Localized: Incorrect, because Salting is not a threat but a defense. Adding
+      a salt ensures that identical passwords produce different hashes, rendering
+      Rainbow Tables ineffective. In fact, Salting is a direct countermeasure against
+      Rainbow Table attacks.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404697
+    m_Localized: Correct, because CSP (Content Security Policy) defines rules that
+      tell the browser which sources are allowed to load and execute scripts. If
+      a malicious script is injected or reflected into a page, the browser will block
+      it if it does not come from an approved source, preventing XSS from executing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404698
+    m_Localized: Incorrect, because this principle mainly applies to preventing SQL
+      Injection. Script whitelisting is enforced by the browser through CSP, not
+      by separating SQL commands from data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404699
+    m_Localized: "Incorrect, because \u201CStored\u201D refers to a type of XSS attack
+      where malicious scripts are permanently saved in the system. It is not a defensive
+      mechanism."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404700
+    m_Localized: "Incorrect, because \u201CReflected\u201D refers to another form
+      of XSS attack where malicious scripts are reflected via URL parameters. It
+      does not control or restrict script execution."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404701
+    m_Localized: Correct, because a Parameterized Query clearly separates the SQL
+      command structure from user-supplied input. The database treats user input
+      strictly as data, not executable code. Therefore, malicious input such as OR
+      '1'='1' cannot alter the intended SQL command.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404702
+    m_Localized: Incorrect, because CSP is browser-side protection and cannot stop
+      SQL commands on the server.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404703
+    m_Localized: Incorrect, because Stored is a type of XSS attack, not a SQL protection
+      method.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404704
+    m_Localized: Incorrect, because Reflected is an XSS attack that tricks users
+      into clicking a malicious link, not a database security control.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404705
+    m_Localized: "Correct, because Reflected XSS only works if the victim clicks
+      the attacker\u2019s link."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404706
+    m_Localized: Incorrect, because CSP is a defense, not an attack type.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404707
+    m_Localized: Incorrect, because Stored XSS is more dangerous since it runs automatically
+      when users visit the page.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404708
+    m_Localized: Incorrect, because this principle prevents SQL Injection, not XSS.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404709
+    m_Localized: Incorrect, because CSP is a protection mechanism, not an attack
+      type.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404710
+    m_Localized: Incorrect, because this prevents SQL Injection, not XSS.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404711
+    m_Localized: Incorrect, because Reflected XSS requires user interaction and does
+      not auto-infect all visitors.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404712
+    m_Localized: Correct, because Stored XSS injects scripts into stored data and
+      runs automatically for anyone who visits the page.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987584
+    m_Localized: Create 1 new card
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987585
+    m_Localized: Dismantle 1 card
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987586
+    m_Localized: Randomly obtain 1 card from the Shop (A01 content)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987587
+    m_Localized: Randomly obtain 1 card from the Shop (A02 content)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987588
+    m_Localized: Randomly obtain 1 card from the Shop (A03 content)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987589
+    m_Localized: Randomly obtain 1 card from the Shop (any chapter)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987590
+    m_Localized: Defeat an enemy 1 time in Stage mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987591
+    m_Localized: Use a total of 20 cards in Battle mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987592
+    m_Localized: Deal a total of 50 damage to enemies (can be accumulated across
+      battles)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987593
+    m_Localized: Play Stage mode 1 time (win or lose)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987594
+    m_Localized: Complete 1 chapter of Story A01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987595
+    m_Localized: Complete 1 chapter of Story A02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987596
+    m_Localized: Complete 1 chapter of Story A03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882865987597
+    m_Localized: Complete 1 chapter of any Story
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882882764800
+    m_Localized: Earn 3 stars in every Stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882882764801
+    m_Localized: Earn 3 stars in every Story and Stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882882764802
+    m_Localized: Earn 3 stars in every Story stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750149930541056
+    m_Localized: "[Strike] When this card attacks, force 1 opponent\u2019s Equip
+      Spell to intercept this attack."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750149930541057
+    m_Localized: It does not traverse back (../) but directly targets using a full
+      path.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750149993455616
+    m_Localized: "Select 1 opponent\u2019s Monster [A01], destroy it, and recover
+      HP equal to its ATK."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750149993455617
+    m_Localized: Last-second denial! The system detects an anomaly and immediately
+      terminates the connection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150060564480
+    m_Localized: "[Strike-Hit] When this card successfully deals damage to your opponent\u2019s
+      HP, gain control of 1 opponent\u2019s Equip Spell."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150060564481
+    m_Localized: It impersonates an ID in an API call to issue commands on behalf
+      of someone else.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150127673344
+    m_Localized: '[Cont.] This card can attack twice per turn.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150127673345
+    m_Localized: When it finds an unprotected /admin endpoint, it seizes full privileges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150186393600
+    m_Localized: '[Cont.] Your opponent cannot activate abilities that force your
+      Equip Spells to intercept.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150186393601
+    m_Localized: Using modern encryption (AES-GCM) prevents pattern visibility.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150249308160
+    m_Localized: "[Strike-Hit] When this card successfully deals damage to your opponent\u2019s
+      HP, your opponent discards the top card of their Deck."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150249308161
+    m_Localized: An assassin in the dark, it executes commands without seeing the
+      outcome.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150316417024
+    m_Localized: "[Cont.] Opponent\u2019s Monster \u201CEncoded Infiltrator\u201D
+      cannot attack or activate its abilities."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150316417025
+    m_Localized: A shield that decodes data encrypted in one layer.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150379331584
+    m_Localized: "[Strike-Hit] When this card successfully deals damage to your opponent\u2019s
+      HP, destroy all opponent\u2019s Equip Spells."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150379331585
+    m_Localized: Targets configuration files on the server that store keys in plain
+      text.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150446440448
+    m_Localized: '[Cont.] When Monster [A03: XSS] is deployed, recover 1 HP.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150446440449
+    m_Localized: Advanced protection policy that whitelists trusted script sources.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150500966400
+    m_Localized: "Destroy all opponent\u2019s Monster [A02] on the field."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150500966401
+    m_Localized: "Aggressively analyzes the enemy\u2019s encryption to uncover weaknesses."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150572269568
+    m_Localized: "[Deploy] When this card is deployed, reveal all cards in your opponent\u2019s
+      hand."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150572269569
+    m_Localized: "It changes the ID in the URL (e.g., user_id=123 to 124) to secretly
+      view someone else\u2019s data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150639378432
+    m_Localized: "[Strike-Hit] Send the top 3 cards of your opponent\u2019s Deck
+      to the Graveyard."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150639378433
+    m_Localized: "The beast of UNION SELECT \u2014 it can extract data from the entire
+      database."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150710681600
+    m_Localized: "Look at the top 5 cards of your opponent\u2019s Deck; choose 1
+      and send it to the Graveyard."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150710681601
+    m_Localized: A successful attack copies all sensitive data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150777790464
+    m_Localized: "[Deploy] Reveal all cards in your opponent\u2019s hand."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150777790465
+    m_Localized: "A spy within a breached database \u2014 it reads all plain text
+      data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150836510720
+    m_Localized: Select 1 Monster Type A01; its Cost becomes 0 and its ATK becomes
+      0.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150836510721
+    m_Localized: A decoy data file placed to lure hackers.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150903619584
+    m_Localized: "Destroy all opponent\u2019s Monsters of Type A01."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150903619585
+    m_Localized: 'The most basic security policy: Deny all.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150966534144
+    m_Localized: "[Deploy] Look at the top 3 cards of your opponent\u2019s Deck;
+      choose 1 Equip Spell and send it to the Graveyard."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750150966534145
+    m_Localized: It randomly guesses hidden URLs until it finds an unlocked door.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151029448704
+    m_Localized: "[Deploy] Destroy 1 opponent\u2019s Equip Spell with Cost 2 or less."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151029448705
+    m_Localized: "A basic intruder \u2014 it uses ../ to traverse backward."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151088168960
+    m_Localized: "[Strike] When this card attacks, you may force 1 opponent\u2019s
+      Equip Spell to intercept the attack."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151088168961
+    m_Localized: It targets the weak ECB mode, allowing it to see data patterns.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151155277824
+    m_Localized: Select 1 Equip Spell from your Graveyard and add it to your hand.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151155277825
+    m_Localized: "When an old key is compromised, it\u2019s time to change the key
+      immediately."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151226580992
+    m_Localized: "[Deploy] Select 1 opponent\u2019s Equip Spell; it cannot use Intercept
+      this turn."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151226580993
+    m_Localized: It encodes (%2f) to bypass shallow filters.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151302078464
+    m_Localized: "[Cont.] Opponent\u2019s Monsters of Type [A01: IDOR] with Cost
+      3 or less cannot attack."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151302078465
+    m_Localized: A cloaking armor! It replaces predictable IDs with random strings.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151369187328
+    m_Localized: "[Deploy] When this card is deployed: Look through your opponent\u2019s
+      entire Deck, choose 2 cards from it, and send them to the Graveyard."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151369187329
+    m_Localized: A key hunter searching for keys accidentally hardcoded by developers.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151432101888
+    m_Localized: '[Cont.] This card is always treated as the correct Type when using
+      Intercept.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151432101889
+    m_Localized: A strict policy that forces browsers to refuse connections over
+      http://.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151503405056
+    m_Localized: '[Cont.] Whenever your opponent draws a card, you may look at that
+      card.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151503405057
+    m_Localized: A network eavesdropper on http://, stealing transmitted data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151562125312
+    m_Localized: "Draw 1 card, then select 1 opponent\u2019s Monster [A01: IDOR]
+      and destroy it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151562125313
+    m_Localized: A script that rapidly brute-forces valid IDs.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151625039872
+    m_Localized: '[Intercept] Destroy 1 Monster [A03: OS Command].'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151625039873
+    m_Localized: A protective shield that filters dangerous characters from input.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151696343040
+    m_Localized: "[Deploy] When this card is deployed, destroy 1 opponent\u2019s
+      Equip Spell with Cost 3 or less."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151696343041
+    m_Localized: "An expert at breaking rusty padlocks \u2014 it cracks outdated
+      hash algorithms."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151763451904
+    m_Localized: "[Deploy] When this card is deployed, look at the top 3 cards of
+      your opponent\u2019s Deck; choose 1 and send it to the Graveyard."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151763451905
+    m_Localized: It tricks the XML parser into reading sensitive system files.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151826366464
+    m_Localized: '[Deploy] This card can attack on the turn it is deployed.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151826366465
+    m_Localized: A destruction machine designed to brute-force MD5.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151889281024
+    m_Localized: "[Cont.] Opponent\u2019s Monsters [A02] cannot use their Abilities.
+      [Cont.] Recover 1 HP at the end of the turn."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151889281025
+    m_Localized: The highest standard (bcrypt, Argon2), intentionally designed to
+      be slow to resist attacks.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151956389888
+    m_Localized: "[Deploy] When this card is deployed, all opponent\u2019s Equip
+      Spells lose their Type until the end of their next turn."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750151956389889
+    m_Localized: "An advanced shapeshifter \u2014 it uses double (nested) encoding."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152019304448
+    m_Localized: "[Strike-Hit] When this card successfully deals damage to your opponent\u2019s
+      HP, destroy 1 Monster on your opponent\u2019s field."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152019304449
+    m_Localized: An assassin that uses NULL (%00) to terminate filenames.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152078024704
+    m_Localized: '[Cont.] All Monsters [A03: SQLi] cannot use their Abilities.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152078024705
+    m_Localized: "A perfect defense \u2014 it always separates commands from data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152161910784
+    m_Localized: Select 1 Monster you control. This turn, if that Monster attacks,
+      your opponent cannot Intercept that attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152161910785
+    m_Localized: Obfuscating malicious code to bypass a WAF.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152224825344
+    m_Localized: '[Strike] This attack cannot be Intercepted by Equip Spells with
+      Cost 3 or less.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152224825345
+    m_Localized: Appending malicious commands after a harmless function.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152291934208
+    m_Localized: '[Cont.] This card is always treated as the correct Type when using
+      Intercept. [Cont.] All Monsters [A01] cannot use their Abilities.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152291934209
+    m_Localized: "The ultimate authorization checkpoint \u2014 the best defensive
+      card against A01."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152354848768
+    m_Localized: "[Strike-Hit] When this card successfully deals damage to your opponent\u2019s
+      HP, destroy 1 opponent\u2019s Equip Spell."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152354848769
+    m_Localized: "It alters hidden IDs in forms to modify or delete other users\u2019
+      data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152426151936
+    m_Localized: '[Strike] When this card attacks, Equip Spells (non-[A03]) with
+      Cost 3 or less cannot Intercept.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152426151937
+    m_Localized: "A basic injector \u2014 it uses the classic OR 1=1 technique."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152484872192
+    m_Localized: "[Cont.] Gains +1 Attack for every 2 cards in your opponent\u2019s
+      Graveyard."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152484872193
+    m_Localized: A massive hash dictionary used to attack unsalted hashes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152543592448
+    m_Localized: '[Cont.] Always treated as the correct Type when using Intercept.
+      [Cont.] Monsters [A01: Path Traversal] cannot use their Abilities.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152543592449
+    m_Localized: "The ultimate decoder \u2014 nothing remains encoded."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152610701312
+    m_Localized: '[Deploy] When this card is deployed, your opponent discards 1 card
+      from their hand.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152610701313
+    m_Localized: A non-persistent attack that tricks users into clicking a malicious
+      script link.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152665227264
+    m_Localized: A token created by an unauthorized creator.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152728141824
+    m_Localized: "[Cont.] All opponent\u2019s Monsters [A01: Path Traversal] on the
+      field cannot use their Abilities."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152728141825
+    m_Localized: A virtual jail that confines processes within a designated directory.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152782667776
+    m_Localized: '[Strike] This attack cannot be Intercepted.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152791056384
+    m_Localized: "A perfect Reverse Shell \u2014 capable of taking over the entire
+      server."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152849776640
+    m_Localized: "[Cont.] Opponent\u2019s Monsters [A02: No Salt] lose their Abilities."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152849776641
+    m_Localized: "Salting \u2014 adding random data to a password before hashing."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152908496896
+    m_Localized: '[Cont.] Your opponent cannot view your hand.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152908496897
+    m_Localized: A code furnace that crushes passwords into hashes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152979800064
+    m_Localized: '[Cont.] Your other Equip Spells cannot be destroyed by Abilities.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750152979800065
+    m_Localized: "Ultimate protection (KMS, Vault) \u2014 separating keys from data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153042714624
+    m_Localized: "[Intercept] If this card Intercepts the correct Type, recover HP
+      equal to that Monster\u2019s Attack."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153042714625
+    m_Localized: "The ultimate decoder \u2014 repeatedly decodes until the data is
+      fully revealed."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153114017792
+    m_Localized: "[Cont.] Your opponent cannot view your hand. [Cont.] Opponent\u2019s
+      Monsters [A01: IDOR] cannot use their Abilities."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153114017793
+    m_Localized: A guardian that verifies whether the logged-in User ID matches the
+      requested resource ID.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153176932352
+    m_Localized: "[Deploy] When this card is deployed, destroy 1 opponent\u2019s
+      Equip Spell that is not A02."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153176932353
+    m_Localized: Specialized in finding hash collisions to forge data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153235652608
+    m_Localized: Destroy 1 Path Traversal Monster.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153235652609
+    m_Localized: A cheap defense that only looks for ../ literally.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153302761472
+    m_Localized: "[Deploy] When this card is deployed, choose 1 opponent\u2019s Equip
+      Spell; it loses its Type until the end of its next turn."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153302761473
+    m_Localized: A cunning beast that forces the browser to downgrade from https://
+      to http://.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153365676032
+    m_Localized: "[Strike-Hit] When this card successfully deals damage to your opponent\u2019s
+      HP, your opponent discards 1 card."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153365676033
+    m_Localized: A persistent XSS worm embedded in the database.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153432784896
+    m_Localized: "[Cont.] If this card Intercepts a Monster [A02: No Salt], recover
+      HP equal to that Monster\u2019s Attack."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153432784897
+    m_Localized: A secret key added before hashing and stored securely and separately.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153499893760
+    m_Localized: '[Cont.] Your opponent cannot see the cards you draw.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153499893761
+    m_Localized: A mobile vault that creates a secure tunnel to protect data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153562808320
+    m_Localized: '[Deploy] When this card is deployed, Special Summon 1 Rogue Token
+      to your field.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153562808321
+    m_Localized: "It doesn\u2019t steal \u2014 it creates. It injects functions to
+      generate ghost users."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153629917184
+    m_Localized: "[Cont.] Opponent\u2019s Monsters with Cost 4 or less cannot activate
+      \u201COn Deploy\u201D Abilities."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153629917185
+    m_Localized: A rule enforcer that verifies user roles in every function.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153692831744
+    m_Localized: "[Strike] When this card declares an attack, choose 1 opponent\u2019s
+      Equip Spell. If your opponent uses it to Intercept, send the top 2 cards of
+      their Deck to the Graveyard."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153692831745
+    m_Localized: It exploits misconfigured HTTPS by forcing outdated encryption.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153759940608
+    m_Localized: Destroy 1 Monster [A03].
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153759940609
+    m_Localized: A firewall that detects known attack patterns.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153814466560
+    m_Localized: '[Cont.] All Monsters [A03: XXE] cannot use their Abilities.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 750153818660864
+    m_Localized: Disable DOCTYPE processing and External Entities.
     m_Metadata:
       m_Items: []
   references:
