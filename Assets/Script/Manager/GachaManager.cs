@@ -117,7 +117,10 @@ public class GachaManager : MonoBehaviour
         // อัปเดตข้อความ
         if (currentBannerNameText != null)
         {
-            currentBannerNameText.text = $"Banner: {currentTargetCategory}";
+
+            currentBannerNameText.text = GameManager.Instance.CurrentGameData.isTranstale
+                                        ? $"Banner: {currentTargetCategory}"
+                                        : $"ตู้: {currentTargetCategory}";
 
             if (!isUnlocked)
             {
