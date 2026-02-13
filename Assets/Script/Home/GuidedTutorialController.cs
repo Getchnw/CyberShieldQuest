@@ -17,11 +17,23 @@ public class GuidedTutorialController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI headerText;      // ลากตัว Name ข้างบนมาใส่
     [SerializeField] private TextMeshProUGUI descriptionText; // ลากตัว Text (TMP) ข้างล่างมาใส่
 
-    [Header("Text Data")]
+
+    [Header("Text Data for Thai")]
+    // English
     [TextArea(1, 3)]
-    [SerializeField] private string[] pageTitles;       // พิมพ์ชื่อหัวข้อ 5 อันเรียงกัน
+    [SerializeField] private string[] pageTitles_Thai;       // พิมพ์ชื่อหัวข้อ 5 อันเรียงกัน
+
     [TextArea(3, 5)]
-    [SerializeField] private string[] pageDescriptions; // พิมพ์คำอธิบาย 5 อันเรียงกัน
+    [SerializeField] private string[] pageDescriptions_Thai; // พิมพ์คำอธิบาย 5 อันเรียงกัน
+
+    [Header("Text Data for English")]
+    // Thai
+    [TextArea(1, 3)]
+    [SerializeField] private string[] pageTitles_English;       // พิมพ์ชื่อหัวข้อ 5 อันเรียงกัน
+
+    [TextArea(3, 5)]
+    [SerializeField] private string[] pageDescriptions_English; // พิมพ์คำอธิบาย 5 อันเรียงกัน
+
 
     [Header("Buttons")]
     [SerializeField] private Button nextButton;
@@ -102,14 +114,33 @@ public class GuidedTutorialController : MonoBehaviour
         }
 
         // 2. อัปเดตข้อความ (Header และ Description)
-        if (headerText != null && pageTitles.Length > currentIndex)
+        if (GameManager.Instance.CurrentGameData.isTranstale)
         {
-            headerText.text = pageTitles[currentIndex];
-        }
+            if (headerText != null && pageTitles_English.Length > currentIndex)
+            {
+                // English
+                headerText.text = pageTitles_English[currentIndex];
+            }
 
-        if (descriptionText != null && pageDescriptions.Length > currentIndex)
+            if (descriptionText != null && pageDescriptions_English.Length > currentIndex)
+            {
+                // English
+                descriptionText.text = pageDescriptions_English[currentIndex];
+            }
+        }
+        else
         {
-            descriptionText.text = pageDescriptions[currentIndex];
+            if (headerText != null && pageTitles_Thai.Length > currentIndex)
+            {
+                // Thai
+                headerText.text = pageTitles_Thai[currentIndex];
+            }
+
+            if (descriptionText != null && pageDescriptions_Thai.Length > currentIndex)
+            {
+                // Thai
+                descriptionText.text = pageDescriptions_Thai[currentIndex];
+            }
         }
 
         // 3. อัปเดตสถานะปุ่ม

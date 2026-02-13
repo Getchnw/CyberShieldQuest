@@ -31,9 +31,13 @@ public class GuidedLineController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI headerText;
     [SerializeField] private TextMeshProUGUI descriptionText;
 
-    [Header("Text Data")]
-    [TextArea(1, 3)][SerializeField] private string[] pageTitles;
-    [TextArea(3, 5)][SerializeField] private string[] pageDescriptions;
+    [Header("Text Data Thai")]
+    [TextArea(1, 3)][SerializeField] private string[] pageTitles_Thai;
+    [TextArea(3, 5)][SerializeField] private string[] pageDescriptions_Thai;
+
+    [Header("Text Data English")]
+    [TextArea(1, 3)][SerializeField] private string[] pageTitles_English;
+    [TextArea(3, 5)][SerializeField] private string[] pageDescriptions_English;
 
     [Header("Buttons")]
     [SerializeField] private Button nextButton;
@@ -147,11 +151,34 @@ public class GuidedLineController : MonoBehaviour
         }
 
         // เปลี่ยนข้อความ
-        if (headerText != null && pageTitles.Length > currentIndex)
-            headerText.text = pageTitles[currentIndex];
+        if (GameManager.Instance.CurrentGameData.isTranstale)
+        {
+            if (headerText != null && pageTitles_English.Length > currentIndex)
+            {
+                // English
+                headerText.text = pageTitles_English[currentIndex];
+            }
 
-        if (descriptionText != null && pageDescriptions.Length > currentIndex)
-            descriptionText.text = pageDescriptions[currentIndex];
+            if (descriptionText != null && pageDescriptions_English.Length > currentIndex)
+            {
+                // English
+                descriptionText.text = pageDescriptions_English[currentIndex];
+            }
+        }
+        else
+        {
+            if (headerText != null && pageTitles_Thai.Length > currentIndex)
+            {
+                // Thai
+                headerText.text = pageTitles_Thai[currentIndex];
+            }
+
+            if (descriptionText != null && pageDescriptions_Thai.Length > currentIndex)
+            {
+                // Thai
+                descriptionText.text = pageDescriptions_Thai[currentIndex];
+            }
+        }
 
         // จัดการสถานะปุ่ม
         if (backButton != null) backButton.interactable = (currentIndex > 0);
@@ -181,7 +208,7 @@ public class GuidedLineController : MonoBehaviour
 
         // 2. จบแล้วทำไงต่อ?
         if (tutorialPanel != null) tutorialPanel.SetActive(false);
-        
+
 
         // if (tutorialType == TutorialType.Home)
         // {
