@@ -51,6 +51,7 @@ public class GameData
     public PlayerDailyQuestSystem dailyQuestData = new PlayerDailyQuestSystem();
     public List<PlayerAchievementData> achievements = new List<PlayerAchievementData>();
     public string currentTitle = "Novice";
+    public bool isTranstale = false; //thai default == false
 
     // Constructor (ตัวสร้างข้อมูลเริ่มต้น)
     public GameData()
@@ -79,6 +80,7 @@ public class GameData
         // Achievement Data
         achievements = new List<PlayerAchievementData>();
         currentTitle = "Novice";
+        isTranstale = false; //thai default == false
     }
 }
 

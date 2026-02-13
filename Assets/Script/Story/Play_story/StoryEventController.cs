@@ -120,9 +120,37 @@ public class StoryEventController : MonoBehaviour
     // ฟังก์ชันรวมสำหรับอัปเดตหน้าจอและเพิ่ม Log
     void UpdateDialogueUI()
     {
-        // 1. ดึงข้อความปัจจุบัน
-        string currentText = string.Join("\n", currentDialogueLines[currentLineIndex].Dialog_Text);
-        // dialogueText.text = currentText;
+        // // 1. ดึงข้อความปัจจุบัน
+        // string currentText = string.Join("\n", currentDialogueLines[currentLineIndex].Dialog_Text);
+        // // dialogueText.text = currentText;
+        // // เช็คว่าต้องแปลภาษาไหม
+        // if (GameManager.Instance.CurrentGameData.selectedStory.isTranstale)
+        // {
+        //     foreach(var line in currentDialogueLines[currentLineIndex].Dialog_Text)
+        //     {
+        //         currentText = LanguageBridge.Get(line);
+        //     }
+        // }
+
+        // 1. สร้าง List ชั่วคราวเพื่อเก็บประโยคที่แปลแล้ว
+        List<string> translatedLines = new List<string>();
+
+        // 2. วนลูปแปลทีละประโยค แล้ว Add ลงใน List
+        if (GameManager.Instance.CurrentGameData.isTranstale)
+        {
+            foreach (var line in currentDialogueLines[currentLineIndex].Dialog_Text)
+            {
+                translatedLines.Add(LanguageBridge.Get(line));
+            }
+        }
+        else
+        {
+            // ถ้าไม่ต้องแปล ก็ใส่ข้อความเดิมลงไปเลย
+            translatedLines.AddRange(currentDialogueLines[currentLineIndex].Dialog_Text);
+        }
+
+        // 3. นำ List ที่แปลครบทุกประโยคแล้ว มาต่อกันด้วย \n (ขึ้นบรรทัดใหม่)
+        string currentText = string.Join("\n", translatedLines);
 
         // 2. ตั้งค่ารูปภาพและชื่อ
         SetupSenderNow(currentDialogueLines, currentLineIndex);

@@ -1,0 +1,4036 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: MyGameTable_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 1c8feb9b110f4814da89f80db20711d5, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 24882643689472
+    m_Localized: Welcome, Sentinel. Your first lesson begins here...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882694021120
+    m_Localized: 'A01: Broken Access Control'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215424
+    m_Localized: "The threat we will study today is IDOR (Insecure Direct Object
+      References) \u2014 when a system \u201Cforgets to verify ownership\u201D of
+      data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215425
+    m_Localized: Those shadows... are they the IDOR threat? How does it find its
+      victims?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215426
+    m_Localized: That is the first step... The threat uses a script called an ID
+      Enumerator. It runs through IDs (101, 102, 103) continuously, searching for
+      vulnerable targets.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215427
+    m_Localized: "When it finds a target, the most basic form of the threat appears:
+      IDOR (Read Data) \u2014 known as the Data Snoop."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215428
+    m_Localized: "It can \u201Cread\u201D or secretly peek at other users\u2019 profiles
+      and confidential information."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215429
+    m_Localized: "Just \u201Cpeeking\u201D is already bad... but that\u2019s all
+      it can do, right?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215430
+    m_Localized: No, Sentinel... That is only the weakest variant. IDOR has far more
+      dangerous forms.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215431
+    m_Localized: "The second variant is IDOR (Write Data) \u2014 the Profile Defacer.
+      It doesn\u2019t just \u201Clook.\u201D It can \u201Cmodify\u201D or \u201Cdelete\u201D
+      other people\u2019s data by intercepting form submissions and altering the
+      hidden ID."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215432
+    m_Localized: "The third variant is IDOR (Perform Action) \u2014 the Account Hijacker.
+      It \u201Cimpersonates\u201D others to perform critical actions, such as transferring
+      money or taking over an account."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215433
+    m_Localized: "There are also variants that can \u201Ccreate\u201D unauthorized
+      ghost data (Unauthorized Creator), and even advanced types that execute attacks
+      without visible results (Blind Executor)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215434
+    m_Localized: "That\u2019s terrifying! Read, write, create, impersonate..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215435
+    m_Localized: How can we defend against such a wide range of threats?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215436
+    m_Localized: "We have multiple layers of defense. The first is to \u201Cobscure\u201D
+      it. We use the GUID Cloak. It transforms simple, predictable IDs like 1, 2,
+      3 into long, random strings (UUIDs), making it impossible for attackers to
+      \u201Cguess\u201D the next victim\u2019s ID."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215437
+    m_Localized: But what if the attacker already knows that random ID?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215438
+    m_Localized: Then the GUID Cloak cannot prevent impersonation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215439
+    m_Localized: You are correct... That is why we need the strongest defense.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215440
+    m_Localized: The Session Guardian.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215441
+    m_Localized: "It verifies every request \u2014 whether reading, writing, or impersonating
+      \u2014 against the true owner stored in the session. If the logged-in ID does
+      not match the ID of the requested data, access is denied."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215442
+    m_Localized: And in emergency situations, we also have a one-time defensive measure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215443
+    m_Localized: "Access Denied \u2014 an interrupt guard that immediately cuts off
+      the connection the moment the system detects an anomaly."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215445
+    m_Localized: Now you understand the core concept of IDOR and how to defend against
+      it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215446
+    m_Localized: 'Lesson Summary:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215447
+    m_Localized: 1. IDOR ranges from data exposure to full impersonation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215448
+    m_Localized: 2. Use hard-to-guess IDs.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215449
+    m_Localized: 3. Always verify user ownership.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215450
+    m_Localized: "You\u2019re ready for the next chapter, Sentinel!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215451
+    m_Localized: The next lesson is Path Traversal...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215452
+    m_Localized: "A threat that uses the symbol `../` to \u201Cclimb\u201D out of
+      restricted folders."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215453
+    m_Localized: "\u201CClimb\u201D? What do you mean?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215454
+    m_Localized: "Exactly. The Dot-Dot-Slash Sneak uses the `../` technique to back
+      out of an allowed directory and access uncontrolled parent directories \u2014
+      like walking backward out of a locked room into a public hallway."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215455
+    m_Localized: So we just create a simple filter that looks for and blocks `../`,
+      right?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215456
+    m_Localized: "That\u2019s a good first line of defense... but it will only stop
+      the basic Dot-Dot-Slash Sneak. This threat is smarter than that \u2014 it \u201Cevolves\u201D
+      to bypass our filters."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215457
+    m_Localized: How can it bypass our Simple Filter if the filter is already looking
+      for `../`?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215458
+    m_Localized: ' '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215459
+    m_Localized: "Because it uses a \u201Csecret coded language\u201D called URL
+      Encoding. In the digital world, special characters like `/` or `.` cannot always
+      travel directly in a URL. They must be translated into codes that begin with
+      `%`."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215460
+    m_Localized: 'For example: The symbol `/` becomes `%2f` and The symbol `.` becomes
+      `%2e`'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215461
+    m_Localized: "The Encoded Infiltrator knows this well. Instead of sending `../`
+      directly, it disguises the command as `%2e%2e%2f` \u2014 which is simply `../`
+      in encoded form."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215462
+    m_Localized: "Our Simple Filter only looks for `../`. When it sees `%2e%2e%2f`,
+      it assumes it\u2019s safe and lets it pass. But once it reaches the server,
+      the code is decoded back into its real form \u2014 and the attack succeeds."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409728
+    m_Localized: "That\u2019s devious! Just disguising it is enough to get through!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409729
+    m_Localized: Wait... what about a Nested Encoder that double-encodes?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409730
+    m_Localized: "That\u2019s an advanced evolution. It knows modern defenses may
+      decode input once \u2014 so it encodes it twice."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409731
+    m_Localized: "It knows that the \u201Csecret code\u201D for `%` is `%25`. So
+      it takes `%2f` (which means `/`) and encodes it again, turning it into `%252f`."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409732
+    m_Localized: "When the defense decodes it the first time, `%252f` becomes `%2f`.
+      The filter thinks it\u2019s safe. But when it reaches the server, it gets decoded
+      again and finally becomes `/`. The attack succeeds."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409733
+    m_Localized: "Some attackers don\u2019t \u201Cclimb\u201D at all. They use an
+      Absolute Path \u2014 the Absolute Path Invoker. It shouts the full address
+      directly (for example, `/etc/passwd`), hoping the defense system is naive enough
+      to only look for `../`."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409734
+    m_Localized: This is complicated! How do we defend against layered disguises
+      like this?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409735
+    m_Localized: We must use smarter defenses. To handle the Encoded Infiltrator,
+      we deploy the Canonicalizer Shield.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409736
+    m_Localized: "It decodes all incoming data back to its true form \u2014 the Canonical
+      Form \u2014 before passing it to the filter for inspection. To defeat the Nested
+      Encoder, we use a Recursive Normalizer that repeatedly decodes input until
+      it is truly clean."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409737
+    m_Localized: "To defend against Absolute Path attacks, we use the Root Jail.
+      It confines all processes within a designated directory. Even if an attacker
+      uses an Absolute Path, they can only see files inside this \u201Cjail\u201D
+      \u2014 never the real system files."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409738
+    m_Localized: And of course, the strongest defense is the Secure Path Validator.
+      It ignores whatever path the user sends and checks only against a trusted Allowlist.
+      If the request is not on the list, it is immediately denied.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409739
+    m_Localized: "Path Traversal also has advanced techniques \u2014 such as the
+      Null-Byte Assassin, which uses a null character to prematurely terminate file
+      extension checks..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409740
+    m_Localized: "Or even the Decoy File Trap \u2014 where we plant a fake file to
+      lure attackers, and the system locks access immediately when it is touched."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409741
+    m_Localized: 1. Never trust user input.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409742
+    m_Localized: 2. Decode and normalize before validating.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409743
+    m_Localized: 3. Use an allowlist (only permit explicitly safe input).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409744
+    m_Localized: "Sentinel, the final threat of A01... This one doesn\u2019t attack
+      the front door. Instead, it tries to \u201Cdiscover\u201D doors that developers
+      have \u201Chidden,\u201D believing no one will ever find them."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409745
+    m_Localized: This threat is called Forced Browsing, and the tool it uses is the
+      Directory Brute-Forcer. It continuously guesses URL names (such as /admin,
+      /backup, /config) until it finds one that exists.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409746
+    m_Localized: "Wait, Oracle... Even if it finds the door, wouldn\u2019t it still
+      be locked? We\u2019re not Admins, after all."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409747
+    m_Localized: 'That is the sharpest question... and that is where the real threat
+      appears: Missing Function-Level Access Control (MFLAC).'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409748
+    m_Localized: "The truth is... the door was never locked. The developer believed
+      \u201Chiding\u201D it was enough. They forgot to put a lock on the door \u2014
+      no proper authorization check was implemented."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409749
+    m_Localized: "So when the Directory Brute-Forcer discovers the door, another
+      threat \u2014 the Admin Gate-Crasher \u2014 simply walks right through and
+      takes full administrative privileges."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409750
+    m_Localized: "So merely \u201Chiding\u201D a door is never truly secure!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409751
+    m_Localized: "Correct. The best defense is not to \u201Chide,\u201D but to \u201Clock
+      every door.\u201D That\u2019s the role of the Warden of Roles. It stands guard
+      at every doorway and verifies the user\u2019s role before granting access."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409752
+    m_Localized: "And in emergency situations, we enforce a Deny by Default Policy
+      \u2014 the strict rule that says: If access is not explicitly allowed, it is
+      automatically denied."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409753
+    m_Localized: And of course, our highest level of protection is the Privilege
+      Checkpoint, which verifies every action, not just every door.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409754
+    m_Localized: 'Now you understand the complete attack chain:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409755
+    m_Localized: "1. Forced Browsing \u2014 Access hidden pages."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409756
+    m_Localized: "2. Missing Access Control \u2014 No restrictions."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409757
+    m_Localized: "3. Warden of Roles \u2014 Enforce roles."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409758
+    m_Localized: You now fully understand A01...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409759
+    m_Localized: "Let\u2019s begin the test, Sentinel."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409760
+    m_Localized: A new lesson begins, Sentinel...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409761
+    m_Localized: "A02: Cryptographic Failures \u2014 failures in protecting secrets
+      properly."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409762
+    m_Localized: What is that alarm signal, Oracle?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409763
+    m_Localized: "It seems the data isn\u2019t being stolen\u2026 it\u2019s leaking
+      out on its own."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409764
+    m_Localized: Correct. That is an unencrypted http:// data stream. Sending sensitive
+      information through it is like writing secrets on a postcard and mailing it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409765
+    m_Localized: "Our first threat doesn\u2019t need to do anything complicated.
+      The HTTP Sniffer simply waits in the middle of the path and secretly \u201Creads\u201D
+      every postcard that passes by \u2014 learning everything in your hand."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409766
+    m_Localized: "It\u2019s that easy? Then we just shouldn\u2019t send postcards.
+      We should use a \u201Cmobile safe\u201D \u2014 https://, right?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409767
+    m_Localized: "Exactly. Our fundamental defense is the TLS Encryption Tunnel.
+      It\u2019s the secure safe (HTTPS) that wraps our data, preventing the HTTP
+      Sniffer from peeking inside."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409768
+    m_Localized: "Great! So once we have the TLS Encryption Tunnel, we\u2019re safe."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409769
+    m_Localized: Not so fast...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409770
+    m_Localized: What if the threat tricks you into not using the safe at all?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409771
+    m_Localized: "That is the second threat: the SSL Stripper. It stands between
+      you and the server. When you request the \u201Csafe\u201D (HTTPS),"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409772
+    m_Localized: "it secretly tells the server, \u201CI\u2019ll use the safe,\u201D
+      but turns back to you and says, \u201CThe server said a postcard (HTTP) is
+      fine.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409773
+    m_Localized: "It literally strips away your protection. (Regarding GUID Cloak
+      \u2014 that defense belongs to access control protection, not cryptographic
+      transmission security.)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409774
+    m_Localized: 'Now you understand how to protect data in transit:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409775
+    m_Localized: "1. Use HTTPS \u2014 Prevent eavesdropping."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409776
+    m_Localized: "2. Enable HSTS \u2014 Stop SSL stripping."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409777
+    m_Localized: "3. Strong ciphers \u2014 Use secure configurations."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409778
+    m_Localized: "Sentinel, our TLS Shield is performing perfectly. Data in transit
+      is secure\u2026 But this time, the alarm is coming from inside our data vault
+      itself."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409779
+    m_Localized: Does that mean an intruder is already inside? Are our secrets safe?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409780
+    m_Localized: That is the critical question. This lesson is about Insecure Data
+      at Rest. The real test is what an attacker sees after opening our vault.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409781
+    m_Localized: When an intruder gains access to the database, a threat known as
+      the Database Peeker immediately gets to work.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409782
+    m_Localized: "If we store sensitive data \u2014 such as passwords \u2014 in plain
+      text, it\u2019s like writing all our secrets in an unlocked notebook."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409783
+    m_Localized: What would the Database Peeker do with such an open notebook?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409784
+    m_Localized: "It launches a Database Dump attack \u2014 copying all readable
+      sensitive data from the database at once, instantly obtaining every secret."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409785
+    m_Localized: Then we must never store secrets in plain text! How do we defend
+      against this?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409786
+    m_Localized: We use the Crypto-Forge, known technically as a Secure Hash Protocol.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409787
+    m_Localized: This is a one-way transformation process that crushes plain-text
+      passwords into unreadable hash values. Even if an attacker steals the hash,
+      they cannot reverse it back into the original password.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409788
+    m_Localized: "With this method, even if the Database Peeker performs a dump,
+      all they obtain are unreadable hash values \u2014 not the real secrets."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409789
+    m_Localized: Now our stored data is secure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409790
+    m_Localized: "1. No plain text \u2014 Don\u2019t store sensitive data openly."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409791
+    m_Localized: "2. Use hashing \u2014 Store irreversible hash values."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409792
+    m_Localized: The next lesson awaits you. Prepare yourself, Sentinel.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409793
+    m_Localized: "We\u2019ve learned how to protect data in transit and at rest\u2026
+      but this alarm is coming from the data graveyard \u2014 where we store legacy
+      data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409794
+    m_Localized: "Old data? But it was already hashed, wasn\u2019t it? Even if the
+      Database Peeker steals it, it\u2019s unreadable."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409795
+    m_Localized: "Yes\u2026 but it was hashed using algorithms created decades ago.
+      In the cyber world, a forge that was once unbreakable can become nothing more
+      than a rusty lock over time."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409796
+    m_Localized: "The first threat is MD5 Brute-Force \u2014 a cracking engine built
+      specifically to overwhelm MD5 hashing."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409797
+    m_Localized: MD5 is old and too fast. Modern computers are powerful enough to
+      attempt billions of guesses per second until they find a match.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409798
+    m_Localized: "Exactly. That\u2019s why it falls almost immediately."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409799
+    m_Localized: "Then we should use SHA-1 instead \u2014 it\u2019s newer than MD5."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409800
+    m_Localized: "Better\u2026 but SHA-1 is also obsolete. It can be attacked in
+      two ways. The first is the Legacy Cracker, which can still brute-force it given
+      enough time and computing power."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409801
+    m_Localized: "The second \u2014 more dangerous \u2014 is the SHA-1 Collision
+      Master. It doesn\u2019t try to reverse the hash. Instead, it finds collisions."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409802
+    m_Localized: "Imagine creating a fake key that doesn\u2019t look like the original,
+      yet opens the same SHA-1 lock perfectly. This enables forgery, not just password
+      cracking."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409803
+    m_Localized: If old hashes are broken, how do we defend ourselves?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409804
+    m_Localized: We adopt a Modern Hash Standard, such as bcrypt or Argon2. These
+      are not ordinary forges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409805
+    m_Localized: They are safes with a built-in time-delay mechanism. They are intentionally
+      designed to be slow. Even the fastest computers must spend measurable time
+      computing each hash.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409806
+    m_Localized: "When a hacker attempts billions of brute-force guesses, what once
+      took a second now stretches into years \u2014 even decades. That is the strongest
+      defense against brute-force attacks."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409807
+    m_Localized: "Now all our data \u2014 past and present \u2014 is protected by
+      modern security standards."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409808
+    m_Localized: 1. Old hashes become insecure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409809
+    m_Localized: 2. Fast hashes enable brute-force.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409810
+    m_Localized: 3. Use slow hashes (bcrypt, Argon2).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409811
+    m_Localized: "Sentinel, our passwords are now stored as irreversible \u201Calloys\u201D
+      \u2014 hashes. But what happens if an intruder possesses a \u201Cdictionary\u201D
+      that can translate those alloys back into pure metal?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409812
+    m_Localized: "Wait, Oracle! I thought you said hashes can\u2019t be reversed!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409813
+    m_Localized: "They can\u2019t be reversed directly\u2026 but attackers can pre-compute
+      them. This threat is known as the Rainbow Table Fiend."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409814
+    m_Localized: "Imagine this: if we add no extra protection, every user who chooses
+      the password \u201C123456\u201D will produce the exact same hash \u2014 for
+      example, e10adc39.... Identical password, identical hash."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409815
+    m_Localized: "The Rainbow Table Fiend carries a massive precomputed dictionary
+      of common passwords and their hashes. It simply looks up e10adc39... in its
+      table and instantly learns it corresponds to \u201C123456\u201D \u2014 no brute-force
+      required."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409816
+    m_Localized: "That\u2019s basically cheating! How do we defend against such a
+      dictionary if identical passwords create identical hashes?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409817
+    m_Localized: We make every hash unique through a technique called Salting. Our
+      primary defense is the Salting Field.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409818
+    m_Localized: "A salt is a unique, random value added to each password before
+      hashing \u2014 like adding a secret ingredient before placing it into the forge."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409819
+    m_Localized: 'For example:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409820
+    m_Localized: "User A: \u201C123456\u201D + \u201CSalt_A\u201D \u2192 Hash_Y"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409821
+    m_Localized: "User B: \u201C123456\u201D + \u201CSalt_B\u201D \u2192 Hash_Z"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409822
+    m_Localized: "Now, even though both users chose the same password, their hashes
+      look completely different. The Rainbow Table Fiend\u2019s dictionary becomes
+      useless."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409823
+    m_Localized: Good! And what about the Pepper Vault?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409824
+    m_Localized: "Pepper is an advanced layer of protection. It is a master secret
+      added before hashing \u2014 similar to salt \u2014 but unlike salt, the pepper
+      is stored separately from the database, in a secure location."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409825
+    m_Localized: 'Now you understand complete hash protection:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409826
+    m_Localized: 1. Hashing alone is not enough.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409827
+    m_Localized: 2. Salt ensures hashes are unique.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409828
+    m_Localized: 3. Pepper is a separate master secret for maximum security.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409829
+    m_Localized: The final lesson of A02 awaits you. Prepare yourself, Sentinel.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409830
+    m_Localized: "You\u2019ve learned to use modern hashing and salting\u2026 but
+      there is another side of A02: Key Management and the misuse of encryption modes."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409831
+    m_Localized: "That safe looks modern\u2026 but why can I still see a pattern
+      inside?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409832
+    m_Localized: "That\u2019s the weakness. Even if we use a strong cipher, choosing
+      a weak encryption mode like ECB causes identical plaintext blocks to produce
+      identical ciphertext blocks."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409833
+    m_Localized: "The ECB Mode Cyclops doesn\u2019t need to break the lock. It simply
+      observes repeating patterns in the encrypted data \u2014 and that can be enough
+      to infer what lies inside."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409834
+    m_Localized: Then we must change the encryption mode! We should use AES-GCM Guardian,
+      a secure mode that prevents pattern leakage, right?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409835
+    m_Localized: Correct. That fixes the lock itself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409836
+    m_Localized: "But what if we use the strongest lock in the world\u2026 and then
+      leave the key under the doormat?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409837
+    m_Localized: What do you mean?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409838
+    m_Localized: "The Hardcode Hunter specializes in reading the system\u2019s blueprints
+      \u2014 the source code. It searches for encryption keys that developers accidentally
+      hardcode directly into the application."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409839
+    m_Localized: "And if developers are slightly more cautious, they might remove
+      the key from the code \u2014 only to store it as plain text inside configuration
+      files (.env, .config) on the server."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409840
+    m_Localized: "That\u2019s just moving the key from under the doormat into an
+      unlocked drawer. And that\u2019s where the Config File Raider strikes."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409841
+    m_Localized: "This is a disaster. We\u2019re hiding the key in the first place
+      attackers look! So where should we store it?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409842
+    m_Localized: 'Here is the most critical lesson of A02: Never store the key alongside
+      the data it protects.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409843
+    m_Localized: "We deploy the ultimate defense: the Secure Key Vault. It is a separate,
+      dedicated vault built specifically to store encryption keys \u2014 isolated
+      from the main system."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409844
+    m_Localized: "Our application never directly \u201Cknows\u201D the key. It can
+      only request the Vault to perform encryption or decryption on its behalf. Even
+      if the server is compromised, the keys remain protected inside the Vault."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409845
+    m_Localized: "And if a key is ever exposed, we have an emergency plan: Emergency
+      Key Rotation \u2014 generating new keys immediately \u2014 along with cryptographic
+      analysis to assess potential impact."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409846
+    m_Localized: 'Now you understand complete encryption security:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409847
+    m_Localized: 1. Use the correct encryption mode, such as AES-GCM.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409848
+    m_Localized: 2. Never store keys in source code.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409849
+    m_Localized: 3. Separate keys from the data they protect.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409850
+    m_Localized: You have mastered A02.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409851
+    m_Localized: "It\u2019s time for the final test, Sentinel."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409852
+    m_Localized: "A new lesson begins, Sentinel\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409853
+    m_Localized: "A03: Injection \u2014 one of the most dangerous attack types. It
+      works by \u201Cinjecting\u201D malicious commands into otherwise normal requests."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409854
+    m_Localized: Everything looks peaceful, Oracle. The librarian simply receives
+      a request slip and retrieves the information.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409855
+    m_Localized: "That\u2019s what it looks like. But this threat operates at the
+      level of the language we use to speak with the librarian \u2014 SQL."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409856
+    m_Localized: The first threat is the Query String Manipulator, representing SQL
+      Injection (SQLi).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409857
+    m_Localized: How does it work?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409858
+    m_Localized: "Imagine a login page. The system asks the librarian: \u201CFind
+      the user named Sentinel with password 1234.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409859
+    m_Localized: "But the Query String Manipulator injects malicious input into the
+      username field. It tells the librarian: \u201CFind the user named Sentinel\u2026
+      OR \u20181\u2019=\u20181\u2019.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409860
+    m_Localized: "A literal-minded librarian evaluates \u20181\u2019=\u20181\u2019
+      as always true. As a result, access is granted \u2014 even without the correct
+      password."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409861
+    m_Localized: "So it just bypasses the login? Even then, it still can\u2019t access
+      secret data, right?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409862
+    m_Localized: "That\u2019s when its evolved form appears \u2014 the Database Devourer."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409863
+    m_Localized: "It doesn\u2019t care about login pages. It uses a technique called
+      UNION SELECT to extract data from other tables \u2014 user records, passwords,
+      credit card details \u2014 all in a single attack."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409864
+    m_Localized: "That\u2019s terrifying. How do we stop something that clever?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409865
+    m_Localized: The strongest defense is the Parameterized Query Guard.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409866
+    m_Localized: "Think of it as a two-tray system. The librarian keeps one tray
+      for commands (e.g., \u201CFind user where name = ? and password = ?\u201D)
+      and a separate tray for data (e.g., \u201CSentinel\u201D OR \u201C1\u201D=\u201C1\u201D)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409867
+    m_Localized: "Even if an attacker tries to sneak malicious code into the data
+      tray, the librarian treats it strictly as data \u2014 just a strange-looking
+      username \u2014 never as executable instructions. This is the principle of
+      separating code from data, and it is the most effective defense against SQL
+      injection."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409868
+    m_Localized: We may also deploy broader defenses, such as a Web Application Firewall
+      (WAF) to detect known attack patterns. However, attackers can attempt payload
+      obfuscation to disguise their malicious input and bypass pattern-based filters.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409869
+    m_Localized: Now our librarian is protected from poisoned request slips.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409870
+    m_Localized: "1. Never trust input \u2014 It may contain hidden commands."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409871
+    m_Localized: 2. Watch for data extraction techniques like UNION SELECT.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409872
+    m_Localized: "3. Use parameterized queries \u2014 Separate code from data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409873
+    m_Localized: "The next lesson is Cross-Site Scripting (XSS)\u2026 This threat
+      does not steal data directly from the database. Instead, it \u201Cinjects\u201D
+      malicious scripts into the browser of other users."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409874
+    m_Localized: Like those annoying pop-up windows?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409875
+    m_Localized: "Exactly. That\u2019s the most basic form: the Reflected Script-Kiddie
+      \u2014 a non-persistent attack."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409876
+    m_Localized: "It tricks users into clicking a malicious link (for example: .../search?q=<script>...).
+      When the victim clicks it, a poorly secured server \u201Creflects\u201D the
+      script back in the response, and the victim\u2019s browser immediately executes
+      it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409877
+    m_Localized: "So if we just \u201Cdon\u2019t click suspicious links,\u201D we\u2019re
+      safe?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409878
+    m_Localized: "That only protects against Reflected XSS. But what if the script
+      doesn\u2019t come from a link \u2014 and is instead permanently embedded in
+      the webpage itself?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409879
+    m_Localized: 'That is the most dangerous variant: the Stored Script Worm (persistent
+      XSS).'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409880
+    m_Localized: "It injects malicious code directly into the database \u2014 for
+      example, inside a comment field. Whenever anyone views that page, the stored
+      script executes automatically. It attacks every visitor \u2014 and can even
+      spread itself to other users like a worm."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409881
+    m_Localized: "That\u2019s terrifying. How do we stop an invisible worm that\u2019s
+      already embedded in the page?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409882
+    m_Localized: Simple filtering (like blocking <script>) is not enough. Attackers
+      can obfuscate their payloads to bypass naive filters.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409883
+    m_Localized: 'We must deploy a stronger defense: Content Security Policy (CSP).'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409884
+    m_Localized: "CSP is a security policy sent to the browser that says: \u201COnly
+      execute scripts that come from my-safe-domain.com.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409885
+    m_Localized: "Even if a Stored Script Worm is injected into a comment, the browser
+      will refuse to execute it \u2014 because it does not come from a trusted source
+      defined in our whitelist. CSP acts as a powerful guard that can prevent many
+      forms of XSS from executing."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409886
+    m_Localized: Now our message board is secure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409887
+    m_Localized: "1. Reflected XSS \u2014 Malicious link triggers script."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409888
+    m_Localized: "2. Stored XSS \u2014 Script saved in database, hits all users."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409889
+    m_Localized: "3. CSP \u2014 Strong defense against script execution."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409890
+    m_Localized: "Sentinel, we\u2019ve secured the database (SQLi) and the user\u2019s
+      browser (XSS)\u2026 but the final Injection threat is targeting the true heart
+      of the system \u2014 the Operating System."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409891
+    m_Localized: The operating system? That controls everything! What kind of threat
+      can go that deep?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409892
+    m_Localized: "This is the most severe form of injection. It doesn\u2019t just
+      request or steal data \u2014 it commands the server to execute arbitrary system-level
+      instructions. This is OS Command Injection."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409893
+    m_Localized: "Imagine our web application as a receptionist, and the operating
+      system as a powerful emergency broadcast system \u2014 normally accessible
+      only to administrators."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409894
+    m_Localized: "The first threat is the Ping Abuser. It exploits harmless-looking
+      features like a \u201CPing\u201D function (used to check whether another server
+      is online)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409895
+    m_Localized: "It hands the receptionist a note saying: \u201CPlease ping 8.8.8.8.\u201D
+      But secretly appends a second command using symbols like &&, for example: ping
+      8.8.8.8 && whoami"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409896
+    m_Localized: It is hijacking a safe command to execute its own malicious instruction.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409897
+    m_Localized: "Exactly. And that\u2019s just asking \u201Cwho am I?\u201D If it
+      evolves into the Root Shell Dragon, it creates a full reverse shell. It no
+      longer just sends commands \u2014 it completely takes control of the server,
+      becoming the system operator."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409898
+    m_Localized: How do we stop this command hijacking?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409899
+    m_Localized: We must teach the receptionist to filter dangerous input. We deploy
+      an Input Sanitizer (Shell Filter).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409900
+    m_Localized: "This defense filters and removes special characters used to chain
+      commands \u2014 such as &, |, and ; \u2014 from user input."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409901
+    m_Localized: 'When the Ping Abuser tries to submit: ping 8.8.8.8 && whoami, The
+      sanitizer strips out && whoami, allowing only the safe ping command to execute.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409902
+    m_Localized: Now our emergency broadcast system is protected from hijacking.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409903
+    m_Localized: 1. Command Injection targets the operating system itself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409904
+    m_Localized: 2. Attackers append malicious commands to legitimate ones.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409905
+    m_Localized: 3. Sanitize input and avoid direct shell execution.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409906
+    m_Localized: "The final lesson of A03\u2026 XXE (XML External Entity)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409907
+    m_Localized: "This threat targets one of the oldest and most rigid systems \u2014
+      the XML Archive."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604032
+    m_Localized: "XML? It looks structured and orderly, Oracle. It doesn\u2019t seem
+      vulnerable. Its strictness is exactly the weakness. The system allows users
+      to submit XML documents, and the automated librarian \u2014 the XML Parser
+      \u2014 is designed to faithfully process every instruction inside the document\u2026
+      including dangerous \u201Crequest slips\u201D known as External Entities."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604033
+    m_Localized: "This threat is the Local File Reader (XXE). It doesn\u2019t inject
+      commands \u2014 it abuses XML\u2019s built-in features to steal data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604034
+    m_Localized: "Imagine an attacker submits an XML document. Hidden inside it is
+      a special external entity declaration that says: \u201CFor the value of &mysecret;,
+      retrieve data from file:///etc/passwd.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604035
+    m_Localized: When the overly obedient XML parser processes this document.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604036
+    m_Localized: "It follows the instruction without question. It reads the /etc/passwd
+      file \u2014 a sensitive system file \u2014 and includes its contents in the
+      response sent back to the attacker."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604037
+    m_Localized: "Unbelievable. The system is tricked into reading its own secret
+      files and handing them over. That\u2019s like forcing it to reveal the opponent\u2019s
+      deck."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604038
+    m_Localized: How do we stop a parser that is too obedient?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604039
+    m_Localized: Simple. We change its rules.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604040
+    m_Localized: We implement XML Parser Hardening.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604041
+    m_Localized: "This means disabling the processing of External Entities and unnecessary
+      DOCTYPE declarations entirely. In plain terms, we tell the parser: \u201CFrom
+      now on, ignore all external entity requests.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604042
+    m_Localized: Once that feature is disabled, the Local File Reader can no longer
+      trick the system into reading local files. The attack becomes ineffective.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604043
+    m_Localized: "Like other injection attacks, XXE payloads can also be obfuscated
+      to bypass pattern-based defenses such as WAFs. That\u2019s why secure parser
+      configuration is essential."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604044
+    m_Localized: Excellent. Now our ancient archive is secure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604045
+    m_Localized: '1. Target: XXE attacks vulnerable XML parsers.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604046
+    m_Localized: '2. Technique: External entities to read system files.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604047
+    m_Localized: '3. Defense: Disable external entities and harden parser settings.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882706604048
+    m_Localized: You have now completed A03, Sentinel.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769856
+    m_Localized: "Which tool did Oracle say the threat uses to \u201Chunt down target
+      IDs\u201D?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769857
+    m_Localized: (A) Session Guardian
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769858
+    m_Localized: (B) ID Enumerator
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769859
+    m_Localized: (C) Account Hijacker
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769860
+    m_Localized: (D) GUID Cloak
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769861
+    m_Localized: What does the most basic IDOR variant (Data Snoop) do?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769862
+    m_Localized: "(A) \u201CRead\u201D or \u201Cpeek at\u201D other people\u2019s
+      data"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769863
+    m_Localized: "(B) \u201CModify\u201D or \u201Cdelete\u201D other people\u2019s
+      data"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769864
+    m_Localized: "(C) \u201CCreate\u201D new data in someone else\u2019s account"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769865
+    m_Localized: "(D) \u201CImpersonate\u201D to transfer money"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769866
+    m_Localized: "Which threat did Oracle describe as the \u201Cmost dangerous\u201D
+      because it can impersonate users and perform transactions?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769867
+    m_Localized: (A) Data Snoop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769868
+    m_Localized: (B) Profile Defacer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769869
+    m_Localized: (C) Blind Executor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769870
+    m_Localized: (D) Account Hijacker
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769871
+    m_Localized: How does the GUID Cloak defense work?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769872
+    m_Localized: (A) Verifies data ownership
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769873
+    m_Localized: (B) Transforms sequential IDs (1, 2, 3) into hard-to-guess random
+      identifiers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769874
+    m_Localized: (C) Verifies user roles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769875
+    m_Localized: (D) Immediately interrupts the attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769876
+    m_Localized: "Which defense did Oracle call the \u201Cstrongest\u201D because
+      it checks every request against the true owner in the session?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769877
+    m_Localized: (A) Access Denied
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769878
+    m_Localized: (B) GUID Cloak
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769879
+    m_Localized: (C) Session Guardian
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769880
+    m_Localized: (D) ID Enumerator
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769881
+    m_Localized: "What symbol does the basic \u201CPath Traversal\u201D threat (Dot-Dot-Slash
+      Sneak) use in its attack?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769882
+    m_Localized: (A) ' OR 1=1 --
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769883
+    m_Localized: (B)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769884
+    m_Localized: (C) ../
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769885
+    m_Localized: (D) )(uid=*)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769886
+    m_Localized: How does the Encoded Infiltrator bypass a Simple Filter?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769887
+    m_Localized: (A) By guessing the URL directly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769888
+    m_Localized: "(B) By \u201Cencoding\u201D (URL Encoding) the ../ sequence into
+      %2e%2e%2f"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769889
+    m_Localized: (C) By impersonating an Admin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769890
+    m_Localized: (D) By using a null-byte character
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769891
+    m_Localized: "Which defense \u201Cdecodes\u201D all incoming input back to its
+      \u201Ctrue form\u201D before validating it?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769892
+    m_Localized: (A) Root Jail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769893
+    m_Localized: (B) Simple Filter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769894
+    m_Localized: (C) Canonicalizer Shield
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769895
+    m_Localized: (D) Decoy File Trap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769896
+    m_Localized: "Which defense did Oracle call the \u201Cbest\u201D because it uses
+      an Allowlist approach?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769897
+    m_Localized: (A) Recursive Normalizer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769898
+    m_Localized: (B) Secure Path Validator
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769899
+    m_Localized: (C) Root Jail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769900
+    m_Localized: (D) Null-Byte Assassin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769901
+    m_Localized: "Which threat uses \u201Cdouble encoding\u201D (e.g., %252f) to
+      trick systems that only decode input once?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769902
+    m_Localized: (A) Absolute Path Invoker
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769903
+    m_Localized: (B) Encoded Infiltrator
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769904
+    m_Localized: (C) Nested Encoder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769905
+    m_Localized: "What method does the \u201CForced Browsing\u201D threat (Directory
+      Brute-Forcer) use to attack a system?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769906
+    m_Localized: (A) Injecting SQL commands
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769907
+    m_Localized: (B) Using double encoding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769908
+    m_Localized: (C) Randomly guessing hidden URLs (e.g., /admin)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769909
+    m_Localized: (D) Changing the ID in the URL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769910
+    m_Localized: "What is the vulnerability \u201CMissing Function-Level Access Control\u201D?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769911
+    m_Localized: (A) The system runs too slowly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769912
+    m_Localized: "(B) The system \u201Cforgets to lock the door\u201D or \u201Cforgets
+      to check authorization\u201D on important hidden functions"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769913
+    m_Localized: (C) The system uses outdated encryption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769914
+    m_Localized: (D) The system displays too many error messages
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769915
+    m_Localized: "Why did Oracle explain that simply \u201Chiding\u201D a door (Security
+      through Obscurity) is not secure?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769916
+    m_Localized: (A) Because regular users might accidentally find it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769917
+    m_Localized: (B) Because it makes the system slower
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769918
+    m_Localized: "(C) Because attackers can use \u201CForced Browsing\u201D to eventually
+      discover it"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769919
+    m_Localized: (D) Because it cannot prevent XSS attacks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769920
+    m_Localized: How does the strongest defense in this lesson (Warden of Roles)
+      work?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769921
+    m_Localized: (A) Changing the Admin page URL every day
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769922
+    m_Localized: (B) Hiding the Admin door as deeply as possible
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769923
+    m_Localized: "(C) Checking the user\u2019s \u201Crole\u201D at \u201Cevery door\u201D
+      (every function)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769924
+    m_Localized: (D) Deleting the Admin page entirely
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769925
+    m_Localized: What is the purpose of the Deny by Default Policy guard?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769926
+    m_Localized: (A) To serve as an emergency safeguard that immediately enforces
+      the strictest rules
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769927
+    m_Localized: (B) To search for hidden doors
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769928
+    m_Localized: (C) To take over administrator privileges
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769929
+    m_Localized: (D) To impersonate another user
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769930
+    m_Localized: "Which threat did Oracle compare to \u201Csecretly reading a postcard\u201D
+      (HTTP)?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769931
+    m_Localized: (A) SSL Stripper
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769932
+    m_Localized: (B) HTTP Sniffer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769933
+    m_Localized: (C) Weak Cipher Negotiator
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769934
+    m_Localized: (D) Data Snoop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769935
+    m_Localized: What is the main purpose of the TLS Encryption Tunnel (or HTTPS)?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769936
+    m_Localized: (A) To prevent HTTP Sniffers from secretly reading data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769937
+    m_Localized: (B) To prevent SQL Injectors
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769938
+    m_Localized: (C) To prevent Path Traversal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769939
+    m_Localized: (D) To prevent URL guessing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769940
+    m_Localized: Which threat tricks the browser into switching from HTTPS (secure)
+      to HTTP (insecure)?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769941
+    m_Localized: (A) HTTP Sniffer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769942
+    m_Localized: (B) Weak Cipher Negotiator
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769943
+    m_Localized: (C) SSL Stripper
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769944
+    m_Localized: (D) Admin Gate-Crasher
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769945
+    m_Localized: "Which defense is used to \u201Cforce\u201D the browser to always
+      use HTTPS in order to counter SSL Stripper?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769946
+    m_Localized: (A) HSTS Protocol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769947
+    m_Localized: (B) TLS Encryption Tunnel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769948
+    m_Localized: (C) Simple Filter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769949
+    m_Localized: How does Weak Cipher Negotiator attack a system?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769950
+    m_Localized: (A) It reads plain text data directly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769951
+    m_Localized: "(B) It removes the \u201CS\u201D from HTTPS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769952
+    m_Localized: "(C) It forces the server to use \u201Colder, weaker encryption\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769953
+    m_Localized: (D) It guesses user IDs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769954
+    m_Localized: What is the main threat in this lesson (Insecure Data at Rest)?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769955
+    m_Localized: (A) Transmitting data over an insecure network
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769956
+    m_Localized: (B) Storing sensitive data, such as passwords, in plain text in
+      the database
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769957
+    m_Localized: (C) Forcing the server to use outdated encryption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769958
+    m_Localized: (D) Guessing the Admin page URL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769959
+    m_Localized: What is a Database Dump attack?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769960
+    m_Localized: "(A) \u201CCopying\u201D readable sensitive data out of the database"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769961
+    m_Localized: "(B) \u201CDeleting\u201D the entire database"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769962
+    m_Localized: "(C) \u201CModifying\u201D data in the database"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769963
+    m_Localized: "(D) \u201CChanging\u201D user passwords"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769964
+    m_Localized: "How does the Secure Hash Protocol, which Oracle calls the \u201Cpassword
+      forge,\u201D work?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769965
+    m_Localized: (A) It creates a secure tunnel for data transmission
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769966
+    m_Localized: "(B) It \u201Ccrushes\u201D or transforms plain text passwords into
+      irreversible hashes"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769967
+    m_Localized: (C) It forces the browser to always use HTTPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769968
+    m_Localized: (D) It verifies data ownership
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769969
+    m_Localized: What is the greatest benefit of using the Secure Hash Protocol?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769970
+    m_Localized: (A) It prevents attackers from breaching the database
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769971
+    m_Localized: (B) Even if attackers breach the database, the stolen data (hashes)
+      is useless
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769972
+    m_Localized: (C) It makes data transmission faster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769973
+    m_Localized: (D) It allows users to create simple passwords
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769974
+    m_Localized: "Which threat did Oracle describe as acting like a \u201Cspy\u201D
+      that reads plain text data in the database?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769975
+    m_Localized: (B) Database Peeker
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769976
+    m_Localized: (D) Legacy Cracker
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769977
+    m_Localized: What is the main issue Oracle discussed in this lesson?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769978
+    m_Localized: (A) Not having a firewall in place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769979
+    m_Localized: (B) Storing passwords in plain text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769980
+    m_Localized: (C) Using outdated and weak hashing algorithms such as MD5 and SHA1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769981
+    m_Localized: (D) Being attacked through an API
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769982
+    m_Localized: How does the MD5 Brute-Forcer threat attack the system?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769983
+    m_Localized: (A) By forging keys
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769984
+    m_Localized: "(B) By using the speed of modern computers to \u201Cbrute-force\u201D
+      passwords until the correct one is found"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769985
+    m_Localized: (C) By intercepting data in transit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769986
+    m_Localized: (D) By creating fake user accounts
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769987
+    m_Localized: What does the SHA1 Collision Master do?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769988
+    m_Localized: (A) It brute-forces faster than the MD5 Brute-Forcer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769989
+    m_Localized: "(B) It finds \u201Ccollisions\u201D or creates forged keys to tamper
+      with data"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769990
+    m_Localized: (C) It decrypts plain text data in transit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769991
+    m_Localized: (D) It attacks by guessing user IDs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769992
+    m_Localized: How do Modern Hash Standards (such as bcrypt) defend against these
+      attacks?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769993
+    m_Localized: (A) They are intentionally designed to be slow to resist brute-force
+      attacks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769994
+    m_Localized: (B) They create a secure tunnel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769995
+    m_Localized: (C) They verify data ownership
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769996
+    m_Localized: (D) They randomize IDs to make them harder to guess
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769997
+    m_Localized: "Which algorithms did Oracle describe as \u201Crusty keys\u201D
+      (outdated)?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769998
+    m_Localized: (A) bcrypt and Argon2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731769999
+    m_Localized: (B) MD5 and SHA1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770000
+    m_Localized: (C) TLS and HSTS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770001
+    m_Localized: (D) SQL and LDAP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770002
+    m_Localized: How does the Rainbow Table Fiend attack the system?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770003
+    m_Localized: (A) It brute-forces passwords in real time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770004
+    m_Localized: (B) It uses a precomputed hash dictionary to look up answers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770005
+    m_Localized: (C) It intercepts data in transit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770006
+    m_Localized: (D) It forces the use of outdated encryption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770007
+    m_Localized: How does the Salting Field help prevent Rainbow Table attacks?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770008
+    m_Localized: (A) It makes hashing faster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770009
+    m_Localized: (B) It ensures identical passwords produce different-looking hashes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770010
+    m_Localized: (C) It prevents attackers from accessing the database
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770011
+    m_Localized: (D) It encrypts passwords twice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770012
+    m_Localized: How did Oracle explain that The Pepper Vault is different from Salting
+      Field?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770013
+    m_Localized: (A) Pepper is faster than Salt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770014
+    m_Localized: (B) Pepper is used for data in transit, while Salt is used for stored
+      data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770015
+    m_Localized: "(C) Pepper is a \u201Cmaster secret\u201D stored separately in
+      a secure location away from the database"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770016
+    m_Localized: (D) Pepper is unnecessary if Salt is used
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770017
+    m_Localized: From Lessons 3 and 4, which is the most complete password protection
+      method?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770018
+    m_Localized: (A) MD5 + Salt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770019
+    m_Localized: (B) SHA1 + Pepper
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770020
+    m_Localized: (C) Modern Hash Standard (such as bcrypt) + Salting Field
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770021
+    m_Localized: (D) TLS Shield
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770022
+    m_Localized: Which weakness allows the Rainbow Table Fiend to succeed?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770023
+    m_Localized: (A) Using ../
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770024
+    m_Localized: (B) Not using HTTPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770025
+    m_Localized: (C) Using outdated hashes (such as MD5)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770026
+    m_Localized: (D) Hashing passwords without salting (Missing Salt)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770027
+    m_Localized: What is the problem with ECB mode that ECB Mode Cyclops exploits?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770028
+    m_Localized: (A) It operates too slowly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770029
+    m_Localized: (B) It allows encrypted data patterns to become visible
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770030
+    m_Localized: (C) It only works with MD5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770031
+    m_Localized: (D) It does not use salting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770032
+    m_Localized: Where does the Hardcode Hunter search for keys?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770033
+    m_Localized: (A) In the database
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770034
+    m_Localized: "(B) In the program\u2019s source code"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770035
+    m_Localized: (C) In configuration files (.env / .config)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770036
+    m_Localized: (D) In a Rainbow Table
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770037
+    m_Localized: How is Config File Raider an evolution of Hardcode Hunter?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770038
+    m_Localized: (A) It searches configuration files (.env) instead of source code
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770039
+    m_Localized: (B) It forces the use of ECB mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770040
+    m_Localized: (C) It intercepts HTTP traffic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770041
+    m_Localized: (D) It generates fake keys
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770042
+    m_Localized: "Which protection did Oracle call the \u201Cultimate defense\u201D
+      for key storage?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770043
+    m_Localized: (A) HSTS Protocol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770044
+    m_Localized: (B) Salting Field
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770045
+    m_Localized: (C) AES-GCM Guardian
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770046
+    m_Localized: (D) Secure Key Vault (KMS)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770047
+    m_Localized: Which guard protects against ECB Mode Cyclops attacks?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770048
+    m_Localized: (A) AES-GCM Guardian
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770049
+    m_Localized: (B) Secure Key Vault
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770050
+    m_Localized: (C) Salting Field
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770051
+    m_Localized: (D) Modern Hash Standard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770052
+    m_Localized: What technique does the Query String Manipulator use to bypass the
+      login page?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770053
+    m_Localized: (A) UNION SELECT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770054
+    m_Localized: (B) ' OR '1'='1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770055
+    m_Localized: (C) <script>
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770056
+    m_Localized: (D) ../
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770057
+    m_Localized: "Which threat did Oracle say uses UNION SELECT to \u201Cextract\u201D
+      data from the entire database?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770058
+    m_Localized: (A) Database Devourer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770059
+    m_Localized: (B) Query String Manipulator
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770060
+    m_Localized: (C) Admin Gate-Crasher
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770061
+    m_Localized: (D) HTTP Sniffer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770062
+    m_Localized: Oracle compared the Parameterized Query Guard to what?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770063
+    m_Localized: (A) A crypto forge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770064
+    m_Localized: (B) A fire escape ladder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770065
+    m_Localized: "(C) A two-tray system separating \u201Ccommands\u201D and \u201Cdata\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770066
+    m_Localized: (D) A mobile vault
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770067
+    m_Localized: What is the best and most complete defense against SQL Injection?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770068
+    m_Localized: (A) Using a WAF
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770069
+    m_Localized: (B) Using Parameterized Query Guard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770070
+    m_Localized: (C) Hiding the login URL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770071
+    m_Localized: (D) Using HSTS Protocol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770072
+    m_Localized: What is the purpose of a Payload Obfuscator?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770073
+    m_Localized: (A) To steal data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770074
+    m_Localized: (B) To disguise attack code so it appears harmless and bypasses
+      a WAF
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770075
+    m_Localized: (C) To prevent attacks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770076
+    m_Localized: (D) To separate commands from data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770077
+    m_Localized: "Which part of the system does the \u201CXSS\u201D threat attack?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770078
+    m_Localized: (A) The database directly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770079
+    m_Localized: "(B) The user\u2019s browser"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770080
+    m_Localized: (C) The network
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770081
+    m_Localized: (D) The configuration file
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770082
+    m_Localized: How does Reflected Script-Kiddie (Reflected XSS) work?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770083
+    m_Localized: (A) It embeds itself in the database
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770084
+    m_Localized: (B) It tricks users into clicking a link containing malicious script
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770085
+    m_Localized: (C) It steals hardcoded keys
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770086
+    m_Localized: (D) It randomly guesses URLs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770087
+    m_Localized: How does Content Security Policy (CSP) prevent XSS?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770088
+    m_Localized: (A) By whitelisting scripts only from trusted sources
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770089
+    m_Localized: (B) By separating SQL commands from data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770090
+    m_Localized: (C) By adding salt to passwords
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770091
+    m_Localized: (D) By forcing HTTPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770092
+    m_Localized: Why can CSP prevent Stored Script Worm?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770093
+    m_Localized: (A) Because CSP deletes the script from the database
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770094
+    m_Localized: (B) Because CSP prevents users from clicking links
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770095
+    m_Localized: (C) Because the browser will not execute the script if it does not
+      come from a trusted source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770096
+    m_Localized: (D) Because CSP encrypts all comments
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770097
+    m_Localized: "Which threat did Oracle describe as \u201Cthe most dangerous\u201D
+      because it embeds itself in the database and attacks everyone?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770098
+    m_Localized: (A) Reflected Script-Kiddie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770099
+    m_Localized: (B) Stored Script Worm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770100
+    m_Localized: (C) Database Devourer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770101
+    m_Localized: (D) Query String Manipulator
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770102
+    m_Localized: "(A) The user\u2019s browser"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770103
+    m_Localized: (B) The system database
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770104
+    m_Localized: "(C) The server\u2019s Operating System"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770105
+    m_Localized: (D) The network connection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770106
+    m_Localized: How does the Ping Abuser threat attack the system?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770107
+    m_Localized: (A) It guesses passwords
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770108
+    m_Localized: (B) It appends malicious commands (e.g., && whoami) to a legitimate
+      command (e.g., ping)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770109
+    m_Localized: (C) It changes ID numbers in the URL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770110
+    m_Localized: (D) It injects scripts into a comment box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770111
+    m_Localized: "Which threat did Oracle describe as \u201Ccomplete server takeover\u201D
+      (Reverse Shell)?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770112
+    m_Localized: (A) Root Shell Dragon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770113
+    m_Localized: (B) Ping Abuser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770114
+    m_Localized: (C) Stored Script Worm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770115
+    m_Localized: (D) Database Devourer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770116
+    m_Localized: How does Input Sanitizer (Shell) work?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770117
+    m_Localized: (A) It creates a whitelist of safe scripts
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770118
+    m_Localized: (B) It filters and removes dangerous symbols (e.g., &, |, ;) from
+      input
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770119
+    m_Localized: (C) It separates SQL commands from data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770120
+    m_Localized: (D) It forces HTTPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770121
+    m_Localized: Which of the following most resembles an OS Command Injection attack?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770122
+    m_Localized: (A) <script>alert('XSS')</script>
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770123
+    m_Localized: (B) 127.0.0.1; rm -rf /
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770124
+    m_Localized: (C) ' OR 1=1 --
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770125
+    m_Localized: (D) file:///etc/passwd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770126
+    m_Localized: Which part of the system does the XXE (Local File Reader) threat
+      attack?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770127
+    m_Localized: (A) The SQL database
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770128
+    m_Localized: "(B) The user\u2019s browser"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770129
+    m_Localized: "(C) The \u201Cautomatic librarian\u201D (XML Parser)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770130
+    m_Localized: (D) The Operating System directly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770131
+    m_Localized: How does the defense recommended by Oracle for XXE (XML Parser Hardening)
+      work?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770132
+    m_Localized: "(A) It \u201Cdisables\u201D the processing of External Entities"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770133
+    m_Localized: (B) It separates SQL commands from data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770134
+    m_Localized: (C) It forces the use of HTTPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770135
+    m_Localized: (D) It filters ../ symbols
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882731770136
+    m_Localized: "Which of the following commands would Local File Reader most likely
+      use in its \u201Crequest slip\u201D?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964160
+    m_Localized: (A) ' OR '1'='1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964161
+    m_Localized: (B) file:///etc/passwd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964162
+    m_Localized: (C) ping 8.8.8.8 && whoami
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964163
+    m_Localized: (D) %252f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964164
+    m_Localized: "Which general Spell Card did Oracle mention as being used to \u201Cobfuscate\u201D
+      attack code to bypass a WAF?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964165
+    m_Localized: (A) Database Dump
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964166
+    m_Localized: (B) Emergency Key Rotation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964167
+    m_Localized: (C) Payload Obfuscator
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964168
+    m_Localized: (D) Deny by Default Policy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964169
+    m_Localized: What technique does Local File Reader use to steal files?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964170
+    m_Localized: (A) It appends && rm -rf commands
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964171
+    m_Localized: (B) It injects <script>
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964172
+    m_Localized: (C) It attaches an External Entity that references a system file
+      (e.g., file:///etc/passwd)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882735964173
+    m_Localized: (D) It decrypts outdated encryption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882752741376
+    m_Localized: "The most severe form of an IDOR attack is \u201Creading\u201D other
+      people\u2019s data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882752741377
+    m_Localized: Using a simple ../ filter (Simple Filter) is sufficient to stop
+      all forms of Path Traversal.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882752741378
+    m_Localized: "Simply \u201Chiding\u201D the Admin page URL (Security through
+      Obscurity) is a sufficient defense."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882752741379
+    m_Localized: "If a website shows https:// (the padlock icon), it means the website
+      is \u201C100% secure\u201D and truly belongs to that company."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882752741380
+    m_Localized: Storing passwords in a database as password123 (plain text) is the
+      most dangerous practice.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882752741381
+    m_Localized: "\u201CHashing\u201D is a type of \u201Cencryption\u201D that can
+      be \u201Cdecrypted\u201D back to the original text."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882752741382
+    m_Localized: "Hardcoding a key in the application\u2019s source code is secure
+      because normal users cannot see it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882752741383
+    m_Localized: An XXE attack (e.g., file:///etc/passwd) can be prevented by disabling
+      the External Entity feature in the XML Parser.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882752741384
+    m_Localized: The best defense against OS Command Injection (e.g., && whoami)
+      is using Content Security Policy (CSP).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882752741385
+    m_Localized: A WAF (Web Application Firewall) can easily prevent attacks that
+      use Payload Obfuscation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518592
+    m_Localized: TRUE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518593
+    m_Localized: "Incorrect because \u201Creading\u201D is only accessing data, whereas
+      modifying or executing actions on behalf of others can cause severe and irreversible
+      damage, such as financial loss or account takeover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518594
+    m_Localized: FALSE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518595
+    m_Localized: "Correct, because although reading other people\u2019s data is serious,
+      it is still considered a level of damage limited to \u201Cinformation exposure.\u201D
+      What is more severe is modifying (Write) other people\u2019s data or performing
+      actions on behalf of the account owner (Action), such as transferring money,
+      changing passwords, or taking over accounts. These actions cause direct damage
+      to both users and the system."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518596
+    m_Localized: Incorrect, because believing a Simple Filter is sufficient leaves
+      the system vulnerable to more advanced techniques that attackers can easily
+      use to bypass the checks.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518597
+    m_Localized: Correct, because filtering only the literal ../ is far too simplistic.
+      Hackers can use more advanced techniques such as encoding (%2f, %252f) or nested
+      encoding to easily bypass a Simple Filter.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518598
+    m_Localized: "Incorrect, because it relies on the concept of Security through
+      Obscurity \u2014 essentially \u2018hoping no one finds it.\u2019 Once discovered,
+      the system has no real protection in place."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518599
+    m_Localized: Correct, because hiding is not the same as actually locking the
+      page. Hackers can use a technique called Forced Browsing to brute-force file
+      or folder names until they discover the hidden Admin page. Without proper authorization
+      checks, anyone who finds it can access it immediately.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518600
+    m_Localized: Incorrect, because it confuses data transmission security with website
+      authenticity. These are two different things.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518601
+    m_Localized: Correct, because https:// (the padlock icon) only means that data
+      transmitted between the user and the website is encrypted. It does not guarantee
+      that the website truly belongs to the legitimate company and is not a phishing
+      site. Hackers can also obtain HTTPS certificates for fake websites.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518602
+    m_Localized: "Correct, because if the database is breached, hackers can immediately
+      see every user\u2019s password without decrypting, guessing, or using any additional
+      techniques. This is the most serious mistake in password storage."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518603
+    m_Localized: Incorrect, because it overlooks the most fundamental risk. Once
+      data is leaked, if the data itself has no protection, the impact is immediate
+      and severe.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518604
+    m_Localized: Incorrect, because you are confusing Hashing (one-way) with Encryption
+      (reversible).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518605
+    m_Localized: "Correct, because hashing is a one-way process. It is like \u201Cgrinding\u201D
+      or \u201Cforging\u201D a password into a new value that cannot be reversed
+      back to the original. This is different from encryption, which uses a key to
+      decrypt the data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518606
+    m_Localized: "Incorrect, because just because normal users cannot see it does
+      not mean hackers cannot. Hardcoding a key in the source code is like hiding
+      a key under a doormat \u2014 anyone who knows where to look can immediately
+      take and use it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518607
+    m_Localized: Correct, because even if regular users cannot see it, hackers can
+      reverse-engineer the application, analyze the code, or search leaked files
+      to steal embedded keys.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518608
+    m_Localized: This feature is the attack vector hackers exploit. If it is not
+      disabled, it is like leaving the door permanently open.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518609
+    m_Localized: "Correct, because XXE attacks rely on the XML Parser\u2019s ability
+      to retrieve data from external sources. Disabling the External Entity feature
+      effectively closes the attack path directly and is the most precise and effective
+      solution."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518610
+    m_Localized: Incorrect, because this uses the wrong tool for the problem. CSP
+      protects against malicious code running in web pages, but it cannot stop commands
+      executed on the server.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518611
+    m_Localized: Correct, because CSP is designed to prevent XSS on the browser side,
+      whereas OS Command Injection occurs on the server side by injecting commands
+      for the operating system to execute. The correct defense is proper input validation
+      and ensuring that user input is never directly concatenated into system commands.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518612
+    m_Localized: Incorrect, because this overestimates the effectiveness of a WAF.
+      In reality, a Payload Obfuscator is specifically designed to evade or trick
+      WAF detection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882769518613
+    m_Localized: Correct, because a WAF works by detecting known attack patterns,
+      while a Payload Obfuscator disguises or alters the attack code so it no longer
+      matches typical signatures. As a result, the WAF may fail to recognize the
+      threat and allow the malicious payload to pass through.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295808
+    m_Localized: "A hacker impersonates another user\u2019s ID in an API request
+      to initiate a money transfer."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295809
+    m_Localized: "A hacker \u201Csnoops\u201D on someone else\u2019s receipt by changing
+      id=101 to id=102."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295810
+    m_Localized: "A hacker creates a fake user within someone else\u2019s account."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295811
+    m_Localized: "A hacker modifies another person\u2019s profile by changing the
+      hidden ID value in a form."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295812
+    m_Localized: IDOR (Read Data)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295813
+    m_Localized: IDOR (Write Data)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295814
+    m_Localized: IDOR (Perform Action)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295815
+    m_Localized: IDOR (Unauthorized Creation)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295816
+    m_Localized: A hacker uses an Absolute Path (e.g., /etc/passwd) to directly target
+      a file.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295817
+    m_Localized: "A hacker uses ../ (in a straightforward way) to \u201Cclimb\u201D
+      out of a directory."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295818
+    m_Localized: A hacker disguises ../ as %2f%2e%2e to bypass filters.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295819
+    m_Localized: A hacker uses double encoding (e.g., %252f) to bypass filters that
+      only decode input once.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295820
+    m_Localized: 'Path Traversal (Basic) '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295821
+    m_Localized: Path Traversal (Encoded)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295822
+    m_Localized: 'Path Traversal (Nested) '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295823
+    m_Localized: 'Path Traversal (Absolute) '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295824
+    m_Localized: "It is \u201Cforgetting to lock\u201D a door (e.g., /admin), allowing
+      a normal user to access it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295825
+    m_Localized: "It is \u201Cconfining\u201D a process inside a \u201Cvirtual jail\u201D
+      so it cannot see the real system files."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295826
+    m_Localized: "It is \u201Crandomly guessing\u201D hidden URLs to discover a doorway."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295827
+    m_Localized: "It is \u201Cchecking the user\u2019s role\u201D (e.g., Admin or
+      User) before allowing access to a function."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295828
+    m_Localized: Forced Browsing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295829
+    m_Localized: MFLAC
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295830
+    m_Localized: Role-Based Access Control  (RBAC)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882786295831
+    m_Localized: Root Jail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490112
+    m_Localized: "\u201CCrushing\u201D a password into a value that cannot be reversed."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490113
+    m_Localized: "\u201CSecretly reading\u201D passwords stored as plain text in
+      the database."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490114
+    m_Localized: "\u201CEavesdropping\u201D on data (like reading a postcard) sent
+      over http://."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490115
+    m_Localized: "\u201CTricking\u201D the browser into switching from https:// (secure)
+      to http:// (not secure)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490116
+    m_Localized: Insecure Data in Transit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490117
+    m_Localized: Downgrade Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490118
+    m_Localized: Insecure Data at Rest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490119
+    m_Localized: Hashing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490120
+    m_Localized: "Adding \u201Crandom data\u201D (Salt) before hashing so the results
+      are unique."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490121
+    m_Localized: "Using a \u201Cprecomputed hash dictionary\u201D to look up the
+      answer."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490122
+    m_Localized: "Using a \u201Cdeliberately slow algorithm\u201D (e.g., bcrypt)
+      to resist brute-force attacks."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490123
+    m_Localized: "Using an \u201Cold and overly fast algorithm\u201D (e.g., MD5),
+      making it easy to brute-force."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490124
+    m_Localized: Weak/Outdated Hashing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490125
+    m_Localized: Rainbow Table Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490126
+    m_Localized: Salting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490127
+    m_Localized: Modern Hashing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490128
+    m_Localized: "\u201CHardcoding\u201D a key inside the program\u2019s source code."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490129
+    m_Localized: "\u201CSeparating\u201D the key and storing it in a dedicated \u201CSecure
+      Key Vault.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490130
+    m_Localized: "An attacker being able to \u201Csee patterns\u201D in encrypted
+      data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490131
+    m_Localized: "Storing a key as \u201Cplain text\u201D inside a .env or .config
+      file."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490132
+    m_Localized: Weak Encryption Mode (ECB)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490133
+    m_Localized: Hardcoded Keys
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490134
+    m_Localized: Keys in Config Files
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490135
+    m_Localized: Secure Key Vault
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490136
+    m_Localized: "The user\u2019s \u201Cbrowser.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490137
+    m_Localized: "The server\u2019s \u201Coperating system\u201D (OS)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490138
+    m_Localized: "The \u201CXML parser.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490139
+    m_Localized: "The \u201Cdatabase.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490140
+    m_Localized: ' OR ''1''=''1 --'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490141
+    m_Localized: <script>alert(1)</script>
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490142
+    m_Localized: 8.8.8.8 && whoami
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490143
+    m_Localized: file:///etc/passwd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490144
+    m_Localized: "Always \u201Cseparating\u201D SQL commands from \u201Cdata.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490145
+    m_Localized: "\u201CTricking\u201D users into clicking a link that contains a
+      malicious script."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490146
+    m_Localized: "\u201CForcing\u201D the browser to load scripts only from trusted
+      sources (a whitelist)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490147
+    m_Localized: "\u201CInjecting\u201D a malicious script into the database (e.g.,
+      a comment field) to attack everyone who views it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490148
+    m_Localized: "Stored XSS (XSS \u0E41\u0E1A\u0E1A\u0E1D\u0E31\u0E07\u0E15\u0E31\u0E27)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490149
+    m_Localized: "Reflected XSS (XSS \u0E41\u0E1A\u0E1A\u0E2A\u0E30\u0E17\u0E49\u0E2D\u0E19)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490150
+    m_Localized: "Parameterized Query (\u0E01\u0E32\u0E23\u0E1B\u0E49\u0E2D\u0E07\u0E01\u0E31\u0E19
+      SQLi)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490151
+    m_Localized: "Content Security Policy (CSP) (\u0E01\u0E32\u0E23\u0E1B\u0E49\u0E2D\u0E07\u0E01\u0E31\u0E19 
+      XSS)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490152
+    m_Localized: "I will \u201Cdisable\u201D unnecessary External Entity features."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490153
+    m_Localized: "I will \u201Cobfuscate\u201D attack code to make it appear harmless
+      and bypass the firewall."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490154
+    m_Localized: "I will \u201Cfilter and remove\u201D dangerous characters."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490155
+    m_Localized: "I will \u201Cdetect and block\u201D known attack patterns (such
+      as SQLi or XSS) at the front gate."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490156
+    m_Localized: 'Input Sanitizer (Shell) '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490157
+    m_Localized: XML Parser Hardening
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490158
+    m_Localized: Payload Obfuscator
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882790490159
+    m_Localized: Web Application Firewall (WAF)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461632
+    m_Localized: Incorrect, because transferring money is performing an action on
+      behalf of the account owner. It is classified as an Action, not simply writing
+      general data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461633
+    m_Localized: Correct, because transferring money is executing a transaction on
+      behalf of the account owner, which is a direct system Action.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461634
+    m_Localized: Incorrect, because transferring money is issuing a system command;
+      it does not create new data or resources.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461635
+    m_Localized: Incorrect, because this is executing a money transfer on behalf
+      of the account owner (an Action), not merely reading data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461636
+    m_Localized: "Incorrect, because in this case it is only viewing someone else\u2019s
+      data; no data has been modified."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461637
+    m_Localized: "Incorrect, because viewing someone else\u2019s data is only a read
+      operation and does not create anything new."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461638
+    m_Localized: "Correct, because it involves changing the ID to secretly view someone
+      else\u2019s data without modifying or executing any actions."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461639
+    m_Localized: Incorrect, because this scenario involves creating new data, not
+      modifying existing data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461640
+    m_Localized: Incorrect, because creating a new user is creating a resource, not
+      performing an action on behalf of the account owner.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461641
+    m_Localized: "Correct, because it involves creating a new user in another person\u2019s
+      account without authorization."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461642
+    m_Localized: "Incorrect, because this case is about creating a new user in someone
+      else\u2019s account, not reading existing data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461643
+    m_Localized: "Correct, because it involves changing the ID to modify another
+      person\u2019s data, which is considered a write operation."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461644
+    m_Localized: Incorrect, because modifying profile information is a write operation,
+      not a transaction or critical system action.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461645
+    m_Localized: Incorrect, because modifying existing data is not the creation of
+      a new resource.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461646
+    m_Localized: This scenario involves modifying profile data, which is classified
+      as a write, not a read.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461647
+    m_Localized: Incorrect, because using an Absolute Path does not involve encoding
+      or bypassing filters, so it is not considered encoded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461648
+    m_Localized: Incorrect, because an Absolute Path is unrelated to nested encoding
+      used to bypass validation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461649
+    m_Localized: Correct, because it uses an Absolute Path such as /etc/passwd to
+      directly target a system file.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461650
+    m_Localized: Incorrect, because this scenario uses an Absolute Path to specify
+      a file directly, not directory traversal using ../.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461651
+    m_Localized: Incorrect, because using ../ directly is a basic form and does not
+      involve encoding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461652
+    m_Localized: Incorrect, because using ../ plainly does not involve encoding,
+      so it is not nested encoding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461653
+    m_Localized: Correct, because using ../ is directory traversal (climbing folders),
+      not targeting a file via an Absolute Path.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461654
+    m_Localized: Correct, because it directly uses ../ to climb out of the permitted
+      directory, which is a basic directory traversal technique.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461655
+    m_Localized: Correct, because it encodes ../ as %2f%2e%2e to bypass system filters.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461656
+    m_Localized: Incorrect, because this is only single-layer encoding, not multiple
+      layers.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461657
+    m_Localized: Incorrect, because the scenario involves encoding to bypass filters,
+      not directly referencing a path.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461658
+    m_Localized: Incorrect, because this case uses encoding to evade filters, which
+      is more advanced than a basic attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461659
+    m_Localized: Incorrect, because this scenario involves multi-layer encoding,
+      not a straightforward attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461660
+    m_Localized: Incorrect, because multi-layer encoding is a more advanced technique
+      and is more severe than standard single encoding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461661
+    m_Localized: Correct, because it uses double encoding (%252f) to bypass systems
+      that decode input only once.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461662
+    m_Localized: Incorrect, because multi-layer encoding is an advanced evasion technique
+      and is unrelated to Absolute Path usage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461663
+    m_Localized: "Correct, because MFLAC refers to missing function-level access
+      control, meaning a sensitive function is left \u201Cunlocked,\u201D allowing
+      unauthorized users to access it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461664
+    m_Localized: "Incorrect, because \u201Cforgetting to lock the door\u201D is an
+      example of a vulnerability, not a role-based access control (RBAC) system itself."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461665
+    m_Localized: Incorrect, because forgetting to lock permissions is an access control
+      issue, not system environment isolation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461666
+    m_Localized: "Incorrect, because this scenario involves missing access control
+      that allows a normal user to access the function \u2014 it is not about guessing
+      URLs."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461667
+    m_Localized: Incorrect, because Root Jail restricts the scope of a process and
+      is not related to user access control.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461668
+    m_Localized: Incorrect, because confining a process in a virtual jail is unrelated
+      to separating user privileges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461669
+    m_Localized: Correct, because Root Jail confines a process within a restricted
+      environment so it cannot access real system files or resources.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461670
+    m_Localized: Incorrect, because confining a process in a virtual jail is the
+      concept of Root Jail and has nothing to do with guessing web paths.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461671
+    m_Localized: Incorrect, because guessing URLs is characteristic of Forced Browsing,
+      not MFLAC.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461672
+    m_Localized: Incorrect, because guessing URLs is an attack behavior, not a concept
+      of access management.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461673
+    m_Localized: Incorrect, because guessing URLs is a web attack technique and not
+      related to operating system isolation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461674
+    m_Localized: Correct, because Forced Browsing involves guessing or enumerating
+      hidden URLs (such as /admin) to access functions that should not be publicly
+      accessible.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461675
+    m_Localized: Incorrect, because role verification is a solution to MFLAC, not
+      a description of the vulnerability itself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461676
+    m_Localized: "Correct, because RBAC verifies a user\u2019s role (such as Admin
+      or User) before allowing access to a function."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461677
+    m_Localized: Incorrect, because verifying user roles concerns access control,
+      not restricting the scope of a process.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461678
+    m_Localized: Incorrect, because role verification is a preventive measure, not
+      a characteristic of a Forced Browsing attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461679
+    m_Localized: Incorrect, because hashing a password is related to password storage,
+      not a network attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461680
+    m_Localized: Incorrect, because storing data insecurely is not the same as processing
+      a password into a non-reversible form.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461681
+    m_Localized: Correct, because hashing is the process of transforming a password
+      into a value that cannot be reversed back to the original data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461682
+    m_Localized: Incorrect, because hashing passwords is about secure storage and
+      is not related to data transmission security.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461683
+    m_Localized: Incorrect, because secretly reading passwords from a database is
+      a Data-at-Rest issue, not a transmission issue.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461684
+    m_Localized: Incorrect, because reading data directly from a database is a storage
+      problem, not a communication attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882811461685
+    m_Localized: Correct, because storing passwords in plain text in a database allows
+      anyone with access to read them immediately.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655936
+    m_Localized: Incorrect, because reading passwords from a database is the result
+      of not hashing them, not the definition of hashing itself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655937
+    m_Localized: Correct, because it involves intercepting data transmitted over
+      http://, where the information is not encrypted during transit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655938
+    m_Localized: Incorrect, because intercepting HTTP traffic is the result of insecure
+      transmission, but it is not the direct mechanism of a Downgrade Attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655939
+    m_Localized: Incorrect, because intercepting data in transit is a Data in Transit
+      issue, not a Data at Rest issue.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655940
+    m_Localized: Incorrect, because intercepting data over HTTP is a transmission
+      security problem and not related to the hashing process.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655941
+    m_Localized: Incorrect, because tricking a user into switching from https to
+      http is a Downgrade Attack technique, not a direct definition of Insecure Data
+      in Transit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655942
+    m_Localized: Correct, because it involves forcing the browser to downgrade from
+      https:// to http:// in order to enable data interception.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655943
+    m_Localized: Incorrect, because forcing a protocol downgrade is a network attack
+      technique, not related to data storage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655944
+    m_Localized: Incorrect, because reducing security levels is an attack method,
+      not a data protection technique.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655945
+    m_Localized: Incorrect, because adding a salt is a defense against Rainbow Table
+      attacks, not an attack method itself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655946
+    m_Localized: Correct, because salting is the process of adding random data before
+      hashing so that identical passwords produce different hash values.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655947
+    m_Localized: Incorrect, because while salting is part of modern password protection,
+      it is not the core concept of modern hashing by itself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655948
+    m_Localized: Incorrect, because adding salt is a defensive technique, not a weakness
+      of the algorithm.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655949
+    m_Localized: Incorrect, because using a hash dictionary is an attack method,
+      not a characteristic of a weak algorithm.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655950
+    m_Localized: Correct, because it involves using a precomputed hash database to
+      quickly match and recover the original password.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655951
+    m_Localized: Incorrect, because a Rainbow Table is an attack technique, not a
+      security enhancement process.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655952
+    m_Localized: Incorrect, because using a hash dictionary is an attack technique,
+      not a concept of Modern Hashing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655953
+    m_Localized: Incorrect, because intentionally using a slow algorithm is a concept
+      of Modern Hashing, not Weak Hashing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655954
+    m_Localized: Incorrect, because using a slow algorithm is a defensive strategy,
+      not a form of attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655955
+    m_Localized: Incorrect, because using a slow algorithm is another defensive concept,
+      but it is not the same as salting.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655956
+    m_Localized: Correct, because Modern Hashing involves using algorithms intentionally
+      designed to be slow, such as bcrypt, to reduce the speed of brute-force attacks.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655957
+    m_Localized: Correct, because using outdated and overly fast algorithms such
+      as MD5 or SHA1 makes password guessing much easier.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655958
+    m_Localized: Incorrect, because using outdated algorithms makes attacks easier,
+      but it is not the attack itself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655959
+    m_Localized: Incorrect, because using outdated algorithms is a weakness and does
+      not enhance security like salting does.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655960
+    m_Localized: Incorrect, because using outdated and overly fast algorithms is
+      exactly what Modern Hashing aims to avoid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655961
+    m_Localized: Correct, because Hardcoded Keys means embedding keys directly in
+      the source code, allowing anyone with access to the code to extract and misuse
+      them.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655962
+    m_Localized: Incorrect, because embedding keys in source code is considered Hardcoded
+      Keys, not storing them in a configuration file.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655963
+    m_Localized: Incorrect, because embedding keys in code is what Secure Key Vault
+      is designed to prevent.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655964
+    m_Localized: Incorrect, because embedding keys in source code is a key management
+      issue, not a weakness of an encryption mode.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655965
+    m_Localized: Incorrect, because storing keys in a Key Vault is a secure practice,
+      not Hardcoded Keys.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655966
+    m_Localized: Incorrect, because separating keys into a dedicated system is a
+      security best practice, not a risk.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655967
+    m_Localized: Correct, because Secure Key Vault involves storing keys in a dedicated
+      system with proper access control and protection mechanisms.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655968
+    m_Localized: Incorrect, because separating keys into a dedicated system is a
+      secure approach, not a vulnerability.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655969
+    m_Localized: Incorrect, because visible encryption patterns are related to ECB
+      mode weaknesses, not hardcoded keys.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655970
+    m_Localized: Incorrect, because seeing data patterns is a weakness of the encryption
+      mode, not related to where the key is stored.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655971
+    m_Localized: Incorrect, because visible encrypted data patterns are unrelated
+      to key storage practices.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655972
+    m_Localized: Correct, because ECB mode has a weakness that allows attackers to
+      see patterns in encrypted data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655973
+    m_Localized: Incorrect, because storing keys in a configuration file is a different
+      issue, not the same as embedding them directly in source code.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655974
+    m_Localized: Correct, because storing keys as plain text in a .env or .config
+      file creates a risk of leakage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655975
+    m_Localized: Incorrect, because storing keys in plain text configuration files
+      is insecure, which is the opposite of using a Secure Key Vault.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655976
+    m_Localized: Incorrect, because storing keys in plain text configuration files
+      is a key management issue, not related to encryption modes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655977
+    m_Localized: "Correct, because <script>alert(1)</script> executes in another
+      user\u2019s browser (XSS)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655978
+    m_Localized: Incorrect, because that payload is an operating system command for
+      the server, not code that a browser can execute.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655979
+    m_Localized: Incorrect, because that payload references a system file, not client-side
+      script executable by a browser.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655980
+    m_Localized: Incorrect, because that code is SQL Injection executed on the server
+      side, not script processed by the browser.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655981
+    m_Localized: "Incorrect, because it is not a command that the server\u2019s operating
+      system understands."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655982
+    m_Localized: Correct, because it injects an OS command to make the server run
+      whoami.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655983
+    m_Localized: Incorrect, because it is not a direct operating system command.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655984
+    m_Localized: Incorrect, because this is not an operating system command, but
+      a payload intended to manipulate the database.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655985
+    m_Localized: Incorrect, because an XML Parser does not execute JavaScript.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655986
+    m_Localized: Incorrect, because an XML Parser cannot execute operating system
+      commands.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655987
+    m_Localized: Correct, because it tricks the XML Parser or file access mechanism
+      into reading a system file.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655988
+    m_Localized: Incorrect, because an XML Parser is not related to SQL commands
+      of this nature.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655989
+    m_Localized: Incorrect, because while a database may store this code, it would
+      execute in the browser.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655990
+    m_Localized: Incorrect, because this is not an SQL command sent to the database.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655991
+    m_Localized: Incorrect, because the database is not the target of this type of
+      payload.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655992
+    m_Localized: Correct, because it is an SQL Injection attack that targets the
+      database by making the condition always evaluate to true.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655993
+    m_Localized: Incorrect, because this describes a method of preventing SQL Injection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655994
+    m_Localized: Correct, because it separates the SQL command structure from user-supplied
+      data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655995
+    m_Localized: Incorrect, because separating SQL commands does not control script
+      loading in the browser.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655996
+    m_Localized: Incorrect, because separating SQL commands is a defense against
+      SQL Injection, not XSS.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655997
+    m_Localized: Correct, because Reflected XSS requires tricking the user into clicking
+      a link containing a malicious script.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655998
+    m_Localized: Incorrect, because tricking a user into clicking a link is related
+      to XSS.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815655999
+    m_Localized: Incorrect, because this is an attack method, not a security policy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656000
+    m_Localized: Incorrect, because tricking users into clicking a link is characteristic
+      of Reflected XSS.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656001
+    m_Localized: Incorrect, because CSP is a defensive measure, not an attack type.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656002
+    m_Localized: Incorrect, because CSP operates in the browser and does not prevent
+      SQL.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656003
+    m_Localized: Correct, because CSP defines a whitelist specifying which sources
+      the browser is allowed to load scripts from.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656004
+    m_Localized: Incorrect, because forcing scripts to load only from trusted sources
+      describes CSP.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656005
+    m_Localized: Incorrect, because permanently embedding malicious code is Stored
+      XSS, not Reflected XSS.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656006
+    m_Localized: Incorrect, because embedding a script is an attack method, not a
+      defense mechanism.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656007
+    m_Localized: Incorrect, because embedding a script is a form of attack behavior.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656008
+    m_Localized: Correct, because Stored XSS involves embedding malicious scripts
+      in a database, such as in a comment field.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656009
+    m_Localized: Correct, because it involves disabling unnecessary External Entity
+      features.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656010
+    m_Localized: Incorrect, because disabling a feature is a defensive measure, not
+      an attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656011
+    m_Localized: Incorrect, because configuring XML is an internal application setting,
+      not a perimeter defense.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656012
+    m_Localized: Incorrect, because disabling External Entity is specifically related
+      to XML.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656013
+    m_Localized: Incorrect, because this is a technique used to evade detection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656014
+    m_Localized: Correct, because it disguises the payload to appear safe in order
+      to deceive protection systems.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656015
+    m_Localized: Incorrect, because Payload Obfuscator is an adversary of WAF.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656016
+    m_Localized: Incorrect, because code obfuscation is an attack technique, not
+      a defense.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656017
+    m_Localized: Incorrect, because filtering characters is related to Input Sanitization.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656018
+    m_Localized: Incorrect, because character filtering is a defensive measure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656019
+    m_Localized: Incorrect, because an Input Sanitizer works within the application
+      code, not at the perimeter.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656020
+    m_Localized: Correct, because it filters and removes dangerous characters before
+      passing input to the shell.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656021
+    m_Localized: Incorrect, because a WAF does not modify internal XML Parser configurations.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656022
+    m_Localized: Incorrect, because a WAF is the target that a Payload Obfuscator
+      attempts to evade.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656023
+    m_Localized: Correct, because a WAF intercepts known attack patterns before they
+      reach the application.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882815656024
+    m_Localized: Incorrect, because a WAF operates at the perimeter and does not
+      directly filter shell-level commands.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433152
+    m_Localized: The Nested Encoder threat is even smarter by
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433153
+    m_Localized: (e.g., %252f) to trick systems that decode only one layer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433154
+    m_Localized: Check user roles (Role)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433155
+    m_Localized: Obfuscate IDs (GUID)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433156
+    m_Localized: Decode (Normalize)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433157
+    m_Localized: Apply double encoding (Nested)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433158
+    m_Localized: "The best way to prevent ID \u201Cguessing\u201D is to"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433159
+    m_Localized: make IDs random and unpredictable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433160
+    m_Localized: To prevent encoded attacks (e.g., %252f), we must
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433161
+    m_Localized: normalize the input back to its original form before validating
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433162
+    m_Localized: "The best way to prevent \u201Cforgetting to lock the door\u201D
+      is to"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433163
+    m_Localized: of users (e.g., Admin or User) before always granting access
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433164
+    m_Localized: "The threat that \u201Cstrips the armor\u201D from https:// (secure)
+      to http:// (insecure) in order to eavesdrop on data is called:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433165
+    m_Localized: 'Rainbow Table '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433166
+    m_Localized: Salting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433167
+    m_Localized: SSL Stripper
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433168
+    m_Localized: "The process of \u201Cadding random data\u201D to a password before
+      hashing to prevent Rainbow Table attacks is called:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433169
+    m_Localized: "\u201CA large dictionary that stores precomputed hash values of
+      common passwords in advance to attack hashed passwords that were not salted\u201D
+      is called:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433170
+    m_Localized: "The best protection against XSS by setting a \u201CWhitelist\u201D
+      policy that allows scripts only from trusted sources is called:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433171
+    m_Localized: Stored (embedded)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433172
+    m_Localized: Reflected (reflected)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433173
+    m_Localized: Separate commands from data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433174
+    m_Localized: Content Security Policy (CSP)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433175
+    m_Localized: The best way to prevent SQL Injection is to use Parameterized Queries,
+      based on separating commands from data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433176
+    m_Localized: The less dangerous XSS attack that requires tricking users into
+      clicking a malicious link is called Reflected XSS.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882832433177
+    m_Localized: The most dangerous XSS attack, because it embeds itself in the database
+      (e.g., comment fields), is called Stored XSS.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404672
+    m_Localized: Correct, because attackers use multiple layers of encoding. If the
+      system decodes only once, the payload may still execute after further decoding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404673
+    m_Localized: Incorrect, because checking user roles does not stop malicious commands
+      hidden in encoded input.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404674
+    m_Localized: Incorrect, because GUID prevents ID guessing, not URL command obfuscation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404675
+    m_Localized: Incorrect, because normalization is a defensive step, not an attack
+      technique.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404676
+    m_Localized: Correct, because sequential IDs are easy to guess, while GUIDs are
+      random and unpredictable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404677
+    m_Localized: Incorrect, because role checks do not prevent ID guessing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404678
+    m_Localized: Incorrect, because normalization does not make IDs harder to guess.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404679
+    m_Localized: Incorrect, because nested encoding hides malicious commands but
+      does not make IDs unpredictable like GUIDs.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404680
+    m_Localized: Correct, because normalization converts encoded or obfuscated input
+      back to its real form before security checks. Without normalization, the system
+      may not detect hidden dangerous patterns such as ../ disguised as %252f, allowing
+      a Path Traversal attack to bypass filters.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404681
+    m_Localized: Incorrect, because without normalization the system may not even
+      recognize that the user is attempting to access restricted files. Even if role
+      checks exist, malicious input could still pass through because the system cannot
+      properly interpret it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404682
+    m_Localized: Incorrect, because GUID helps prevent ID guessing, but Path Traversal
+      directly targets file paths such as ../. Even with GUIDs, failing to normalize
+      input paths still leaves the system vulnerable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404683
+    m_Localized: Incorrect, because Nested Encoding is an attacker technique used
+      to bypass security checks. Encoding input again does not improve protection
+      and can make validation harder.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404684
+    m_Localized: Incorrect, because renaming a URL to something harder to guess (e.g.,
+      changing /admin to /admin-ax7z) only hides the door, it does not lock it. Proper
+      authorization checks are still required.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404685
+    m_Localized: Incorrect, because normalization only ensures the system clearly
+      understands the input format. It does not determine whether a user is authorized
+      to access a function. Access control requires permission checks.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404686
+    m_Localized: Incorrect, because Nested Encoding is an evasion technique used
+      by attackers. It is not a security control and does not enforce user authorization.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404687
+    m_Localized: Correct, because the MFLAC issue occurs when users can access functions
+      they should not be allowed to use. The system must always verify the user's
+      role (e.g., Admin vs User) before granting access. Otherwise, it is like leaving
+      the door unlocked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404688
+    m_Localized: Correct, because SSL Stripper is an attack that forces a connection
+      to downgrade from https:// to http://. Without encryption, attackers can intercept
+      sensitive information such as usernames and passwords without the user realizing
+      the protection has been removed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404689
+    m_Localized: Incorrect, because a Rainbow Table is used to crack password hashes.
+      It does not modify website protocols or downgrade HTTPS connections.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882853404690
+    m_Localized: Incorrect, because Salting is a defensive technique used to protect
+      passwords by adding random data before hashing. It is not an attack and is
+      unrelated to intercepting web traffic.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 199256034205696
+    m_Localized: NEW GAME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 199435810463744
+    m_Localized: CONTINUOUS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 201310597242880
+    m_Localized: SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 201515853897728
+    m_Localized: EXIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 241246729887744
+    m_Localized: Stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 242196026712064
+    m_Localized: Story
+    m_Metadata:
+      m_Items: []
+  - m_Id: 242772261167104
+    m_Localized: Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 243933563281408
+    m_Localized: Shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 244363445886976
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 246741721112576
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 246935640563712
+    m_Localized: SFX
+    m_Metadata:
+      m_Items: []
+  - m_Id: 250624505765888
+    m_Localized: Back To Home
+    m_Metadata:
+      m_Items: []
+  - m_Id: 251107433734144
+    m_Localized: Back To Story
+    m_Metadata:
+      m_Items: []
+  - m_Id: 252780143140864
+    m_Localized: Score Pre-test & Post-test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 253652642258944
+    m_Localized: Pre-Test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 253732149485568
+    m_Localized: Post-Test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 255404598845440
+    m_Localized: Previous
+    m_Metadata:
+      m_Items: []
+  - m_Id: 255539097591808
+    m_Localized: Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 255904023011328
+    m_Localized: Submit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 258255966396416
+    m_Localized: Click to Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 258536695357440
+    m_Localized: Log
+    m_Metadata:
+      m_Items: []
+  - m_Id: 258840048394240
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 336883056074752
+    m_Localized: Reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 337069476110336
+    m_Localized: Go to Chapter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 346775837958144
+    m_Localized: Prize List
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350749186023424
+    m_Localized: Banner A01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350866370682880
+    m_Localized: Banner A02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350879255584768
+    m_Localized: Banner A03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351277513138176
+    m_Localized: 1 time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351402201407488
+    m_Localized: 10 time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351542077251584
+    m_Localized: Collection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 354431822684160
+    m_Localized: Enter Deck Name...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 354977694572544
+    m_Localized: New Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 355189725028352
+    m_Localized: Search Card...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 355709101498368
+    m_Localized: Delete Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357810590408704
+    m_Localized: Back to Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358301680492544
+    m_Localized: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358467774930944
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 360789028593664
+    m_Localized: Star condition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 360985145860096
+    m_Localized: Start game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 361348737490944
+    m_Localized: Confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362725077377024
+    m_Localized: Take Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362978585305088
+    m_Localized: End Turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363291912396800
+    m_Localized: Pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363815965515776
+    m_Localized: Quit Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363939185778688
+    m_Localized: Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364062368292864
+    m_Localized: Log
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

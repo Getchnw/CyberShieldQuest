@@ -85,14 +85,34 @@ public class UI_QuizController : MonoBehaviour
         }
 
         QuestionData q = allQuestions[currentQuestionIndex]; //ดึงคำถามปัจจุบัน
-        questionText.text = q.questionText; //ใส่โจทย
+        // เช็คการแปลภาษา
+        if (GameManager.Instance.CurrentGameData.isTranstale)
+        {
+            // ต้องแปล
+            questionText.text = LanguageBridge.Get(q.questionText);
+        }
+        else
+        {
+            // ไม่ต้องแปล
+            questionText.text = q.questionText; //ใส่โจทย
+        }
 
         for (int i = 0; i < answerButtons.Count && i < answerButtonTexts.Count; i++)
         {
             if (i < q.answerOptions.Length)
             {
                 answerButtons[i].gameObject.SetActive(true);
-                answerButtonTexts[i].text = q.answerOptions[i];
+                // เช็คการแปลภาษา
+                if (GameManager.Instance.CurrentGameData.isTranstale)
+                {
+                    // ต้องแปล
+                    answerButtonTexts[i].text = LanguageBridge.Get(q.answerOptions[i]);
+                }
+                else
+                {
+                    // ไม่ต้องแปล
+                    answerButtonTexts[i].text = q.answerOptions[i];
+                }
                 int answerIndex = i;
                 answerButtons[i].onClick.RemoveAllListeners();
                 answerButtons[i].onClick.AddListener(() => OnAnswerSelected(answerIndex));
@@ -209,8 +229,18 @@ public class UI_QuizController : MonoBehaviour
         else if (correctAnswersCount == 3) stars = 1;
 
         Star_amount.text = $"{stars}";
-        StarText.text = $"Star earned : {stars}";
-        resultScoreText.text = $"Score : {correctAnswersCount} / {allQuestions.Count}";
+        if (GameManager.Instance.CurrentGameData.isTranstale)
+        {
+            // english
+            StarText.text = $"Star earned : {stars}";
+            resultScoreText.text = $"Score : {correctAnswersCount} / {allQuestions.Count}";
+        }
+        else
+        {
+            // ไทย
+            StarText.text = $"จำนวนดาวที่ได้รับ : {stars}";
+            resultScoreText.text = $"คะแนน : {correctAnswersCount} / {allQuestions.Count}";
+        }
 
         // 2. บันทึกผลลัพธ์ลง GameManager 
         if (stars == 0)
@@ -224,98 +254,6 @@ public class UI_QuizController : MonoBehaviour
         // 3. (สำคัญ) แสดง "ของรางวัล"
         DisplayRewards(stars);
     }
-
-    // private void DisplayRewards(int starsAchieved)
-    // {
-    //     // ล้างแถวรางวัลเก่า
-    //     foreach (Transform child in rewardListContainer)
-    //     {
-    //         Destroy(child.gameObject);
-    //     }
-
-    //     // ดึง "ของรางวัล" ทั้งหมดของ Quiz นี้
-    //     List<RewardData> rewards = GameContentDatabase.Instance.GetRewardByQuizID(currentQuiz.quiz_id);
-
-    //     foreach (RewardData reward in rewards)
-    //     {
-
-    //         //ผ่านเกณฑ์ดาวหรือไม่ เช่น ทำได้สามดาว ก็จะได้รางวัลของทั้งหมดตัตั้งแต่ 0-3ดาว
-    //         if (reward.starRequired <= starsAchieved && reward.starRequired > 0)
-    //         {
-    //             // ถ้าผ่านเกณฑ์: เช็คว่า "เคยรับ" หรือยัง
-    //             if (GameManager.Instance.HasClaimedReward(reward.reward_id))
-    //             {
-    //                 // เคยรับแล้ว
-    //                 TextMeshProUGUI card_Name = CardPrefab.GetComponentInChildren<TextMeshProUGUI>();
-    //                 if (reward.rewardType == RewardType.Gold)
-    //                 {
-    //                     GoldAll += reward.rewardValue;
-    //                     GoldText.text = $"{reward.rewardValue} Gold";
-    //                 }
-    //                 else if (reward.rewardType == RewardType.Card)
-    //                 {
-    //                     foreach (var cardItem in reward.cardReference)
-    //                     {
-    //                         card_Name.text = $"<color=grey>{cardItem.card.cardName} x{cardItem.amount} (Claimed)</color>";
-    //                     }
-    //                 }
-    //             }
-    //             else
-    //             {
-    //                 // ยังไม่เคยรับ (ให้รางวัลเลย!)
-    //                 GameManager.Instance.ClaimReward(reward.reward_id);
-    //                 if (reward.rewardType == RewardType.Gold)
-    //                 {
-    //                     GoldAll += reward.rewardValue;
-    //                 }
-    //                 else if (reward.rewardType == RewardType.Card)
-    //                 {
-    //                     foreach (var cardItem in reward.cardReference)
-    //                     {
-    //                         GameManager.Instance.AddCardToInventory(cardItem.card.card_id, cardItem.amount);
-    //                     }
-    //                 }
-    //                 experienceAll += reward.experiencePoints;
-
-    //                 // GameObject row = Instantiate(rewardRowPrefab, rewardListContainer);
-    //                 // TextMeshProUGUI rowText = row.GetComponentInChildren<TextMeshProUGUI>();
-
-    //                 TextMeshProUGUI card_Name = CardPrefab.GetComponentInChildren<TextMeshProUGUI>();
-    //                 if (reward.rewardType == RewardType.Gold)
-    //                 {
-    //                     GoldAll += reward.rewardValue;
-    //                     GoldText.text = $"{reward.rewardValue} Gold";
-    //                 }
-    //                 else if (reward.rewardType == RewardType.Card)
-    //                 {
-    //                     foreach (var cardItem in reward.cardReference)
-    //                     {
-    //                         card_Name.text = $"<color=yellow>{cardItem.card.cardName} x{cardItem.amount}</color>";
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         else
-    //         {
-    //             // ดาวไม่ถึง(0 ดาว) ได้แค่ แค่Gold กับ Exp เป็นราสงวัลพื้นฐาน
-    //             if (reward.rewardType == RewardType.Gold)
-    //             {
-    //                 GoldAll += reward.rewardValue;
-    //                 GoldText.text = $"{reward.rewardValue} Gold";
-    //             }
-    //             experienceAll += reward.experiencePoints;
-    //             ExperienceText.text = $"{reward.experiencePoints}";
-    //         }
-    //     }
-    //     // เพิ่ม Gold กับ Exp ให้ผู้เล่น
-    //     GameManager.Instance.AddExperience(experienceAll);
-    //     GameManager.Instance.AddGold(GoldAll);
-    //     // // show UI All
-    //     // GameObject rowAll = Instantiate(rewardRowPrefab, rewardListContainer);
-    //     // TextMeshProUGUI rowTextAll = rowAll.GetComponentInChildren<TextMeshProUGUI>();
-    //     // rowTextAll.text = $"<color=green> Total Received: {GoldAll} Gold , {experienceAll} Exp </color>";
-
-    // }
 
     private void DisplayRewards(int starsAchieved)
     {
@@ -341,25 +279,24 @@ public class UI_QuizController : MonoBehaviour
 
             // --- ตรวจสอบสถานะการรับ ---
             bool isClaimed = GameManager.Instance.HasClaimedReward(reward.reward_id);
-            string statusText = isClaimed ? "<color=grey>(Received)</color>" : "<color=yellow>(New!)</color>";
+
+            // --- เตรียมข้อความสถานะ ---
+            string statusText = "";
+            if (GameManager.Instance.CurrentGameData.isTranstale)
+            {
+                // english
+                statusText = isClaimed ? "<color=grey>(Received)</color>" : "<color=yellow>(New!)</color>";
+            }
+            else
+            {
+                // ไทย
+                statusText = isClaimed ? "<color=grey>(ได้รับแล้ว)</color>" : "<color=yellow>(ใหม่!)</color>";
+            }
 
             // --- กรณีเป็น GOLD ---
             if (reward.rewardType == RewardType.Gold)
             {
-                // GameObject newRow = Instantiate(GoldRowPrefab, rewardListContainer);
-                // TextMeshProUGUI goldText = newRow.GetComponentInChildren<TextMeshProUGUI>();
-
-                goldText.text = $"Gold : {reward.rewardValue} {statusText}";
-
-                // ซ่อนรูปการ์ด (เพราะเป็นทอง) -> พื้นหลังจะหดเล็กลงเองเพราะ ContentSizeFitter
-                // if (cardImageDisplay != null) cardImageDisplay.gameObject.SetActive(false);
-
-                // แจกรางวัล (Logic)
-                if (!isClaimed)
-                {
-                    GameManager.Instance.ClaimReward(reward.reward_id);
-                    GoldAll += reward.rewardValue;
-                }
+                GoldAll += reward.rewardValue;
             }
             // --- กรณีเป็น CARD ---
             else if (reward.rewardType == RewardType.Card)
@@ -396,15 +333,32 @@ public class UI_QuizController : MonoBehaviour
             }
 
             // เพิ่ม EXP เสมอ
-            if (!isClaimed)
-            {
-                experienceAll += reward.experiencePoints;
-            }
+            experienceAll += reward.experiencePoints;
         }
 
         // อัปเดต Text สรุปผลรวมด้านนอก
-        if (goldText != null) goldText.text = $"Gold :{GoldAll}";
-        if (ExperienceText != null) ExperienceText.text = $"Experience :{experienceAll}";
+        if (goldText != null)
+        {
+            if (GameManager.Instance.CurrentGameData.isTranstale)
+            {
+                goldText.text = $"Gold : {GoldAll}";
+            }
+            else
+            {
+                goldText.text = $"ทอง : {GoldAll}";
+            }
+        }
+        if (ExperienceText != null)
+        {
+            if (GameManager.Instance.CurrentGameData.isTranstale)
+            {
+                ExperienceText.text = $"Experience : {experienceAll}";
+            }
+            else
+            {
+                ExperienceText.text = $"ค่าประสบการณ์ : {experienceAll}";
+            }
+        }
 
         // บันทึกผลรวม
         GameManager.Instance.AddExperience(experienceAll);
