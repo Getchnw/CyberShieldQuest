@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
-  m_Name: MyGameTable Shared Data
+  m_Name: MyGameData Shared Data
   m_EditorClassIdentifier: 
-  m_TableCollectionName: MyGameTable
-  m_TableCollectionNameGuidString: 1c8feb9b110f4814da89f80db20711d5
+  m_TableCollectionName: MyGameData
+  m_TableCollectionNameGuidString: b2ac2e641af3dda44af4050d94168cf5
   m_Entries:
   - m_Id: 24882643689472
     m_Key: "\u0E22\u0E34\u0E19\u0E14\u0E35\u0E15\u0E49\u0E2D\u0E19\u0E23\u0E31\u0E1A,
@@ -5729,11 +5729,11 @@ MonoBehaviour:
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
-    rid: 5797615119710552088
+    rid: 5797615119710552094
   references:
     version: 2
     RefIds:
-    - rid: 5797615119710552088
+    - rid: 5797615119710552094
       type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
       data:
-        m_CustomEpoch: 1770801912811
+        m_CustomEpoch: 1770837297299

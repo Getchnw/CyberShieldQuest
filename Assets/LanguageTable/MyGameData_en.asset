@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
-  m_Name: MyGameTable_en
+  m_Name: MyGameData_en
   m_EditorClassIdentifier: 
   m_LocaleId:
     m_Code: en
-  m_SharedData: {fileID: 11400000, guid: 1c8feb9b110f4814da89f80db20711d5, type: 2}
+  m_SharedData: {fileID: 11400000, guid: b2ac2e641af3dda44af4050d94168cf5, type: 2}
   m_Metadata:
     m_Items: []
   m_TableData:
@@ -528,6 +528,198 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 24882702409791
     m_Localized: "2. Use hashing \u2014 Store irreversible hash values."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215444
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 199256034205696
+    m_Localized: NEW GAME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 199435810463744
+    m_Localized: CONTINUOUS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 201310597242880
+    m_Localized: SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 201515853897728
+    m_Localized: EXIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 241246729887744
+    m_Localized: Stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 242196026712064
+    m_Localized: Story
+    m_Metadata:
+      m_Items: []
+  - m_Id: 242772261167104
+    m_Localized: Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 243933563281408
+    m_Localized: Shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 244363445886976
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 246741721112576
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 246935640563712
+    m_Localized: SFX
+    m_Metadata:
+      m_Items: []
+  - m_Id: 250624505765888
+    m_Localized: Back To Home
+    m_Metadata:
+      m_Items: []
+  - m_Id: 251107433734144
+    m_Localized: Back To Story
+    m_Metadata:
+      m_Items: []
+  - m_Id: 252780143140864
+    m_Localized: Score Pre-test & Post-test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 253652642258944
+    m_Localized: Pre-Test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 253732149485568
+    m_Localized: Post-Test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 255404598845440
+    m_Localized: Previous
+    m_Metadata:
+      m_Items: []
+  - m_Id: 255539097591808
+    m_Localized: Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 255904023011328
+    m_Localized: Submit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 258255966396416
+    m_Localized: Click to Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 258536695357440
+    m_Localized: Log
+    m_Metadata:
+      m_Items: []
+  - m_Id: 258840048394240
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 336883056074752
+    m_Localized: Reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 337069476110336
+    m_Localized: Go to Chapter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 346775837958144
+    m_Localized: Prize List
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351542077251584
+    m_Localized: Collection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350749186023424
+    m_Localized: Banner A01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350866370682880
+    m_Localized: Banner A02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350879255584768
+    m_Localized: Banner A03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351277513138176
+    m_Localized: 1 time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351402201407488
+    m_Localized: 10 time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 354431822684160
+    m_Localized: Enter Deck Name...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 354977694572544
+    m_Localized: New Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 355189725028352
+    m_Localized: Search Card...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 355709101498368
+    m_Localized: Delete Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357810590408704
+    m_Localized: Back to Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358301680492544
+    m_Localized: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358467774930944
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 360789028593664
+    m_Localized: Star condition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 360985145860096
+    m_Localized: Start game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 361348737490944
+    m_Localized: Confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362725077377024
+    m_Localized: Take Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362978585305088
+    m_Localized: End Turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363291912396800
+    m_Localized: Pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363815965515776
+    m_Localized: Quit Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363939185778688
+    m_Localized: Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364062368292864
+    m_Localized: Log
     m_Metadata:
       m_Items: []
   - m_Id: 24882702409792
@@ -3841,194 +4033,6 @@ MonoBehaviour:
     m_Localized: Incorrect, because Salting is a defensive technique used to protect
       passwords by adding random data before hashing. It is not an attack and is
       unrelated to intercepting web traffic.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 199256034205696
-    m_Localized: NEW GAME
-    m_Metadata:
-      m_Items: []
-  - m_Id: 199435810463744
-    m_Localized: CONTINUOUS
-    m_Metadata:
-      m_Items: []
-  - m_Id: 201310597242880
-    m_Localized: SETTINGS
-    m_Metadata:
-      m_Items: []
-  - m_Id: 201515853897728
-    m_Localized: EXIT
-    m_Metadata:
-      m_Items: []
-  - m_Id: 241246729887744
-    m_Localized: Stage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 242196026712064
-    m_Localized: Story
-    m_Metadata:
-      m_Items: []
-  - m_Id: 242772261167104
-    m_Localized: Deck
-    m_Metadata:
-      m_Items: []
-  - m_Id: 243933563281408
-    m_Localized: Shop
-    m_Metadata:
-      m_Items: []
-  - m_Id: 244363445886976
-    m_Localized: Settings
-    m_Metadata:
-      m_Items: []
-  - m_Id: 246741721112576
-    m_Localized: Music
-    m_Metadata:
-      m_Items: []
-  - m_Id: 246935640563712
-    m_Localized: SFX
-    m_Metadata:
-      m_Items: []
-  - m_Id: 250624505765888
-    m_Localized: Back To Home
-    m_Metadata:
-      m_Items: []
-  - m_Id: 251107433734144
-    m_Localized: Back To Story
-    m_Metadata:
-      m_Items: []
-  - m_Id: 252780143140864
-    m_Localized: Score Pre-test & Post-test
-    m_Metadata:
-      m_Items: []
-  - m_Id: 253652642258944
-    m_Localized: Pre-Test
-    m_Metadata:
-      m_Items: []
-  - m_Id: 253732149485568
-    m_Localized: Post-Test
-    m_Metadata:
-      m_Items: []
-  - m_Id: 255404598845440
-    m_Localized: Previous
-    m_Metadata:
-      m_Items: []
-  - m_Id: 255539097591808
-    m_Localized: Next
-    m_Metadata:
-      m_Items: []
-  - m_Id: 255904023011328
-    m_Localized: Submit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 258255966396416
-    m_Localized: Click to Next
-    m_Metadata:
-      m_Items: []
-  - m_Id: 258536695357440
-    m_Localized: Log
-    m_Metadata:
-      m_Items: []
-  - m_Id: 258840048394240
-    m_Localized: Back
-    m_Metadata:
-      m_Items: []
-  - m_Id: 336883056074752
-    m_Localized: Reward
-    m_Metadata:
-      m_Items: []
-  - m_Id: 337069476110336
-    m_Localized: Go to Chapter
-    m_Metadata:
-      m_Items: []
-  - m_Id: 346775837958144
-    m_Localized: Prize List
-    m_Metadata:
-      m_Items: []
-  - m_Id: 350749186023424
-    m_Localized: Banner A01
-    m_Metadata:
-      m_Items: []
-  - m_Id: 350866370682880
-    m_Localized: Banner A02
-    m_Metadata:
-      m_Items: []
-  - m_Id: 350879255584768
-    m_Localized: Banner A03
-    m_Metadata:
-      m_Items: []
-  - m_Id: 351277513138176
-    m_Localized: 1 time
-    m_Metadata:
-      m_Items: []
-  - m_Id: 351402201407488
-    m_Localized: 10 time
-    m_Metadata:
-      m_Items: []
-  - m_Id: 351542077251584
-    m_Localized: Collection
-    m_Metadata:
-      m_Items: []
-  - m_Id: 354431822684160
-    m_Localized: Enter Deck Name...
-    m_Metadata:
-      m_Items: []
-  - m_Id: 354977694572544
-    m_Localized: New Deck
-    m_Metadata:
-      m_Items: []
-  - m_Id: 355189725028352
-    m_Localized: Search Card...
-    m_Metadata:
-      m_Items: []
-  - m_Id: 355709101498368
-    m_Localized: Delete Deck
-    m_Metadata:
-      m_Items: []
-  - m_Id: 357810590408704
-    m_Localized: Back to Deck
-    m_Metadata:
-      m_Items: []
-  - m_Id: 358301680492544
-    m_Localized: Yes
-    m_Metadata:
-      m_Items: []
-  - m_Id: 358467774930944
-    m_Localized: No
-    m_Metadata:
-      m_Items: []
-  - m_Id: 360789028593664
-    m_Localized: Star condition
-    m_Metadata:
-      m_Items: []
-  - m_Id: 360985145860096
-    m_Localized: Start game
-    m_Metadata:
-      m_Items: []
-  - m_Id: 361348737490944
-    m_Localized: Confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 362725077377024
-    m_Localized: Take Damage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 362978585305088
-    m_Localized: End Turn
-    m_Metadata:
-      m_Items: []
-  - m_Id: 363291912396800
-    m_Localized: Pause
-    m_Metadata:
-      m_Items: []
-  - m_Id: 363815965515776
-    m_Localized: Quit Game
-    m_Metadata:
-      m_Items: []
-  - m_Id: 363939185778688
-    m_Localized: Resume
-    m_Metadata:
-      m_Items: []
-  - m_Id: 364062368292864
-    m_Localized: Log
     m_Metadata:
       m_Items: []
   references:
