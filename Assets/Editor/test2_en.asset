@@ -1,0 +1,727 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: test2_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: b2ac2e641af3dda44af4050d94168cf5, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 24882643689472
+    m_Localized: Welcome, Sentinel. Your first lesson begins here...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882694021120
+    m_Localized: 'A01: Broken Access Control'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215424
+    m_Localized: "The threat we will study today is IDOR (Insecure Direct Object
+      References) \u2014 when a system \u201Cforgets to verify ownership\u201D of
+      data."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215425
+    m_Localized: Those shadows... are they the IDOR threat? How does it find its
+      victims?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215426
+    m_Localized: That is the first step... The threat uses a script called an ID
+      Enumerator. It runs through IDs (101, 102, 103) continuously, searching for
+      vulnerable targets.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215427
+    m_Localized: "When it finds a target, the most basic form of the threat appears:
+      IDOR (Read Data) \u2014 known as the Data Snoop."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215428
+    m_Localized: "It can \u201Cread\u201D or secretly peek at other users\u2019 profiles
+      and confidential information."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215429
+    m_Localized: "Just \u201Cpeeking\u201D is already bad... but that\u2019s all
+      it can do, right?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215430
+    m_Localized: No, Sentinel... That is only the weakest variant. IDOR has far more
+      dangerous forms.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215431
+    m_Localized: "The second variant is IDOR (Write Data) \u2014 the Profile Defacer.
+      It doesn\u2019t just \u201Clook.\u201D It can \u201Cmodify\u201D or \u201Cdelete\u201D
+      other people\u2019s data by intercepting form submissions and altering the
+      hidden ID."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215432
+    m_Localized: "The third variant is IDOR (Perform Action) \u2014 the Account Hijacker.
+      It \u201Cimpersonates\u201D others to perform critical actions, such as transferring
+      money or taking over an account."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215433
+    m_Localized: "There are also variants that can \u201Ccreate\u201D unauthorized
+      ghost data (Unauthorized Creator), and even advanced types that execute attacks
+      without visible results (Blind Executor)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215434
+    m_Localized: "That\u2019s terrifying! Read, write, create, impersonate..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215435
+    m_Localized: How can we defend against such a wide range of threats?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215436
+    m_Localized: "We have multiple layers of defense. The first is to \u201Cobscure\u201D
+      it. We use the GUID Cloak. It transforms simple, predictable IDs like 1, 2,
+      3 into long, random strings (UUIDs), making it impossible for attackers to
+      \u201Cguess\u201D the next victim\u2019s ID."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215437
+    m_Localized: But what if the attacker already knows that random ID?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215438
+    m_Localized: Then the GUID Cloak cannot prevent impersonation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215439
+    m_Localized: You are correct... That is why we need the strongest defense.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215440
+    m_Localized: The Session Guardian.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215441
+    m_Localized: "It verifies every request \u2014 whether reading, writing, or impersonating
+      \u2014 against the true owner stored in the session. If the logged-in ID does
+      not match the ID of the requested data, access is denied."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215442
+    m_Localized: And in emergency situations, we also have a one-time defensive measure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215443
+    m_Localized: "Access Denied \u2014 an interrupt guard that immediately cuts off
+      the connection the moment the system detects an anomaly."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215445
+    m_Localized: Now you understand the core concept of IDOR and how to defend against
+      it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215446
+    m_Localized: 'Lesson Summary:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215447
+    m_Localized: 1. IDOR ranges from data exposure to full impersonation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215448
+    m_Localized: 2. Use hard-to-guess IDs.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215449
+    m_Localized: 3. Always verify user ownership.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215450
+    m_Localized: "You\u2019re ready for the next chapter, Sentinel!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215451
+    m_Localized: The next lesson is Path Traversal...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215452
+    m_Localized: "A threat that uses the symbol `../` to \u201Cclimb\u201D out of
+      restricted folders."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215453
+    m_Localized: "\u201CClimb\u201D? What do you mean?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215454
+    m_Localized: "Exactly. The Dot-Dot-Slash Sneak uses the `../` technique to back
+      out of an allowed directory and access uncontrolled parent directories \u2014
+      like walking backward out of a locked room into a public hallway."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215455
+    m_Localized: So we just create a simple filter that looks for and blocks `../`,
+      right?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215456
+    m_Localized: "That\u2019s a good first line of defense... but it will only stop
+      the basic Dot-Dot-Slash Sneak. This threat is smarter than that \u2014 it \u201Cevolves\u201D
+      to bypass our filters."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215457
+    m_Localized: How can it bypass our Simple Filter if the filter is already looking
+      for `../`?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215458
+    m_Localized: ' '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215459
+    m_Localized: "Because it uses a \u201Csecret coded language\u201D called URL
+      Encoding. In the digital world, special characters like `/` or `.` cannot always
+      travel directly in a URL. They must be translated into codes that begin with
+      `%`."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215460
+    m_Localized: 'For example: The symbol `/` becomes `%2f` and The symbol `.` becomes
+      `%2e`'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215461
+    m_Localized: "The Encoded Infiltrator knows this well. Instead of sending `../`
+      directly, it disguises the command as `%2e%2e%2f` \u2014 which is simply `../`
+      in encoded form."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215462
+    m_Localized: "Our Simple Filter only looks for `../`. When it sees `%2e%2e%2f`,
+      it assumes it\u2019s safe and lets it pass. But once it reaches the server,
+      the code is decoded back into its real form \u2014 and the attack succeeds."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409728
+    m_Localized: "That\u2019s devious! Just disguising it is enough to get through!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409729
+    m_Localized: Wait... what about a Nested Encoder that double-encodes?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409730
+    m_Localized: "That\u2019s an advanced evolution. It knows modern defenses may
+      decode input once \u2014 so it encodes it twice."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409731
+    m_Localized: "It knows that the \u201Csecret code\u201D for `%` is `%25`. So
+      it takes `%2f` (which means `/`) and encodes it again, turning it into `%252f`."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409732
+    m_Localized: "When the defense decodes it the first time, `%252f` becomes `%2f`.
+      The filter thinks it\u2019s safe. But when it reaches the server, it gets decoded
+      again and finally becomes `/`. The attack succeeds."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409733
+    m_Localized: "Some attackers don\u2019t \u201Cclimb\u201D at all. They use an
+      Absolute Path \u2014 the Absolute Path Invoker. It shouts the full address
+      directly (for example, `/etc/passwd`), hoping the defense system is naive enough
+      to only look for `../`."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409734
+    m_Localized: This is complicated! How do we defend against layered disguises
+      like this?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409735
+    m_Localized: We must use smarter defenses. To handle the Encoded Infiltrator,
+      we deploy the Canonicalizer Shield.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409736
+    m_Localized: "It decodes all incoming data back to its true form \u2014 the Canonical
+      Form \u2014 before passing it to the filter for inspection. To defeat the Nested
+      Encoder, we use a Recursive Normalizer that repeatedly decodes input until
+      it is truly clean."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409737
+    m_Localized: "To defend against Absolute Path attacks, we use the Root Jail.
+      It confines all processes within a designated directory. Even if an attacker
+      uses an Absolute Path, they can only see files inside this \u201Cjail\u201D
+      \u2014 never the real system files."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409738
+    m_Localized: And of course, the strongest defense is the Secure Path Validator.
+      It ignores whatever path the user sends and checks only against a trusted Allowlist.
+      If the request is not on the list, it is immediately denied.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409739
+    m_Localized: "Path Traversal also has advanced techniques \u2014 such as the
+      Null-Byte Assassin, which uses a null character to prematurely terminate file
+      extension checks..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409740
+    m_Localized: "Or even the Decoy File Trap \u2014 where we plant a fake file to
+      lure attackers, and the system locks access immediately when it is touched."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409741
+    m_Localized: 1. Never trust user input.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409742
+    m_Localized: 2. Decode and normalize before validating.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409743
+    m_Localized: 3. Use an allowlist (only permit explicitly safe input).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409744
+    m_Localized: "Sentinel, the final threat of A01... This one doesn\u2019t attack
+      the front door. Instead, it tries to \u201Cdiscover\u201D doors that developers
+      have \u201Chidden,\u201D believing no one will ever find them."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409745
+    m_Localized: This threat is called Forced Browsing, and the tool it uses is the
+      Directory Brute-Forcer. It continuously guesses URL names (such as /admin,
+      /backup, /config) until it finds one that exists.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409746
+    m_Localized: "Wait, Oracle... Even if it finds the door, wouldn\u2019t it still
+      be locked? We\u2019re not Admins, after all."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409747
+    m_Localized: 'That is the sharpest question... and that is where the real threat
+      appears: Missing Function-Level Access Control (MFLAC).'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409748
+    m_Localized: "The truth is... the door was never locked. The developer believed
+      \u201Chiding\u201D it was enough. They forgot to put a lock on the door \u2014
+      no proper authorization check was implemented."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409749
+    m_Localized: "So when the Directory Brute-Forcer discovers the door, another
+      threat \u2014 the Admin Gate-Crasher \u2014 simply walks right through and
+      takes full administrative privileges."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409750
+    m_Localized: "So merely \u201Chiding\u201D a door is never truly secure!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409751
+    m_Localized: "Correct. The best defense is not to \u201Chide,\u201D but to \u201Clock
+      every door.\u201D That\u2019s the role of the Warden of Roles. It stands guard
+      at every doorway and verifies the user\u2019s role before granting access."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409752
+    m_Localized: "And in emergency situations, we enforce a Deny by Default Policy
+      \u2014 the strict rule that says: If access is not explicitly allowed, it is
+      automatically denied."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409753
+    m_Localized: And of course, our highest level of protection is the Privilege
+      Checkpoint, which verifies every action, not just every door.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409754
+    m_Localized: 'Now you understand the complete attack chain:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409755
+    m_Localized: "1. Forced Browsing \u2014 Access hidden pages."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409756
+    m_Localized: "2. Missing Access Control \u2014 No restrictions."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409757
+    m_Localized: "3. Warden of Roles \u2014 Enforce roles."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409758
+    m_Localized: You now fully understand A01...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409759
+    m_Localized: "Let\u2019s begin the test, Sentinel."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409760
+    m_Localized: A new lesson begins, Sentinel...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409761
+    m_Localized: "A02: Cryptographic Failures \u2014 failures in protecting secrets
+      properly."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409762
+    m_Localized: What is that alarm signal, Oracle?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409763
+    m_Localized: "It seems the data isn\u2019t being stolen\u2026 it\u2019s leaking
+      out on its own."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409764
+    m_Localized: Correct. That is an unencrypted http:// data stream. Sending sensitive
+      information through it is like writing secrets on a postcard and mailing it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409765
+    m_Localized: "Our first threat doesn\u2019t need to do anything complicated.
+      The HTTP Sniffer simply waits in the middle of the path and secretly \u201Creads\u201D
+      every postcard that passes by \u2014 learning everything in your hand."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409766
+    m_Localized: "It\u2019s that easy? Then we just shouldn\u2019t send postcards.
+      We should use a \u201Cmobile safe\u201D \u2014 https://, right?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409767
+    m_Localized: "Exactly. Our fundamental defense is the TLS Encryption Tunnel.
+      It\u2019s the secure safe (HTTPS) that wraps our data, preventing the HTTP
+      Sniffer from peeking inside."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409768
+    m_Localized: "Great! So once we have the TLS Encryption Tunnel, we\u2019re safe."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409769
+    m_Localized: Not so fast...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409770
+    m_Localized: What if the threat tricks you into not using the safe at all?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409771
+    m_Localized: "That is the second threat: the SSL Stripper. It stands between
+      you and the server. When you request the \u201Csafe\u201D (HTTPS),"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409772
+    m_Localized: "it secretly tells the server, \u201CI\u2019ll use the safe,\u201D
+      but turns back to you and says, \u201CThe server said a postcard (HTTP) is
+      fine.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409773
+    m_Localized: "It literally strips away your protection. (Regarding GUID Cloak
+      \u2014 that defense belongs to access control protection, not cryptographic
+      transmission security.)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409774
+    m_Localized: 'Now you understand how to protect data in transit:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409775
+    m_Localized: "1. Use HTTPS \u2014 Prevent eavesdropping."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409776
+    m_Localized: "2. Enable HSTS \u2014 Stop SSL stripping."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409777
+    m_Localized: "3. Strong ciphers \u2014 Use secure configurations."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409778
+    m_Localized: "Sentinel, our TLS Shield is performing perfectly. Data in transit
+      is secure\u2026 But this time, the alarm is coming from inside our data vault
+      itself."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409779
+    m_Localized: Does that mean an intruder is already inside? Are our secrets safe?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409780
+    m_Localized: That is the critical question. This lesson is about Insecure Data
+      at Rest. The real test is what an attacker sees after opening our vault.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409781
+    m_Localized: When an intruder gains access to the database, a threat known as
+      the Database Peeker immediately gets to work.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409782
+    m_Localized: "If we store sensitive data \u2014 such as passwords \u2014 in plain
+      text, it\u2019s like writing all our secrets in an unlocked notebook."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409783
+    m_Localized: What would the Database Peeker do with such an open notebook?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409784
+    m_Localized: "It launches a Database Dump attack \u2014 copying all readable
+      sensitive data from the database at once, instantly obtaining every secret."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409785
+    m_Localized: Then we must never store secrets in plain text! How do we defend
+      against this?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409786
+    m_Localized: We use the Crypto-Forge, known technically as a Secure Hash Protocol.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409787
+    m_Localized: This is a one-way transformation process that crushes plain-text
+      passwords into unreadable hash values. Even if an attacker steals the hash,
+      they cannot reverse it back into the original password.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409788
+    m_Localized: "With this method, even if the Database Peeker performs a dump,
+      all they obtain are unreadable hash values \u2014 not the real secrets."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409789
+    m_Localized: Now our stored data is secure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409790
+    m_Localized: "1. No plain text \u2014 Don\u2019t store sensitive data openly."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882702409791
+    m_Localized: "2. Use hashing \u2014 Store irreversible hash values."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24882698215444
+    m_Localized: ' '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 199256034205696
+    m_Localized: NEW GAME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 199435810463744
+    m_Localized: CONTINUOUS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 201310597242880
+    m_Localized: SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 201515853897728
+    m_Localized: EXIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 241246729887744
+    m_Localized: Stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 242196026712064
+    m_Localized: Story
+    m_Metadata:
+      m_Items: []
+  - m_Id: 242772261167104
+    m_Localized: Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 243933563281408
+    m_Localized: Shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 244363445886976
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 246741721112576
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 246935640563712
+    m_Localized: SFX
+    m_Metadata:
+      m_Items: []
+  - m_Id: 250624505765888
+    m_Localized: Back To Home
+    m_Metadata:
+      m_Items: []
+  - m_Id: 251107433734144
+    m_Localized: Back To Story
+    m_Metadata:
+      m_Items: []
+  - m_Id: 252780143140864
+    m_Localized: Score Pre-test & Post-test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 253652642258944
+    m_Localized: Pre-Test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 253732149485568
+    m_Localized: Post-Test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 255404598845440
+    m_Localized: Previous
+    m_Metadata:
+      m_Items: []
+  - m_Id: 255539097591808
+    m_Localized: Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 255904023011328
+    m_Localized: Submit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 258255966396416
+    m_Localized: Click to Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 258536695357440
+    m_Localized: Log
+    m_Metadata:
+      m_Items: []
+  - m_Id: 258840048394240
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 336883056074752
+    m_Localized: Reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 337069476110336
+    m_Localized: Go to Chapter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 346775837958144
+    m_Localized: Prize List
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351542077251584
+    m_Localized: Collection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350749186023424
+    m_Localized: Banner A01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350866370682880
+    m_Localized: Banner A02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350879255584768
+    m_Localized: Banner A03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351277513138176
+    m_Localized: 1 time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351402201407488
+    m_Localized: 10 time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 354431822684160
+    m_Localized: Enter Deck Name...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 354977694572544
+    m_Localized: New Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 355189725028352
+    m_Localized: Search Card...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 355709101498368
+    m_Localized: Delete Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357810590408704
+    m_Localized: Back to Deck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358301680492544
+    m_Localized: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358467774930944
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 360789028593664
+    m_Localized: Star condition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 360985145860096
+    m_Localized: Start game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 361348737490944
+    m_Localized: Confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362725077377024
+    m_Localized: Take Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362978585305088
+    m_Localized: End Turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363291912396800
+    m_Localized: Pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363815965515776
+    m_Localized: Quit Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363939185778688
+    m_Localized: Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364062368292864
+    m_Localized: Log
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
