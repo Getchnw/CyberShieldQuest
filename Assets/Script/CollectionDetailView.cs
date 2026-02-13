@@ -44,13 +44,13 @@ public class CollectionDetailView : MonoBehaviour
 
         gameObject.SetActive(true);
         RefreshView(); // อัปเดตข้อมูล
-        
+
         // 🔥 ฟังการเปลี่ยนแปลง inventory เพื่ออัปเดต UI
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnInventoryChanged += RefreshView;
         }
-        
+
         // 🔥 Debug: แสดงสถานะตัวแปร
         Debug.Log($"[CollectionDetailView] Opened: {card.cardName} | onCraftAction={onCraftAction != null} | onDismantleAction={onDismantleAction != null}");
     }
@@ -63,7 +63,7 @@ public class CollectionDetailView : MonoBehaviour
         if (currentCard.artwork != null) artworkImage.sprite = currentCard.artwork;
         ApplyFrameByRarity(currentCard);
         nameText.text = currentCard.cardName;
-        
+
         string subCat = currentCard.subCategory != SubCategory.General ? $" / [{currentCard.subCategory}]" : "";
         typeText.text = $"{currentCard.type}{subCat}";
 
@@ -71,25 +71,41 @@ public class CollectionDetailView : MonoBehaviour
         if (currentCard.type == CardType.Monster) stats += $" | Atk: {currentCard.atk}";
         statsText.text = stats;
 
-        abilityText.text = currentCard.abilityText;
-        flavorText.text = $"<i>{currentCard.flavorText}</i>";
+        if (GameManager.Instance.CurrentGameData.isTranstale)
+        {
+            // English
+            // ดึงคำแปลมาจากตาราง
+            abilityText.text = LanguageBridge.Get(currentCard.abilityText);
+            flavorText.text = $"<i>{LanguageBridge.Get(currentCard.flavorText)}</i>";
+        }
+        else
+        {
+            // Thai
+            abilityText.text = currentCard.abilityText;
+            flavorText.text = $"<i>{currentCard.flavorText}</i>";
+        }
 
         // 2. ข้อมูลจำนวนที่มี
         int owned = GameManager.Instance.GetCardAmount(currentCard.card_id);
-        amountOwnedText.text = $"Owned: {owned}";
+        amountOwnedText.text = GameManager.Instance.CurrentGameData.isTranstale
+                                ? $"Owned : {owned}" // true = English
+                                : $"คงเหลือ : {owned}";//false = thai
 
         // 3. ตั้งค่าปุ่ม Craft
         int craftCost = CraftingSystem.GetCraftCost(currentCard.rarity);
         int playerScrap = GameManager.Instance.CurrentGameData.profile.scrap;
-        
-        craftCostText.text = $"Craft\n-{craftCost} Scrap";
+
+        craftCostText.text = GameManager.Instance.CurrentGameData.isTranstale
+                                ? $"Craft\n-{craftCost} Scrap"
+                                : $"สร้างการ์ด\n-{craftCost} ชิ้นส่วน";
         craftButton.interactable = (playerScrap >= craftCost);
-        
+
         // 🔥 ลบ listeners เก่า + เพิ่ม listeners ใหม่
         craftButton.onClick.RemoveAllListeners();
         if (onCraftAction != null)
         {
-            craftButton.onClick.AddListener(() => {
+            craftButton.onClick.AddListener(() =>
+            {
                 Debug.Log($"[Craft Button] Clicked - Card: {currentCard.cardName}");
                 onCraftAction?.Invoke(currentCard);
             });
@@ -101,15 +117,18 @@ public class CollectionDetailView : MonoBehaviour
 
         // 4. ตั้งค่าปุ่ม Dismantle
         int dismantleVal = CraftingSystem.GetDismantleValue(currentCard.rarity);
-        
-        dismantleValText.text = $"Dismantle\n+{dismantleVal} Scrap";
+
+        dismantleValText.text = GameManager.Instance.CurrentGameData.isTranstale
+                                ? $"Dismantle\n+{dismantleVal} Scrap"
+                                : $"ย่อยการ์ด\n+{dismantleVal} ชิ้นส่วน";
         dismantleButton.interactable = (owned > 0); // ต้องมีของถึงจะย่อยได้
-        
+
         // 🔥 ลบ listeners เก่า + เพิ่ม listeners ใหม่
         dismantleButton.onClick.RemoveAllListeners();
         if (onDismantleAction != null)
         {
-            dismantleButton.onClick.AddListener(() => {
+            dismantleButton.onClick.AddListener(() =>
+            {
                 Debug.Log($"[Dismantle Button] Clicked - Card: {currentCard.cardName}");
                 onDismantleAction?.Invoke(currentCard);
             });
@@ -131,7 +150,7 @@ public class CollectionDetailView : MonoBehaviour
         {
             GameManager.Instance.OnInventoryChanged -= RefreshView;
         }
-        
+
         gameObject.SetActive(false);
     }
 

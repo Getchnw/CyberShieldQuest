@@ -22,14 +22,14 @@ public class CollectionManager : MonoBehaviour
     {
         LoadCardLibrary();
         RefreshUI();
-        
+
         // 🔥 ฟังการเปลี่ยนแปลง inventory
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnInventoryChanged += RefreshUI;
         }
     }
-    
+
     private void OnDestroy()
     {
         // 🔥 ลบ listener เวลาออกจาก scene
@@ -42,7 +42,17 @@ public class CollectionManager : MonoBehaviour
     void Update()
     {
         if (GameManager.Instance != null && scrapText != null)
-            scrapText.text = $"Scrap: {GameManager.Instance.CurrentGameData.profile.scrap}";
+        {
+            if (GameManager.Instance.CurrentGameData.isTranstale)
+            {
+                // English
+                scrapText.text = $"Scrap: {GameManager.Instance.CurrentGameData.profile.scrap}";
+            }
+            else
+            {
+                scrapText.text = $"ชิ้นส่วน : {GameManager.Instance.CurrentGameData.profile.scrap}";
+            }
+        }
     }
 
     void LoadCardLibrary()
@@ -87,13 +97,31 @@ public class CollectionManager : MonoBehaviour
     void OnCraftButton(CardData card)
     {
         int cost = CraftingSystem.GetCraftCost(card.rarity);
-        ConfirmAction($"Create  {card.cardName} \nCost: {cost} Scrap?", () => StartCoroutine(CraftProcess(card)));
+        if (GameManager.Instance.CurrentGameData.isTranstale)
+        {
+            // English
+            ConfirmAction($"Create  {card.cardName} \nCost: {cost} Scrap?", () => StartCoroutine(CraftProcess(card)));
+        }
+        else
+        {
+            // Thai
+            ConfirmAction($"สร้างการ์ด  {card.cardName} \nใช้ชิ้นส่วนทั้งหมด {cost} ชิ้นส่วน", () => StartCoroutine(CraftProcess(card)));
+        }
     }
 
     void OnDismantleButton(CardData card)
     {
         int val = CraftingSystem.GetDismantleValue(card.rarity);
-        ConfirmAction($"Dismantle {card.cardName} \nGain: {val} Scrap?", () => StartCoroutine(DismantleProcess(card)));
+        if (GameManager.Instance.CurrentGameData.isTranstale)
+        {
+            // English
+            ConfirmAction($"Dismantle {card.cardName} \nGain: {val} Scrap?", () => StartCoroutine(DismantleProcess(card)));
+        }
+        else
+        {
+            // Thai
+            ConfirmAction($"ย่อยการ์ด  {card.cardName} \nได้รับชิ้นส่วนทั้งหมด {val} ชิ้นส่วน", () => StartCoroutine(CraftProcess(card)));
+        }
     }
 
     // --- Process จริงๆ (Coroutine) ---
@@ -112,7 +140,7 @@ public class CollectionManager : MonoBehaviour
             // 🔥 ปิด confirm + detail popup
             confirmPopup?.Close();
             detailPopup?.Close();
-            
+
             // ให้ Save มีเวลา execute
             yield return null;
         }
@@ -129,11 +157,11 @@ public class CollectionManager : MonoBehaviour
             GameManager.Instance.SaveCurrentGame();
 
             DailyQuestManager.Instance.UpdateProgress(QuestType.Card, 1, "scrap");
-            
+
             // 🔥 ปิด confirm + detail popup
             confirmPopup?.Close();
             detailPopup?.Close();
-            
+
             // ให้ Save มีเวลา execute
             yield return null;
         }

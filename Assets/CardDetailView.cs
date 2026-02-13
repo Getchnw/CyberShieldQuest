@@ -40,30 +40,87 @@ public class CardDetailView : MonoBehaviour
         }
         ApplyFrameByRarity(data);
 
-        // 2. ใส่ชื่อ (เพิ่มหัวข้อ Name:)
-        nameText.text = $"<b>Name:</b> {data.cardName}";
+        //// 2. ใส่ชื่อ (เพิ่มหัวข้อ Name:)
+        //nameText.text = $"<b>Name:</b> {data.cardName}";
 
-        // 3. ใส่ประเภท (เพิ่มหัวข้อ Type:)
-        // เช็คว่ามี SubCategory ไหม (ถ้าไม่ใช่ None/General ให้โชว์ด้วย)
-        string subCat = (data.subCategory != SubCategory.General && data.subCategory != SubCategory.General) 
-                        ? $" / [{data.subCategory}]" 
-                        : "";
-        typeText.text = $"<b>Type:</b> {data.type}{subCat}";
+        //// 3. ใส่ประเภท (เพิ่มหัวข้อ Type:)
+        //// เช็คว่ามี SubCategory ไหม (ถ้าไม่ใช่ None/General ให้โชว์ด้วย)
+        //string subCat = (data.subCategory != SubCategory.General && data.subCategory != SubCategory.General) 
+        //                ? $" / [{data.subCategory}]" 
+        //                : "";
+        //typeText.text = $"<b>Type:</b> {data.type}{subCat}";
 
-        // 4. ใส่ค่าพลัง (เพิ่มหัวข้อ Stats:)
-        string stats = $"Cost: {data.cost}";
-        if (data.type == CardType.Monster || data.type == CardType.Token)
+        //// 4. ใส่ค่าพลัง (เพิ่มหัวข้อ Stats:)
+        //string stats = $"Cost: {data.cost}";
+        //if (data.type == CardType.Monster || data.type == CardType.Token)
+        //{
+        //    stats += $" | Atk: {data.atk}";
+        //    // if (data.hp > 0) stats += $" | HP: {data.hp}"; // ถ้ามี HP ให้เปิดบรรทัดนี้
+        //}
+        //statsText.text = $"<b>Stats:</b> {stats}";
+
+        //// 5. ใส่สกิล (เพิ่มหัวข้อ Skill: และขึ้นบรรทัดใหม่)
+        //abilityText.text = $"<b>Skill:</b>\n{data.abilityText}";
+
+        //// 6. ใส่คำบรรยาย (เพิ่มหัวข้อ Description: และทำตัวเอียง)
+        //flavorText.text = $"<b>Description:</b>\n<i>{data.flavorText}</i>";
+
+        if (GameManager.Instance.CurrentGameData.isTranstale)
         {
-            stats += $" | Atk: {data.atk}";
-            // if (data.hp > 0) stats += $" | HP: {data.hp}"; // ถ้ามี HP ให้เปิดบรรทัดนี้
+            //English
+            // 2. ใส่ชื่อ (เพิ่มหัวข้อ Name:)
+            nameText.text = $"<b>Name:</b> {data.cardName}";
+
+            // 3. ใส่ประเภท (เพิ่มหัวข้อ Type:)
+            // เช็คว่ามี SubCategory ไหม (ถ้าไม่ใช่ None/General ให้โชว์ด้วย)
+            string subCat = (data.subCategory != SubCategory.General && data.subCategory != SubCategory.General)
+                            ? $" / [{data.subCategory}]"
+                            : "";
+            typeText.text = $"<b>Type:</b> {data.type}{subCat}";
+
+            // 4. ใส่ค่าพลัง (เพิ่มหัวข้อ Stats:)
+            string stats = $"Cost: {data.cost}";
+            if (data.type == CardType.Monster || data.type == CardType.Token)
+            {
+                stats += $" | Atk: {data.atk}";
+                // if (data.hp > 0) stats += $" | HP: {data.hp}"; // ถ้ามี HP ให้เปิดบรรทัดนี้
+            }
+            statsText.text = $"<b>Stats:</b> {stats}";
+
+            // 5. ใส่สกิล (เพิ่มหัวข้อ Skill: และขึ้นบรรทัดใหม่)
+            abilityText.text = $"<b>Skill:</b>\n{LanguageBridge.Get(data.abilityText)}";
+
+            // 6. ใส่คำบรรยาย (เพิ่มหัวข้อ Description: และทำตัวเอียง)
+            flavorText.text = $"<b>Description:</b>\n<i>{LanguageBridge.Get(data.flavorText)}</i>";
         }
-        statsText.text = $"<b>Stats:</b> {stats}";
+        else
+        {
+            //Thai
+            // 2. ใส่ชื่อ (เพิ่มหัวข้อ Name:)
+            nameText.text = $"<b>ชื่อ:</b> {data.cardName}";
 
-        // 5. ใส่สกิล (เพิ่มหัวข้อ Skill: และขึ้นบรรทัดใหม่)
-        abilityText.text = $"<b>Skill:</b>\n{data.abilityText}";
+            // 3. ใส่ประเภท (เพิ่มหัวข้อ Type:)
+            // เช็คว่ามี SubCategory ไหม (ถ้าไม่ใช่ None/General ให้โชว์ด้วย)
+            string subCat = (data.subCategory != SubCategory.General && data.subCategory != SubCategory.General)
+                            ? $" / [{data.subCategory}]"
+                            : "";
+            typeText.text = $"<b>ประเภท:</b> {data.type}{subCat}";
 
-        // 6. ใส่คำบรรยาย (เพิ่มหัวข้อ Description: และทำตัวเอียง)
-        flavorText.text = $"<b>Description:</b>\n<i>{data.flavorText}</i>";
+            // 4. ใส่ค่าพลัง (เพิ่มหัวข้อ Stats:)
+            string stats = $"Cost: {data.cost}";
+            if (data.type == CardType.Monster || data.type == CardType.Token)
+            {
+                stats += $" | Atk: {data.atk}";
+                // if (data.hp > 0) stats += $" | HP: {data.hp}"; // ถ้ามี HP ให้เปิดบรรทัดนี้
+            }
+            statsText.text = $"<b>ค่าสถานะ:</b> {stats}";
+
+            // 5. ใส่สกิล (เพิ่มหัวข้อ Skill: และขึ้นบรรทัดใหม่)
+            abilityText.text = $"<b>สกิล:</b>\n{data.abilityText}";
+
+            // 6. ใส่คำบรรยาย (เพิ่มหัวข้อ Description: และทำตัวเอียง)
+            flavorText.text = $"<b>คำอธิบาย:</b>\n<i>{data.flavorText}</i>";
+        }
     }
 
     // ฟังก์ชันปิดหน้าต่าง (ผูกกับปุ่ม Close)
