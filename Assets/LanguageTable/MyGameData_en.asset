@@ -4813,6 +4813,14 @@ MonoBehaviour:
     m_Localized: Day 7
     m_Metadata:
       m_Items: []
+  - m_Id: 1284995027263488
+    m_Localized: Do you want to start a new game?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1285320442339328
+    m_Localized: Confirm / Cancel
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

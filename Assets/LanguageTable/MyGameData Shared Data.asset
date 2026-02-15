@@ -5766,6 +5766,14 @@ MonoBehaviour:
     m_Key: DailyLogin.day7
     m_Metadata:
       m_Items: []
+  - m_Id: 1284995027263488
+    m_Key: "\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E40\u0E23\u0E34\u0E48\u0E21\u0E40\u0E01\u0E21\u0E43\u0E2B\u0E21\u0E48\u0E2B\u0E23\u0E37\u0E2D\u0E44\u0E21\u0E48"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1285320442339328
+    m_Key: Confirm / Cancel
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
