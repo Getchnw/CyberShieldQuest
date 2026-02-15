@@ -1728,20 +1728,20 @@ MonoBehaviour:
   tutorialType: 4
   tutorialPanel: {fileID: 1388900464}
   tutorialPages:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1250867112}
+  - {fileID: 1931702203}
+  - {fileID: 1803001304}
+  - {fileID: 1614613615}
+  - {fileID: 382069301}
   headerText: {fileID: 2107679621}
   descriptionText: {fileID: 1051110655}
-  pageTitles:
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  pageDescriptions:
+  pageTitles_Thai:
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  pageDescriptions_Thai:
   - "\u0E2B\u0E19\u0E49\u0E32 Shop \u0E0B\u0E36\u0E48\u0E07\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19\u0E08\u0E30\u0E2A\u0E32\u0E21\u0E32\u0E23\u0E16\u0E2A\u0E38\u0E48\u0E21\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E44\u0E14\u0E49\u0E40\u0E09\u0E1E\u0E32\u0E30
     Banner \u0E02\u0E2D\u0E07\u0E40\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E17\u0E35\u0E48\u0E40\u0E23\u0E35\u0E22\u0E19\u0E08\u0E1A\u0E41\u0E25\u0E49\u0E27\u0E40\u0E17\u0E48\u0E32\u0E19\u0E31\u0E49\u0E19
     \u0E42\u0E14\u0E22\u0E43\u0E19\u0E01\u0E23\u0E13\u0E35\u0E19\u0E35\u0E49 \u0E40\u0E21\u0E37\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19\u0E1C\u0E48\u0E32\u0E19\u0E40\u0E23\u0E37\u0E48\u0E2D\u0E07
@@ -1759,6 +1759,22 @@ MonoBehaviour:
   - "\u0E2B\u0E19\u0E49\u0E32\u0E41\u0E2A\u0E14\u0E07\u0E1C\u0E25\u0E01\u0E32\u0E23\u0E2A\u0E38\u0E48\u0E21\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E30\u0E41\u0E2A\u0E14\u0E07\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E17\u0E35\u0E48\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19\u0E2A\u0E38\u0E48\u0E21\u0E44\u0E14\u0E49\u0E08\u0E33\u0E19\u0E27\u0E19
     10 \u0E43\u0E1A \u0E42\u0E14\u0E22\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E17\u0E35\u0E48\u0E44\u0E14\u0E49\u0E23\u0E31\u0E1A\u0E08\u0E30\u0E16\u0E39\u0E01\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E02\u0E49\u0E32\u0E2A\u0E39\u0E48
     Deck \u0E02\u0E2D\u0E07\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19\u0E42\u0E14\u0E22\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34"
+  pageTitles_English:
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  pageDescriptions_English:
+  - Shop Page allows players to draw cards only from the Banner of Stories they have
+    fully completed. For example, after completing Story A01, the system unlocks
+    the A01 Banner for card draws.
+  - 1 Time button allows players to draw 1 card for 100 gold.
+  - "The Card Draw Result Page displays the 1 card obtained. The card is automatically
+    added to the player\u2019s Deck."
+  - 10 Time button allows players to draw 10 cards for 1,000 gold.
+  - "The Card Draw Result Page displays the 10 cards obtained. All received cards
+    are automatically added to the player\u2019s Deck."
   nextButton: {fileID: 1663401048}
   backButton: {fileID: 459123305}
   nextButtonText: {fileID: 0}

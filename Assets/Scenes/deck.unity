@@ -5401,8 +5401,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1906240710}
   m_HandleRect: {fileID: 1906240709}
   m_Direction: 0
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.94969696
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -8155,7 +8155,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.050303087, y: 0.952}
   m_AnchorMax: {x: 0.9496063, y: 0.952}
-  m_AnchoredPosition: {x: -29.643835, y: 41.774273}
+  m_AnchoredPosition: {x: -29.643854, y: 41.774345}
   m_SizeDelta: {x: 28.973, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1365120178
@@ -8465,7 +8465,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1005382358}
   m_Direction: 2
   m_Value: 1
-  m_Size: 1
+  m_Size: 0.9520001
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -8811,7 +8811,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 9.591682, y: -2.1821237}
+  m_AnchoredPosition: {x: 9.591682, y: -2.1821241}
   m_SizeDelta: {x: -10.554096, y: 11.279101}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1434593403
@@ -9248,50 +9248,50 @@ MonoBehaviour:
   tutorialType: 3
   tutorialPanel: {fileID: 86012783}
   tutorialPages:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 587054879}
+  - {fileID: 1572957087}
+  - {fileID: 1394957654}
+  - {fileID: 810878369}
+  - {fileID: 1847737380}
+  - {fileID: 1184435835}
+  - {fileID: 897244448}
+  - {fileID: 1162046796}
+  - {fileID: 2014974261}
+  - {fileID: 964250929}
+  - {fileID: 1921014069}
+  - {fileID: 1721462781}
+  - {fileID: 585918930}
+  - {fileID: 1643464956}
+  - {fileID: 640042286}
+  - {fileID: 763181523}
+  - {fileID: 1302454135}
+  - {fileID: 624706827}
+  - {fileID: 1423700347}
+  - {fileID: 1390824259}
   headerText: {fileID: 367066479}
   descriptionText: {fileID: 1343496277}
-  pageTitles:
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  - Gameplay Guideline
-  pageDescriptions:
+  pageTitles_Thai:
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  pageDescriptions_Thai:
   - "\u0E2B\u0E19\u0E49\u0E32 Deck \u0E40\u0E1B\u0E47\u0E19\u0E2B\u0E19\u0E49\u0E32\u0E2A\u0E33\u0E2B\u0E23\u0E31\u0E1A\u0E41\u0E2A\u0E14\u0E07\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14\u0E17\u0E35\u0E48\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19\u0E21\u0E35
     \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23 Deck
     \u0E02\u0E2D\u0E07\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19 \u0E42\u0E14\u0E22\u0E2A\u0E32\u0E21\u0E32\u0E23\u0E16\u0E01\u0E14\u0E14\u0E39
@@ -9375,6 +9375,62 @@ MonoBehaviour:
     \u0E40\u0E21\u0E37\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23
     Deck \u0E08\u0E30\u0E1E\u0E1A\u0E27\u0E48\u0E32\u0E04\u0E07\u0E40\u0E2B\u0E25\u0E37\u0E2D\u0E40\u0E1E\u0E35\u0E22\u0E07
     First Deck \u0E17\u0E35\u0E48\u0E21\u0E35\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E23\u0E30\u0E1A\u0E1A"
+  pageTitles_English:
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  pageDescriptions_English:
+  - The Deck page displays all cards owned by the player and allows deck management.
+    Players can click Collection to view all collected cards.
+  - When the Collection button is selected, the system shows all player cards along
+    with the current Scrap value, which can be used for crafting and dismantling
+    cards.
+  - When a card is selected, the system displays its details, including Scrap value
+    and the number of copies owned.
+  - The Dismantle button allows the selected card to be exchanged for 10 Scrap.
+  - The Dismantle confirmation page allows the player to confirm or cancel exchanging
+    the card for 10 Scrap.
+  - When confirmed, the system immediately adds 10 Scrap and reduces the owned card
+    count by 1.
+  - The Collection page displays all cards and the current Scrap amount. Players
+    must have 100 Scrap to craft a selected card.
+  - The Craft button exchanges 100 Scrap for the selected card.
+  - The Craft confirmation page allows the player to confirm or cancel the transaction.
+  - When confirmed, the system deducts 100 Scrap and increases the owned card count
+    by 1.
+  - The Back to Deck button returns the player to the Deck page for deck management.
+  - On the Deck page, players can select cards from the right panel. The selected
+    card will be added to the Deck area in the center of the screen.
+  - A Deck can contain up to 30 cards.
+  - Right-clicking a card displays its details on the left side of the screen.
+  - When adding cards to the Deck, the system shows a summary including total cards,
+    card types (Monster / Spell / Equip), and total Cost. The default deck name is
+    First Deck.
+  - Players can create a new deck by entering a name and clicking New Deck.
+  - After creating a new deck, players can view all available decks in the system.
+  - Players can search for cards using the Search Card field or click All Card to
+    display all cards. Cards can also be filtered by Story.
+  - The Delete Deck button removes the currently selected deck immediately (e.g.,
+    deleting Deck 2 while viewing Deck 2).
+  - After deletion, checking the deck list will show that only First Deck remains
+    in the system (if it is the only deck left).
   nextButton: {fileID: 14833446}
   backButton: {fileID: 310102933}
   nextButtonText: {fileID: 0}
