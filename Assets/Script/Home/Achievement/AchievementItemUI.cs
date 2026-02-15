@@ -28,7 +28,7 @@ public class AchievementItemUI : MonoBehaviour
     {
         // 1. ใส่ข้อมูลพื้นฐาน
         titleText.text = staticData.title;
-        descText.text = staticData.description;
+        descText.text = LanguageBridge.Get(staticData.description);
         iconImage.sprite = staticData.icon;
 
         // 2. คำนวณความคืบหน้า (เพื่อทำ Slider)
@@ -38,18 +38,22 @@ public class AchievementItemUI : MonoBehaviour
         if (saveData.isClaimed)
         {
             claimButton.interactable = false;
-            rewardText.text = "Claimed";
+            rewardText.text = GameManager.Instance.CurrentGameData.isTranstale
+                                ? "<color=green>Claimed</color>"
+                                : "<color=green>รับแล้ว</color>";
         }
         else if (saveData.isUnlocked) // ปลดล็อคแล้วแต่ยังไม่รับ
         {
             claimButton.interactable = true;
-            rewardText.text = "CLAIM";
+            rewardText.text = GameManager.Instance.CurrentGameData.isTranstale
+                                ? "<color=green>Claim</color>"
+                                : "<color=green>รับรางวัล</color>";
         }
         else // ยังทำไม่เสร็จ
         {
             claimButton.interactable = false;
             // โชว์ของรางวัลที่จะได้ (ถ้ามี)
-            rewardText.text = $"{staticData.rewardGold} Gold";
+            rewardText.text = $"{staticData.rewardGold} G";
         }
     }
 

@@ -5726,6 +5726,46 @@ MonoBehaviour:
     m_Key: Battle.Log
     m_Metadata:
       m_Items: []
+  - m_Id: 1278660705476608
+    m_Key: DailyLogin.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1279293252657152
+    m_Key: DailyQuest.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1279599252299776
+    m_Key: Achievement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280182549962752
+    m_Key: DailyLogin.day1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280272752664576
+    m_Key: DailyLogin.day2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280460837838848
+    m_Key: DailyLogin.day3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280534196215808
+    m_Key: DailyLogin.day4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280616522014720
+    m_Key: DailyLogin.day5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280747975696384
+    m_Key: DailyLogin.day6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280824265891840
+    m_Key: DailyLogin.day7
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

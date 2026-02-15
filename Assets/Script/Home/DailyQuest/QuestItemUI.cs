@@ -28,7 +28,7 @@ public class QuestItemUI : MonoBehaviour
     public void RefreshUI()
     {
         // 1. รีเซ็ตข้อความให้เป็นค่าตั้งต้นเสมอก่อนเริ่ม Logic
-        descText.text = myStaticData.description;
+        descText.text = LanguageBridge.Get(myStaticData.description);
         // Gold
         IconRewardImage.sprite = myStaticData.icon;
         amountRewardText.text = $"{myStaticData.rewardGold} G";
@@ -48,7 +48,9 @@ public class QuestItemUI : MonoBehaviour
         {
             // กรณีรับไปแล้ว
             claimButton.interactable = false;
-            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "<color=green>Claimed</color>"; // เปลี่ยนข้อความปุ่ม
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = GameManager.Instance.CurrentGameData.isTranstale
+                                                                        ? "<color=green>Claimed</color>"
+                                                                        : "<color=green>รับแล้ว</color>"; // เปลี่ยนข้อความปุ่ม
 
             // ปิดรูป
             checkImage.gameObject.SetActive(true);
@@ -58,13 +60,17 @@ public class QuestItemUI : MonoBehaviour
         {
             // กรณีทำครบแล้ว แต่ยังไม่รับ
             claimButton.interactable = isComplete; // กดได้เมื่อทำครบ
-            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "<color=green>Claim</color>";
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = GameManager.Instance.CurrentGameData.isTranstale
+                                                                        ? "<color=green>Claim</color>"
+                                                                        : "<color=green>รับรางวัล</color>";
             claimButton.onClick.AddListener(OnClaimClicked);
         }
         else
         {
             // กรณียังไม่ครบ
-            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = "<color=yellow>Go to Quest</color>";
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = GameManager.Instance.CurrentGameData.isTranstale
+                                                                            ? "<color=yellow>Go to Quest</color>"
+                                                                            : $"<color=yellow>ไปหน้า  ทำเควส</color>";
             claimButton.onClick.AddListener(() => GotoQuest(myStaticData.targetScene));
         }
     }

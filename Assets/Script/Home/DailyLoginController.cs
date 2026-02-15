@@ -115,7 +115,9 @@ public class DailyLoginController : MonoBehaviour
         }
         else if (canClaimToday && nextRewardTimeText != null)
         {
-            nextRewardTimeText.text = "Ready to Claim!";
+            nextRewardTimeText.text = GameManager.Instance.CurrentGameData.isTranstale
+                                        ? "Ready to Claim!"
+                                        : "รับของรางวัล";
         }
 
         var data = GameManager.Instance.CurrentGameData.dailyLoginData;

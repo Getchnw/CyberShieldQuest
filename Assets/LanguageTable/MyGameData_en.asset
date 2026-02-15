@@ -4773,6 +4773,46 @@ MonoBehaviour:
     m_Localized: Disable DOCTYPE processing and External Entities.
     m_Metadata:
       m_Items: []
+  - m_Id: 1278660705476608
+    m_Localized: Daily Login
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1279293252657152
+    m_Localized: Daily Quest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1279599252299776
+    m_Localized: Achievement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280182549962752
+    m_Localized: Day 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280272752664576
+    m_Localized: Day 2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280460837838848
+    m_Localized: Day 3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280534196215808
+    m_Localized: Day 4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280616522014720
+    m_Localized: Day 5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280747975696384
+    m_Localized: Day 6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280824265891840
+    m_Localized: Day 7
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
