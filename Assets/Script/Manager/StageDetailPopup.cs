@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro; // ถ้าใช้ TextMeshPro
 using System.Collections.Generic;
+using UnityEngine.Localization.Settings;
 
 public class StageDetailPopup : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class StageDetailPopup : MonoBehaviour
     public TextMeshProUGUI[] starCriteriaTexts; // อาร์เรย์เก็บ Text เงื่อนไขดาว 3 ข้อ
     public TextMeshProUGUI statusText;         // แสดงสถานะ (ชนะแล้ว/ยังไม่เล่น/ดาวที่ได้)
     public Image completedBadge;               // ⭐ Badge สำหรับแสดง "COMPLETED"
+
     public Button startButton;
     public Button closeButton;
     // ตัวแปรเก็บข้อมูลด่านปัจจุบันที่กำลังดูอยู่
@@ -47,14 +49,24 @@ public class StageDetailPopup : MonoBehaviour
     public void Open(StageManager.StageData data)
     {
         Debug.Log($"[POPUP] Open() ถูกเรียก สำหรับ {data.stageName}");
-        
+
         currentStageData = data;
 
         // 1. อัปเดตข้อความต่างๆ
-        titleText.text = data.stageName;
-        levelText.text = $"Level: {data.botLevel}";
-        deckInfoText.text = $"Enemy Deck:\n{data.deckDescription}";
-        
+        if (LocalizationSettings.SelectedLocale.Identifier.Code == "th")
+        {
+            titleText.text = data.stageName_th;
+            levelText.text = $"เลเวล: {data.botLevel}";
+            deckInfoText.text = $"เด็คคู่ต่อสู้:\n{data.deckDescription_th}";
+
+        }
+        else
+        {
+            titleText.text = data.stageName;
+            levelText.text = $"Level: {data.botLevel}";
+            deckInfoText.text = $"Enemy Deck:\n{data.deckDescription}";
+        }
+
         // 2. อัปเดตรูปบอท (ถ้ามี)
         if (data.botSprite != null)
         {
@@ -70,78 +82,109 @@ public class StageDetailPopup : MonoBehaviour
         // ดึงข้อมูล progress เพื่อเช็คว่าดาวไหนได้แล้ว
         var progress = GameManager.Instance != null ? GameManager.Instance.GetStageProgress(data.stageID) : null;
         int starsEarned = (progress != null && progress.isCompleted) ? progress.starsEarned : 0;
-        
+
         for (int i = 0; i < starCriteriaTexts.Length; i++)
         {
-            if (i < data.starConditions.Count)
+            if (LocalizationSettings.SelectedLocale.Identifier.Code == "th")
             {
-                // เช็คว่าดาวนี้ได้แล้วหรือยัง (star index 0, 1, 2 = ดาว 1, 2, 3)
-                bool starCompleted = (i < starsEarned);
-                
-                if (starCompleted)
+                // Thai
+                if (i < data.starConditions.Count)
                 {
-                    // ทำแล้ว = [X] + สีเขียว
-                    starCriteriaTexts[i].text = $"[X] {data.starConditions[i].description}";
-                    starCriteriaTexts[i].color = new Color(0.2f, 1f, 0.2f); // สีเขียว
+                    // เช็คว่าดาวนี้ได้แล้วหรือยัง (star index 0, 1, 2 = ดาว 1, 2, 3)
+                    bool starCompleted = (i < starsEarned);
+
+                    if (starCompleted)
+                    {
+                        // ทำแล้ว = [X] + สีเขียว
+                        starCriteriaTexts[i].text = $"[X] {data.starConditions[i].description_th}";
+                        starCriteriaTexts[i].color = new Color(0.2f, 1f, 0.2f); // สีเขียว
+                    }
+                    else
+                    {
+                        // ยังไม่ทำ = [ ] + สีขาว
+                        starCriteriaTexts[i].text = $"[ ] {data.starConditions[i].description_th}";
+                        starCriteriaTexts[i].color = Color.white;
+                    }
                 }
                 else
                 {
-                    // ยังไม่ทำ = [ ] + สีขาว
-                    starCriteriaTexts[i].text = $"[ ] {data.starConditions[i].description}";
-                    starCriteriaTexts[i].color = Color.white;
+                    Debug.Log("I'm Here");
+                    starCriteriaTexts[i].text = ""; // เคลียร์ข้อความถ้าไม่มี
                 }
             }
             else
             {
-                starCriteriaTexts[i].text = ""; // เคลียร์ข้อความถ้าไม่มี
+                // Englih
+                if (i < data.starConditions.Count)
+                {
+                    // เช็คว่าดาวนี้ได้แล้วหรือยัง (star index 0, 1, 2 = ดาว 1, 2, 3)
+                    bool starCompleted = (i < starsEarned);
+
+                    if (starCompleted)
+                    {
+                        // ทำแล้ว = [X] + สีเขียว
+                        starCriteriaTexts[i].text = $"[X] {data.starConditions[i].description}";
+                        starCriteriaTexts[i].color = new Color(0.2f, 1f, 0.2f); // สีเขียว
+                    }
+                    else
+                    {
+                        // ยังไม่ทำ = [ ] + สีขาว
+                        starCriteriaTexts[i].text = $"[ ] {data.starConditions[i].description}";
+                        starCriteriaTexts[i].color = Color.white;
+                    }
+                }
+                else
+                {
+                    starCriteriaTexts[i].text = ""; // เคลียร์ข้อความถ้าไม่มี
+                }
             }
         }
 
         // 4. อัปเดตสถานะ (ชนะแล้ว/ยังไม่เล่น)
         Debug.Log($"[POPUP] statusText = {(statusText != null ? "Found" : "NULL")}");
         Debug.Log($"[POPUP] GameManager.Instance = {(GameManager.Instance != null ? "Found" : "NULL")}");
-        
+
         if (statusText != null)
         {
             Debug.Log($"[POPUP] Stage {data.stageID}: Progress = {(progress != null ? "Found" : "NULL")}");
-            
+
             if (progress != null && progress.isCompleted)
             {
                 Debug.Log($"[POPUP] Stage COMPLETED: {progress.starsEarned}/3 Stars");
                 statusText.text = $"✅ COMPLETED! {progress.starsEarned}/3 Stars";
                 statusText.color = new Color(0.2f, 1f, 0.2f); // สีเขียว
-                
+
                 // แสดง badge "COMPLETED"
                 if (completedBadge != null)
                 {
                     completedBadge.gameObject.SetActive(true);
                     completedBadge.color = new Color(1f, 0.84f, 0f); // สีทอง
                 }
-                
+
                 // เปลี่ยนสี Start button เป็นน้ำเงิน (Replay)
                 if (startButton != null)
                 {
                     startButton.image.color = new Color(0.2f, 0.6f, 1f); // สีน้ำเงิน
                     var btnText = startButton.GetComponentInChildren<TextMeshProUGUI>();
-                    if (btnText != null) btnText.text = "REPLAY";
+                    if (btnText != null) btnText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "เล่นอีกครั้ง" : "REPLAY";
                 }
             }
             else
             {
                 Debug.Log($"[POPUP] Stage NOT CLEARED: progress={progress}, isCompleted={(progress != null ? progress.isCompleted : false)}");
-                statusText.text = "⚪ NOT CLEARED";
+                statusText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "ยังไม่เคลียร์" : "⚪ NOT CLEARED";
                 statusText.color = Color.gray;
-                
+
                 // ซ่อน badge
                 if (completedBadge != null)
                     completedBadge.gameObject.SetActive(false);
-                
+
                 // เปลี่ยนสี Start button เป็นเขียว (Start)
                 if (startButton != null)
                 {
                     startButton.image.color = new Color(0.2f, 1f, 0.2f); // สีเขียว
                     var btnText = startButton.GetComponentInChildren<TextMeshProUGUI>();
-                    if (btnText != null) btnText.text = "START";
+                    if (btnText != null) btnText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "เริ่มเกม" : "START";
                 }
             }
         }

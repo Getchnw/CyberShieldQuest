@@ -617,6 +617,7 @@ GameObject:
   - component: {fileID: 213874715}
   - component: {fileID: 213874717}
   - component: {fileID: 213874716}
+  - component: {fileID: 213874718}
   m_Layer: 5
   m_Name: starcon
   m_TagString: Untagged
@@ -640,8 +641,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.000027239, y: 13}
-  m_SizeDelta: {x: 200, y: 77.935}
+  m_AnchoredPosition: {x: 73.659, y: 13}
+  m_SizeDelta: {x: 347.32, y: 77.935}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &213874716
 MonoBehaviour:
@@ -740,6 +741,46 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 213874714}
   m_CullTransparentMesh: 1
+--- !u!114 &213874718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 213874714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: GUID:b2ac2e641af3dda44af4050d94168cf5
+    m_TableEntryReference:
+      m_KeyId: 360789028593664
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 213874716}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &297046183
 GameObject:
   m_ObjectHideFlags: 0
@@ -1882,6 +1923,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allStages:
   - stageName: Sector A-01
+    stageName_th: "\u0E14\u0E48\u0E32\u0E19 A01"
     stageID: ' L1_A01'
     stageButton: {fileID: 1509022532}
     lockIcon: {fileID: 1499652950}
@@ -1890,9 +1932,12 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: ea9a5a72b5da3034386b50790be59292, type: 3}
     botLevel: 1
     deckDescription: conclude A01 card
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+      A01"
     starConditions:
     - type: 0
       description: Win battle
+      description_th: "\u0E0A\u0E19\u0E30\u0E01\u0E32\u0E23\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49"
       intValue: 0
       floatValue: 0
       category: 3
@@ -1900,6 +1945,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 1
       description: win within 12 turn
+      description_th: "\u0E0A\u0E19\u0E30\u0E20\u0E32\u0E22\u0E43\u0E19 12 \u0E15\u0E32"
       intValue: 10
       floatValue: 0
       category: 0
@@ -1907,6 +1953,8 @@ MonoBehaviour:
       subCategory: 0
     - type: 14
       description: use spell 3 time
+      description_th: "\u0E43\u0E0A\u0E49\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+        spell 3 \u0E43\u0E1A"
       intValue: 3
       floatValue: 0
       category: 0
@@ -1916,6 +1964,7 @@ MonoBehaviour:
     requiredPrevStages: []
     botDecks: 00000000
   - stageName: Sector A-02
+    stageName_th: "\u0E14\u0E48\u0E32\u0E19 A02"
     stageID: ' L1_A02'
     stageButton: {fileID: 1519608694}
     lockIcon: {fileID: 1628630799}
@@ -1924,9 +1973,12 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: 3b1926ec88c69b0498cb518150c3dc75, type: 3}
     botLevel: 1
     deckDescription: conclude A02 card
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+      A01"
     starConditions:
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -1934,6 +1986,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -1941,6 +1994,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -1951,6 +2005,7 @@ MonoBehaviour:
     - ' L1_A01'
     botDecks: 0000000000000000
   - stageName: Sector A-03
+    stageName_th: "\u0E14\u0E48\u0E32\u0E19 A03"
     stageID: ' L1_A03'
     stageButton: {fileID: 1459265819}
     lockIcon: {fileID: 106721440}
@@ -1959,9 +2014,12 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: f24b940388e25314da955ed7dc899fcd, type: 3}
     botLevel: 1
     deckDescription: conclude A03 card
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+      A03"
     starConditions:
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -1969,6 +2027,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -1976,6 +2035,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -1986,6 +2046,8 @@ MonoBehaviour:
     - ' L1_A02'
     botDecks: 000000000000000000000000
   - stageName: Sector mix1
+    stageName_th: "\u0E14\u0E48\u0E32\u0E19\u0E23\u0E27\u0E21\u0E40\u0E14\u0E47\u0E04
+      1"
     stageID: ' L2_MIX1'
     stageButton: {fileID: 2075203257}
     lockIcon: {fileID: 2069034767}
@@ -1994,9 +2056,12 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: 3528db8cb3e6f4c4f8b00051645dabdc, type: 3}
     botLevel: 2
     deckDescription: 'conclude A01 and A02 card '
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+      A01 \u0E01\u0E31\u0E1A A02"
     starConditions:
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -2004,6 +2069,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -2011,6 +2077,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -2021,6 +2088,8 @@ MonoBehaviour:
     - ' L1_A03'
     botDecks: 00000000000000000000000000000000
   - stageName: Sector mix2
+    stageName_th: "\u0E14\u0E48\u0E32\u0E19\u0E23\u0E27\u0E21\u0E40\u0E14\u0E47\u0E04
+      2"
     stageID: ' L2_MIX2'
     stageButton: {fileID: 2063271928}
     lockIcon: {fileID: 1386562960}
@@ -2029,12 +2098,14 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: ecd41c4a95499ee449f15218bde705a0, type: 3}
     botLevel: 2
     deckDescription: 'conclude A02 and A03 card '
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17"
     starConditions: []
     requiredChapters: 010000000200000003000000
     requiredPrevStages:
     - ' L2_MIX1'
     botDecks: 0000000000000000000000000000000000000000
   - stageName: Boss
+    stageName_th: 
     stageID: L3_boss
     stageButton: {fileID: 999770081}
     lockIcon: {fileID: 565844136}
@@ -2043,6 +2114,7 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: 3b2eb791098859c4c8fccd70835072b9, type: 3}
     botLevel: 3
     deckDescription: 'conclude A01 A02 and A03 card '
+    deckDescription_th: 
     starConditions: []
     requiredChapters: 010000000200000003000000
     requiredPrevStages:
@@ -2288,7 +2360,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 366611148233730966, guid: 59865f9ba3fec414384598595107dd56, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2008055953}
   m_SourcePrefab: {fileID: 100100000, guid: 59865f9ba3fec414384598595107dd56, type: 3}
 --- !u!224 &999664413 stripped
 RectTransform:
@@ -2935,6 +3010,7 @@ GameObject:
   - component: {fileID: 1593854598}
   - component: {fileID: 1593854600}
   - component: {fileID: 1593854599}
+  - component: {fileID: 1593854601}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -3058,6 +3134,46 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1593854597}
   m_CullTransparentMesh: 1
+--- !u!114 &1593854601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1593854597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: GUID:b2ac2e641af3dda44af4050d94168cf5
+    m_TableEntryReference:
+      m_KeyId: 360985145860096
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1593854599}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &1622889622
 GameObject:
   m_ObjectHideFlags: 0
@@ -3449,6 +3565,62 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+--- !u!1 &2008055951 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 366611148233730966, guid: 59865f9ba3fec414384598595107dd56, type: 3}
+  m_PrefabInstance: {fileID: 909246885}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2008055953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2008055951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: GUID:b2ac2e641af3dda44af4050d94168cf5
+    m_TableEntryReference:
+      m_KeyId: 250624505765888
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2008055954}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &2008055954 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8592167545032568480, guid: 59865f9ba3fec414384598595107dd56, type: 3}
+  m_PrefabInstance: {fileID: 909246885}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2008055951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2028044151
 GameObject:
   m_ObjectHideFlags: 0

@@ -22,10 +22,11 @@ public class StageManager : MonoBehaviour
     {
         [Header("UI Configuration")]
         public string stageName;        // ชื่อที่แสดงบนหัวข้อ
+        public string stageName_th;
         public string stageID;          // ID ภาษาอังกฤษ (ห้ามซ้ำ) เช่น L1_A01, L2_Mix1
         public Button stageButton;      // ปุ่มกดเลือกด่าน
         public GameObject lockIcon;     // รูปแม่กุญแจ
-        
+
         // ⭐ Prefab ของดาวที่จะ instantiate บนปุ่ม
         public Sprite starSprite;       // รูปดาว
         [Range(0.15f, 1f)]
@@ -36,7 +37,8 @@ public class StageManager : MonoBehaviour
         public int botLevel;            // เลเวลบอท
         [TextArea]
         public string deckDescription;  // คำบรรยายเด็คบอท
-        
+        public string deckDescription_th;
+
         // ⭐ เปลี่ยนเป็น StarCondition แทน string
         public List<StarCondition> starConditions; // เงื่อนไขดาว 3 ข้อ
 
@@ -49,16 +51,16 @@ public class StageManager : MonoBehaviour
 
         [Header("Battle Settings (ส่งไปฉากต่อสู้)")]
         public List<MainCategory> botDecks; // บอทจะใช้การ์ดหมวดไหนบ้าง
-        
+
         private Transform starsContainer; // Container สำหรับเก็บดาว
-        
+
         /// <summary>
         /// ตรวจสอบเงื่อนไขดาวจาก BattleStatistics
         /// </summary>
         public int CalculateStarsEarned(BattleStatistics stats)
         {
             if (stats == null || starConditions == null) return 0;
-            
+
             int stars = 0;
             foreach (var condition in starConditions)
             {
@@ -67,7 +69,7 @@ public class StageManager : MonoBehaviour
             }
             return stars;
         }
-        
+
         /// <summary>
         /// อัปเดตการแสดงดาวบนปุ่ม
         /// </summary>
@@ -104,7 +106,7 @@ public class StageManager : MonoBehaviour
             // สร้างดาวใหม่ตามจำนวน
             float buttonWidth = buttonRect.rect.width;
             float starWidth = buttonWidth * starSize;
-            
+
             for (int i = 0; i < starsEarned && i < 3; i++)
             {
                 GameObject starGO = new GameObject($"Star_{i}");
@@ -114,7 +116,7 @@ public class StageManager : MonoBehaviour
                 Image starImage = starGO.AddComponent<Image>();
                 starImage.sprite = starSprite;
                 starImage.raycastTarget = false; // ป้องกันการบล็อก click
-                
+
                 RectTransform starRect = starGO.GetComponent<RectTransform>();
                 starRect.anchorMin = new Vector2(1, 1);
                 starRect.anchorMax = new Vector2(1, 1);
