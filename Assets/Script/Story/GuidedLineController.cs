@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.Localization.Settings;
 
 public class GuidedLineController : MonoBehaviour
 {
@@ -151,7 +152,7 @@ public class GuidedLineController : MonoBehaviour
         }
 
         // เปลี่ยนข้อความ
-        if (GameManager.Instance.CurrentGameData.isTranstale)
+        if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
         {
             if (headerText != null && pageTitles_English.Length > currentIndex)
             {

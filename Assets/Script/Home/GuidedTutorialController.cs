@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.Localization.Settings;
 
 public class GuidedTutorialController : MonoBehaviour
 {
@@ -114,7 +115,7 @@ public class GuidedTutorialController : MonoBehaviour
         }
 
         // 2. อัปเดตข้อความ (Header และ Description)
-        if (GameManager.Instance.CurrentGameData.isTranstale)
+        if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
         {
             if (headerText != null && pageTitles_English.Length > currentIndex)
             {

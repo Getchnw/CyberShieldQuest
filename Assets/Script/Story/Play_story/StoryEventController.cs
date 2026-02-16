@@ -4,6 +4,7 @@ using TMPro;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine.Localization.Settings;
 
 public class StoryEventController : MonoBehaviour
 {
@@ -136,7 +137,7 @@ public class StoryEventController : MonoBehaviour
         List<string> translatedLines = new List<string>();
 
         // 2. วนลูปแปลทีละประโยค แล้ว Add ลงใน List
-        if (GameManager.Instance.CurrentGameData.isTranstale)
+        if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
         {
             foreach (var line in currentDialogueLines[currentLineIndex].Dialog_Text)
             {

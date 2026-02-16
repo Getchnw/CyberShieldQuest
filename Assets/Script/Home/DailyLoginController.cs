@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.Localization.Settings;
 
 public class DailyLoginController : MonoBehaviour
 {
@@ -115,7 +116,7 @@ public class DailyLoginController : MonoBehaviour
         }
         else if (canClaimToday && nextRewardTimeText != null)
         {
-            nextRewardTimeText.text = GameManager.Instance.CurrentGameData.isTranstale
+            nextRewardTimeText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                         ? "Ready to Claim!"
                                         : "รับของรางวัล";
         }

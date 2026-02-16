@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.Localization.Settings;
 
 public class CollectionManager : MonoBehaviour
 {
@@ -43,7 +44,7 @@ public class CollectionManager : MonoBehaviour
     {
         if (GameManager.Instance != null && scrapText != null)
         {
-            if (GameManager.Instance.CurrentGameData.isTranstale)
+            if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
             {
                 // English
                 scrapText.text = $"Scrap: {GameManager.Instance.CurrentGameData.profile.scrap}";
@@ -97,7 +98,7 @@ public class CollectionManager : MonoBehaviour
     void OnCraftButton(CardData card)
     {
         int cost = CraftingSystem.GetCraftCost(card.rarity);
-        if (GameManager.Instance.CurrentGameData.isTranstale)
+        if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
         {
             // English
             ConfirmAction($"Create  {card.cardName} \nCost: {cost} Scrap?", () => StartCoroutine(CraftProcess(card)));
@@ -112,7 +113,7 @@ public class CollectionManager : MonoBehaviour
     void OnDismantleButton(CardData card)
     {
         int val = CraftingSystem.GetDismantleValue(card.rarity);
-        if (GameManager.Instance.CurrentGameData.isTranstale)
+        if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
         {
             // English
             ConfirmAction($"Dismantle {card.cardName} \nGain: {val} Scrap?", () => StartCoroutine(DismantleProcess(card)));

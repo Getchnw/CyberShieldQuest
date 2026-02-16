@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Localization.Settings;
 
 public class QuestItemUI : MonoBehaviour
 {
@@ -48,7 +49,7 @@ public class QuestItemUI : MonoBehaviour
         {
             // กรณีรับไปแล้ว
             claimButton.interactable = false;
-            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = GameManager.Instance.CurrentGameData.isTranstale
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                                                         ? "<color=green>Claimed</color>"
                                                                         : "<color=green>รับแล้ว</color>"; // เปลี่ยนข้อความปุ่ม
 
@@ -60,7 +61,7 @@ public class QuestItemUI : MonoBehaviour
         {
             // กรณีทำครบแล้ว แต่ยังไม่รับ
             claimButton.interactable = isComplete; // กดได้เมื่อทำครบ
-            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = GameManager.Instance.CurrentGameData.isTranstale
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                                                         ? "<color=green>Claim</color>"
                                                                         : "<color=green>รับรางวัล</color>";
             claimButton.onClick.AddListener(OnClaimClicked);
@@ -68,7 +69,7 @@ public class QuestItemUI : MonoBehaviour
         else
         {
             // กรณียังไม่ครบ
-            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = GameManager.Instance.CurrentGameData.isTranstale
+            claimButton.GetComponentInChildren<TextMeshProUGUI>().text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                                                             ? "<color=yellow>Go to Quest</color>"
                                                                             : $"<color=yellow>ไปหน้า  ทำเควส</color>";
             claimButton.onClick.AddListener(() => GotoQuest(myStaticData.targetScene));

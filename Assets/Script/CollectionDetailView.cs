@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using UnityEngine.Localization.Settings;
 
 public class CollectionDetailView : MonoBehaviour
 {
@@ -71,7 +72,7 @@ public class CollectionDetailView : MonoBehaviour
         if (currentCard.type == CardType.Monster) stats += $" | Atk: {currentCard.atk}";
         statsText.text = stats;
 
-        if (GameManager.Instance.CurrentGameData.isTranstale)
+        if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
         {
             // English
             // ดึงคำแปลมาจากตาราง
@@ -87,7 +88,7 @@ public class CollectionDetailView : MonoBehaviour
 
         // 2. ข้อมูลจำนวนที่มี
         int owned = GameManager.Instance.GetCardAmount(currentCard.card_id);
-        amountOwnedText.text = GameManager.Instance.CurrentGameData.isTranstale
+        amountOwnedText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                 ? $"Owned : {owned}" // true = English
                                 : $"คงเหลือ : {owned}";//false = thai
 
@@ -95,7 +96,7 @@ public class CollectionDetailView : MonoBehaviour
         int craftCost = CraftingSystem.GetCraftCost(currentCard.rarity);
         int playerScrap = GameManager.Instance.CurrentGameData.profile.scrap;
 
-        craftCostText.text = GameManager.Instance.CurrentGameData.isTranstale
+        craftCostText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                 ? $"Craft\n-{craftCost} Scrap"
                                 : $"สร้างการ์ด\n-{craftCost} ชิ้นส่วน";
         craftButton.interactable = (playerScrap >= craftCost);
@@ -118,7 +119,7 @@ public class CollectionDetailView : MonoBehaviour
         // 4. ตั้งค่าปุ่ม Dismantle
         int dismantleVal = CraftingSystem.GetDismantleValue(currentCard.rarity);
 
-        dismantleValText.text = GameManager.Instance.CurrentGameData.isTranstale
+        dismantleValText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                 ? $"Dismantle\n+{dismantleVal} Scrap"
                                 : $"ย่อยการ์ด\n+{dismantleVal} ชิ้นส่วน";
         dismantleButton.interactable = (owned > 0); // ต้องมีของถึงจะย่อยได้

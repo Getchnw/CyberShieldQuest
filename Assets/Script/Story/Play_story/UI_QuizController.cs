@@ -4,6 +4,8 @@ using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
+using UnityEngine.Localization.Settings;
+
 
 public class UI_QuizController : MonoBehaviour
 {
@@ -86,14 +88,14 @@ public class UI_QuizController : MonoBehaviour
 
         QuestionData q = allQuestions[currentQuestionIndex]; //ดึงคำถามปัจจุบัน
         // เช็คการแปลภาษา
-        if (GameManager.Instance.CurrentGameData.isTranstale)
+        if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
         {
-            // ต้องแปล
+            // ต้องแปล => Eng
             questionText.text = LanguageBridge.Get(q.questionText);
         }
         else
         {
-            // ไม่ต้องแปล
+            // ไม่ต้องแปล = ไทย
             questionText.text = q.questionText; //ใส่โจทย
         }
 
@@ -103,7 +105,7 @@ public class UI_QuizController : MonoBehaviour
             {
                 answerButtons[i].gameObject.SetActive(true);
                 // เช็คการแปลภาษา
-                if (GameManager.Instance.CurrentGameData.isTranstale)
+                if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
                 {
                     // ต้องแปล
                     answerButtonTexts[i].text = LanguageBridge.Get(q.answerOptions[i]);
@@ -229,7 +231,7 @@ public class UI_QuizController : MonoBehaviour
         else if (correctAnswersCount == 3) stars = 1;
 
         Star_amount.text = $"{stars}";
-        if (GameManager.Instance.CurrentGameData.isTranstale)
+        if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
         {
             // english
             StarText.text = $"Star earned : {stars}";
@@ -282,7 +284,7 @@ public class UI_QuizController : MonoBehaviour
 
             // --- เตรียมข้อความสถานะ ---
             string statusText = "";
-            if (GameManager.Instance.CurrentGameData.isTranstale)
+            if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
             {
                 // english
                 statusText = isClaimed ? "<color=grey>(Received)</color>" : "<color=yellow>(New!)</color>";
@@ -339,7 +341,7 @@ public class UI_QuizController : MonoBehaviour
         // อัปเดต Text สรุปผลรวมด้านนอก
         if (goldText != null)
         {
-            if (GameManager.Instance.CurrentGameData.isTranstale)
+            if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
             {
                 goldText.text = $"Gold : {GoldAll}";
             }
@@ -350,7 +352,7 @@ public class UI_QuizController : MonoBehaviour
         }
         if (ExperienceText != null)
         {
-            if (GameManager.Instance.CurrentGameData.isTranstale)
+            if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
             {
                 ExperienceText.text = $"Experience : {experienceAll}";
             }

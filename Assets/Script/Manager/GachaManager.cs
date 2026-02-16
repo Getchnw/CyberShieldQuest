@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Localization.Settings;
 
 public class GachaManager : MonoBehaviour
 {
@@ -118,7 +119,7 @@ public class GachaManager : MonoBehaviour
         if (currentBannerNameText != null)
         {
 
-            currentBannerNameText.text = GameManager.Instance.CurrentGameData.isTranstale
+            currentBannerNameText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                         ? $"Banner: {currentTargetCategory}"
                                         : $"ตู้: {currentTargetCategory}";
 

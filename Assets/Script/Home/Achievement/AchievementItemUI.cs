@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Linq; // จำเป็นสำหรับการคำนวณผลรวม (Sum)
+using UnityEngine.Localization.Settings;
 
 public class AchievementItemUI : MonoBehaviour
 {
@@ -38,14 +39,14 @@ public class AchievementItemUI : MonoBehaviour
         if (saveData.isClaimed)
         {
             claimButton.interactable = false;
-            rewardText.text = GameManager.Instance.CurrentGameData.isTranstale
+            rewardText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                 ? "<color=green>Claimed</color>"
                                 : "<color=green>รับแล้ว</color>";
         }
         else if (saveData.isUnlocked) // ปลดล็อคแล้วแต่ยังไม่รับ
         {
             claimButton.interactable = true;
-            rewardText.text = GameManager.Instance.CurrentGameData.isTranstale
+            rewardText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                 ? "<color=green>Claim</color>"
                                 : "<color=green>รับรางวัล</color>";
         }
