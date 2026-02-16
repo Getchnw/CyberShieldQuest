@@ -172,6 +172,13 @@ public class BattleManager : MonoBehaviour
     private int requiredDiscardCount = 0;
     private bool discardConfirmed = false;
 
+    // 🔥 Return Equip From Graveyard System
+    private bool cardAdditionInProgress = false;
+    private bool cardAdditionComplete = false;
+    private bool isChoosingGraveyardEquip = false;
+    private CardData selectedGraveyardEquip = null;
+    private bool graveyardEquipConfirmed = false;
+
     // 🔥 Mulligan System
     private int playerMulliganLeft = 1;
     private int enemyMulliganLeft = 1;
@@ -860,55 +867,122 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        var cardsInHand = handArea.GetComponentsInChildren<BattleCardUI>();
-        if (cardsInHand.Length == 0)
+        try
         {
-            Debug.Log("⚠️ ไม่มีการ์ดในมือ");
-            return;
-        }
+            // 🔥 Get ONLY direct children (not nested)
+            var cardsInHand = handArea.GetComponentsInChildren<BattleCardUI>(includeInactive: false)
+                .Where(c => c.transform.parent == handArea).ToArray();
+            
+            if (cardsInHand.Length == 0)
+            {
+                Debug.Log("⚠️ ไม่มีการ์ดในมือ");
+                return;
+            }
 
-        var layout = handArea.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
-        if (useHandLayoutGroup && layout != null)
-        {
-            layout.enabled = true;
-            layout.spacing = handSpacing;
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
+            // 🔥 Filter out null/destroyed cards
+            cardsInHand = System.Array.FindAll(cardsInHand, c => c != null && c.gameObject != null);
+            if (cardsInHand.Length == 0)
+            {
+                Debug.LogWarning("⚠️ ArrangeCardsInHand: No valid cards after null-check");
+                return;
+            }
 
-            Debug.Log($"🎴 HLG Settings: spacing={layout.spacing}, controlW={layout.childControlWidth}, controlH={layout.childControlHeight}, expandW={layout.childForceExpandWidth}");
+            var layout = handArea.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+            if (useHandLayoutGroup && layout != null)
+            {
+                layout.enabled = true;
+                layout.spacing = handSpacing;
+                layout.childAlignment = TextAnchor.MiddleCenter;
+                layout.childControlWidth = true;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
 
-            // ให้แต่ละการ์ดมี LayoutElement เพื่อกำหนด preferred size
+                Debug.Log($"🎴 HLG Settings: spacing={layout.spacing}, controlW={layout.childControlWidth}, controlH={layout.childControlHeight}, expandW={layout.childForceExpandWidth}");
+
+                // ให้แต่ละการ์ดมี LayoutElement เพื่อกำหนด preferred size
+                foreach (var card in cardsInHand)
+                {
+                    if (card == null || card.gameObject == null) continue;
+                    
+                    if (card.transform.parent != handArea)
+                        card.transform.SetParent(handArea, false);
+
+                    var rt = card.GetComponent<RectTransform>();
+                    if (rt != null)
+                    {
+                        rt.localScale = Vector3.one;
+                        rt.localRotation = Quaternion.identity;
+                    }
+
+                    var le = card.GetComponent<UnityEngine.UI.LayoutElement>();
+                    if (le == null) le = card.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
+                    le.preferredWidth = handCardPreferredSize.x;
+                    le.preferredHeight = handCardPreferredSize.y;
+                    le.minWidth = 0f;
+                    le.minHeight = 0f;
+                    le.flexibleWidth = 0f;
+                    le.flexibleHeight = 0f;
+
+                    Debug.Log($"🎴 Card[{card.name}]: LE(prefW={le.preferredWidth}, prefH={le.preferredHeight}), localPos={rt?.localPosition}");
+
+                    var img = card.GetComponent<Image>();
+                    // 🟣 ตั้งสีขาว (ยกเว้นถ้าการ์ดสูญเสีย category)
+                    if (img && !card.hasLostCategory) img.color = Color.white;
+
+                    var cg = card.GetComponent<CanvasGroup>();
+                    if (cg)
+                    {
+                        cg.interactable = true;
+                        cg.blocksRaycasts = true;
+                        cg.alpha = 1f;
+                    }
+                }
+
+                var handRect = handArea as RectTransform;
+                if (handRect)
+                {
+                    UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(handRect);
+                    Canvas.ForceUpdateCanvases(); // 🔥 บังคับให้ Canvas อัพเดททันที
+                }
+
+                // 🔥 Debug: แสดงตำแหน่งสุดท้ายของการ์ดแต่ละใบ
+                Debug.Log("🎴 === ตำแหน่งการ์ดหลัง layout ===");
+                for (int i = 0; i < cardsInHand.Length; i++)
+                {
+                    var rt = cardsInHand[i].GetComponent<RectTransform>();
+                    if (rt != null)
+                        Debug.Log($"🎴 Card[{i}] {cardsInHand[i].name}: localPos={rt.localPosition}, anchoredPos={rt.anchoredPosition}");
+                }
+
+                Debug.Log($"✅ จัดการ์ดในมือด้วย HorizontalLayoutGroup (spacing={handSpacing}, count={cardsInHand.Length})");
+                return;
+            }
+
+            // Fallback: manual layout ถ้าไม่มี HLG
+            if (layout != null) layout.enabled = false;
+
+            int count = 0;
+            float cardWidth = Mathf.Max(10f, handCardPreferredSize.x);
+            float spacing = Mathf.Max(10f, handSpacing);
+            float totalWidth = (cardWidth + spacing) * cardsInHand.Length;
+            float startX = -totalWidth / 2f + cardWidth / 2f;
+
             foreach (var card in cardsInHand)
             {
-                if (card == null) continue;
+                if (card == null || card.gameObject == null) continue;
+                
                 if (card.transform.parent != handArea)
                     card.transform.SetParent(handArea, false);
 
-                var rt = card.GetComponent<RectTransform>();
-                if (rt != null)
-                {
-                    rt.localScale = Vector3.one;
-                    rt.localRotation = Quaternion.identity;
-                }
-
-                var le = card.GetComponent<UnityEngine.UI.LayoutElement>();
-                if (le == null) le = card.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
-                le.preferredWidth = handCardPreferredSize.x;
-                le.preferredHeight = handCardPreferredSize.y;
-                le.minWidth = 0f;
-                le.minHeight = 0f;
-                le.flexibleWidth = 0f;
-                le.flexibleHeight = 0f;
-
-                Debug.Log($"🎴 Card[{card.name}]: LE(prefW={le.preferredWidth}, prefH={le.preferredHeight}), localPos={rt?.localPosition}");
+                float xPos = startX + count * (cardWidth + spacing);
+                card.transform.localPosition = new Vector3(xPos, 0, 0);
+                card.transform.localScale = Vector3.one;
+                card.transform.localRotation = Quaternion.identity;
 
                 var img = card.GetComponent<Image>();
                 // 🟣 ตั้งสีขาว (ยกเว้นถ้าการ์ดสูญเสีย category)
                 if (img && !card.hasLostCategory) img.color = Color.white;
-
                 var cg = card.GetComponent<CanvasGroup>();
                 if (cg)
                 {
@@ -916,68 +990,21 @@ public class BattleManager : MonoBehaviour
                     cg.blocksRaycasts = true;
                     cg.alpha = 1f;
                 }
+                count++;
             }
 
-            var handRect = handArea as RectTransform;
-            if (handRect)
+            var handRect2 = handArea as RectTransform;
+            if (handRect2)
             {
-                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(handRect);
+                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(handRect2);
                 Canvas.ForceUpdateCanvases(); // 🔥 บังคับให้ Canvas อัพเดททันที
             }
-
-            // 🔥 Debug: แสดงตำแหน่งสุดท้ายของการ์ดแต่ละใบ
-            Debug.Log("🎴 === ตำแหน่งการ์ดหลัง layout ===");
-            for (int i = 0; i < cardsInHand.Length; i++)
-            {
-                var rt = cardsInHand[i].GetComponent<RectTransform>();
-                if (rt != null)
-                    Debug.Log($"🎴 Card[{i}] {cardsInHand[i].name}: localPos={rt.localPosition}, anchoredPos={rt.anchoredPosition}");
-            }
-
-            Debug.Log($"✅ จัดการ์ดในมือด้วย HorizontalLayoutGroup (spacing={handSpacing}, count={cardsInHand.Length})");
-            return;
+            Debug.Log($"✅ จัดการ์ดในมือแบบ manual (spacing={spacing}, count={cardsInHand.Length})");
         }
-
-        // Fallback: manual layout ถ้าไม่มี HLG
-        if (layout != null) layout.enabled = false;
-
-        int count = 0;
-        float cardWidth = Mathf.Max(10f, handCardPreferredSize.x);
-        float spacing = Mathf.Max(10f, handSpacing);
-        float totalWidth = (cardWidth + spacing) * cardsInHand.Length;
-        float startX = -totalWidth / 2f + cardWidth / 2f;
-
-        foreach (var card in cardsInHand)
+        catch (System.Exception ex)
         {
-            if (card == null) continue;
-            if (card.transform.parent != handArea)
-                card.transform.SetParent(handArea, false);
-
-            float xPos = startX + count * (cardWidth + spacing);
-            card.transform.localPosition = new Vector3(xPos, 0, 0);
-            card.transform.localScale = Vector3.one;
-            card.transform.localRotation = Quaternion.identity;
-
-            var img = card.GetComponent<Image>();
-            // 🟣 ตั้งสีขาว (ยกเว้นถ้าการ์ดสูญเสีย category)
-            if (img && !card.hasLostCategory) img.color = Color.white;
-            var cg = card.GetComponent<CanvasGroup>();
-            if (cg)
-            {
-                cg.interactable = true;
-                cg.blocksRaycasts = true;
-                cg.alpha = 1f;
-            }
-            count++;
+            Debug.LogError($"❌ EXCEPTION in ArrangeCardsInHand: {ex.Message}\n{ex.StackTrace}");
         }
-
-        var handRect2 = handArea as RectTransform;
-        if (handRect2)
-        {
-            UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(handRect2);
-            Canvas.ForceUpdateCanvases(); // 🔥 บังคับให้ Canvas อัพเดททันที
-        }
-        Debug.Log($"✅ จัดการ์ดในมือแบบ manual (spacing={spacing}, count={cardsInHand.Length})");
     }
 
     // 🔥 จัดมือบอทให้มองเห็นได้ (เหมือนผู้เล่น แต่ปิดการโต้ตอบ)
@@ -985,62 +1012,87 @@ public class BattleManager : MonoBehaviour
     {
         if (enemyHandArea == null) return;
 
-        var cards = enemyHandArea.GetComponentsInChildren<BattleCardUI>();
-        if (cards.Length == 0) return;
-
-        var layout = enemyHandArea.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
-        if (useHandLayoutGroup && layout != null)
+        try
         {
-            layout.enabled = true;
-            layout.spacing = handSpacing;
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
-
-            foreach (var card in cards)
+            // 🔥 Get ONLY direct children (not nested)
+            var cards = enemyHandArea.GetComponentsInChildren<BattleCardUI>(includeInactive: false)
+                .Where(c => c.transform.parent == enemyHandArea).ToArray();
+            
+            if (cards.Length == 0)
             {
-                if (card == null) continue;
-                if (card.transform.parent != enemyHandArea)
-                    card.transform.SetParent(enemyHandArea, false);
-
-                var rt = card.GetComponent<RectTransform>();
-                if (rt != null)
-                {
-                    rt.localScale = Vector3.one;
-                    rt.localRotation = Quaternion.identity;
-                }
-
-                var le = card.GetComponent<UnityEngine.UI.LayoutElement>();
-                if (le == null) le = card.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
-                le.preferredWidth = handCardPreferredSize.x;
-                le.preferredHeight = handCardPreferredSize.y;
-                le.minWidth = 0f;
-                le.minHeight = 0f;
-                le.flexibleWidth = 0f;
-                le.flexibleHeight = 0f;
-
-                var img = card.GetComponent<Image>();
-                // 🟣 ตั้งสีขาว (ยกเว้นถ้าการ์ดสูญเสีย category)
-                if (img && !card.hasLostCategory) img.color = Color.white;
-
-                var cg = card.GetComponent<CanvasGroup>();
-                if (cg)
-                {
-                    bool allowClick = IsCardRevealed(card.GetData());
-                    cg.interactable = allowClick;
-                    cg.blocksRaycasts = allowClick;
-                    cg.alpha = 1f;
-                }
+                Debug.Log("🎴 ArrangeEnemyHand: No cards to arrange");
+                return;
             }
 
-            var rect = enemyHandArea as RectTransform;
-            if (rect)
+            // 🔥 Filter out null/destroyed cards
+            cards = System.Array.FindAll(cards, c => c != null && c.gameObject != null);
+            if (cards.Length == 0)
             {
-                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
-                Canvas.ForceUpdateCanvases();
+                Debug.LogWarning("⚠️ ArrangeEnemyHand: No valid cards after null-check");
+                return;
             }
+
+            Debug.Log($"🎴 ArrangeEnemyHand: {cards.Length} valid direct children found");
+
+            var layout = enemyHandArea.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+            if (useHandLayoutGroup && layout != null)
+            {
+                layout.enabled = true;
+                layout.spacing = handSpacing;
+                layout.childAlignment = TextAnchor.MiddleCenter;
+                layout.childControlWidth = true;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+
+                foreach (var card in cards)
+                {
+                    if (card == null || card.gameObject == null) continue;
+                    
+                    if (card.transform.parent != enemyHandArea)
+                        card.transform.SetParent(enemyHandArea, false);
+
+                    var rt = card.GetComponent<RectTransform>();
+                    if (rt != null)
+                    {
+                        rt.localScale = Vector3.one;
+                        rt.localRotation = Quaternion.identity;
+                    }
+
+                    var le = card.GetComponent<UnityEngine.UI.LayoutElement>();
+                    if (le == null) le = card.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
+                    le.preferredWidth = handCardPreferredSize.x;
+                    le.preferredHeight = handCardPreferredSize.y;
+                    le.minWidth = 0f;
+                    le.minHeight = 0f;
+                    le.flexibleWidth = 0f;
+                    le.flexibleHeight = 0f;
+
+                    var img = card.GetComponent<Image>();
+                    // 🟣 ตั้งสีขาว (ยกเว้นถ้าการ์ดสูญเสีย category)
+                    if (img && !card.hasLostCategory) img.color = Color.white;
+
+                    var cg = card.GetComponent<CanvasGroup>();
+                    if (cg)
+                    {
+                        bool allowClick = IsCardRevealed(card.GetData());
+                        cg.interactable = allowClick;
+                        cg.blocksRaycasts = allowClick;
+                        cg.alpha = 1f;
+                    }
+                }
+
+                var rect = enemyHandArea as RectTransform;
+                if (rect)
+                {
+                    UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+                    Canvas.ForceUpdateCanvases();
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"❌ EXCEPTION in ArrangeEnemyHand: {ex.Message}\n{ex.StackTrace}");
         }
     }
 
@@ -1554,6 +1606,14 @@ public class BattleManager : MonoBehaviour
                     // เทพอกพ/ดูมือ is ok ก็ว่า ok (ต้องการ discard/reveal ได้)
                     break;
 
+                case ActionType.ReturnEquipFromGraveyard:
+                    if (!HasEquipInGraveyard(isPlayer))
+                    {
+                        Debug.Log($"🚫 Effect {effect.action} ไม่มี Equip Spell ในสุสาน!");
+                        return false;
+                    }
+                    break;
+
                     // effect อื่นๆ ถือว่า OK
             }
         }
@@ -1649,20 +1709,37 @@ public class BattleManager : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
 
         // 🔥 ทริกเกอร์เอฟเฟกต์ (รอให้เสร็จก่อน)
+        Debug.Log($"🔵 BOT SPELL: Starting ResolveEffects...");
         yield return StartCoroutine(ResolveEffects(spellCard, EffectTrigger.OnDeploy, isPlayer: false));
+        Debug.Log($"🔵 BOT SPELL: ResolveEffects COMPLETED!");
 
         yield return new WaitForSeconds(0.2f);
 
         // 🪦 ส่งเวทย์ลงสุสาน (Spell ใช้ไปแล้ว)
-        SendToGraveyard(spellData, isPlayer: false);
-        Destroy(spellCard.gameObject);
+        if (spellCard != null && spellCard.gameObject != null)
+        {
+            SendToGraveyard(spellData, isPlayer: false);
+            Destroy(spellCard.gameObject);
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ spellCard already destroyed after ResolveEffects");
+            if (spellData != null)
+                SendToGraveyard(spellData, isPlayer: false);
+        }
 
         yield return new WaitForSeconds(0.2f);
 
         // ปล่อยเวทย์ลงไปสุสาน
-        Destroy(spellCard.gameObject);
+        if (spellCard != null && spellCard.gameObject != null)
+        {
+            Destroy(spellCard.gameObject);
+        }
+        
         if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
+        Debug.Log($"🔵 BOT SPELL: Calling UpdateUI()...");
         UpdateUI();
+        Debug.Log($"🔵 BOT SPELL: COMPLETELY FINISHED!");
     }
 
     /// <summary>แสดงแจ้งเตือนเวทย์ที่ถูกใช้</summary>
@@ -3715,6 +3792,9 @@ public class BattleManager : MonoBehaviour
             case ActionType.ControlEquip:
                 yield return StartCoroutine(ApplyControlEquip(sourceCard, effect, isPlayer));
                 break;
+            case ActionType.ReturnEquipFromGraveyard:
+                yield return StartCoroutine(ApplyReturnEquipFromGraveyard(sourceCard, effect, isPlayer));
+                break;
             default:
                 Debug.LogWarning($"⚠️ Action type {effect.action} not implemented yet");
                 yield break;
@@ -5298,6 +5378,264 @@ public class BattleManager : MonoBehaviour
         return null;
     }
 
+    bool HasEquipInGraveyard(bool isPlayer)
+    {
+        var graveyard = isPlayer ? playerGraveyard : enemyGraveyard;
+        return graveyard.Any(card => card != null && card.type == CardType.EquipSpell);
+    }
+
+    IEnumerator ApplyReturnEquipFromGraveyard(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        Debug.Log($"🎯 ApplyReturnEquipFromGraveyard: source={sourceCard?.GetData()?.cardName ?? "Unknown"}, player={isPlayer}");
+
+        if (effect.targetType != TargetType.Self)
+        {
+            Debug.LogWarning("⚠️ ReturnEquipFromGraveyard only supports TargetType.Self");
+            yield break;
+        }
+
+        if (!HasEquipInGraveyard(isPlayer))
+        {
+            Debug.Log($"⚠️ ไม่มี Equip Spell ในสุสานให้ดึงกลับ ({(isPlayer ? "Player" : "Enemy")})");
+            yield break;
+        }
+
+        if (isPlayer)
+        {
+            Debug.Log($"👤 Player turn - opening graveyard selection UI");
+            yield return StartCoroutine(PlayerChooseEquipFromGraveyard(isPlayer: true));
+        }
+        else
+        {
+            Debug.Log($"🤖 Bot turn - auto-selecting first equip");
+            yield return StartCoroutine(ReturnFirstEquipFromGraveyard(isPlayer: false));
+        }
+
+        Debug.Log($"✅✅✅ ApplyReturnEquipFromGraveyard COMPLETELY DONE - Control returns to caller ✅✅✅");
+    }
+
+    IEnumerator ReturnFirstEquipFromGraveyard(bool isPlayer)
+    {
+        var graveyard = isPlayer ? playerGraveyard : enemyGraveyard;
+        var equipCard = graveyard.FirstOrDefault(card => card != null && card.type == CardType.EquipSpell);
+        
+        if (equipCard == null)
+        {
+            Debug.Log("⚠️ ReturnFirstEquipFromGraveyard: no Equip Spell found");
+            yield break;
+        }
+
+        Debug.Log($"🪦 Bot auto-selecting: {equipCard.cardName}");
+        Debug.Log($"📊 Graveyard before removal: {graveyard.Count} cards");
+        
+        // 🔥 ทำสำเนา CardData ก่อนลบออกจาก graveyard
+        CardData cardDataCopy = equipCard;
+        graveyard.Remove(equipCard);
+        UpdateGraveyardCountUI();
+        
+        Debug.Log($"📊 Graveyard after removal: {graveyard.Count} cards");
+        Debug.Log($"➕ Adding {cardDataCopy.cardName} to {(isPlayer ? "Player" : "Enemy")} hand");
+        
+        // 🔥 ใช้สำเนา ไม่ใช้ original
+        cardAdditionComplete = false;
+        AddCardToHandFromData(cardDataCopy, isPlayer);
+        
+        // 🔥 รอจนกว่าการเพิ่มการ์ดจะสิ้นสุด (max 5 seconds timeout)
+        float timeout = Time.time + 5f;
+        while (!cardAdditionComplete && Time.time < timeout)
+        {
+            yield return null;
+        }
+        
+        if (Time.time >= timeout)
+        {
+            Debug.LogError("❌ TIMEOUT: AddCardToHandFromData ไม่จบใน 5 วินาที!");
+            cardAdditionComplete = true;
+        }
+        
+        AddBattleLog($"{(isPlayer ? "Player" : "Bot")} returned {cardDataCopy.cardName} from graveyard");
+        
+        yield return new WaitForEndOfFrame();
+        Debug.Log($"✅ ReturnFirstEquipFromGraveyard completed for {(isPlayer ? "Player" : "Bot")}");
+    }
+
+    IEnumerator PlayerChooseEquipFromGraveyard(bool isPlayer)
+    {
+        var graveyard = isPlayer ? playerGraveyard : enemyGraveyard;
+        if (!HasEquipInGraveyard(isPlayer)) yield break;
+
+        GameObject panel = isPlayer ? playerGraveyardPanel : enemyGraveyardPanel;
+        Transform root = isPlayer ? playerGraveyardListRoot : enemyGraveyardListRoot;
+
+        if (panel == null || root == null)
+        {
+            Debug.LogError("❌ Graveyard panel/root is NULL! Cannot select equip.");
+            yield break;
+        }
+
+        Debug.Log($"🪦 Opening graveyard selection for {(isPlayer ? "Player" : "Enemy")} - has {graveyard.Count} cards");
+
+        isChoosingGraveyardEquip = true;
+        graveyardEquipConfirmed = false;
+        selectedGraveyardEquip = null;
+
+        panel.SetActive(true);
+        ClearListRoot(root);
+        SetupGraveyardScroll(panel, root);
+        PopulateGraveyardListForSelection(root, graveyard);
+
+        Debug.Log($"⏳ Waiting for player to right-click a card...");
+        while (!graveyardEquipConfirmed)
+        {
+            yield return null;
+        }
+
+        panel.SetActive(false);
+        isChoosingGraveyardEquip = false;
+
+        if (selectedGraveyardEquip != null)
+        {
+            Debug.Log($"✅ Player confirmed: {selectedGraveyardEquip.cardName}");
+            Debug.Log($"📊 Graveyard before removal: {graveyard.Count} cards");
+            
+            // 🔥 ทำสำเนา CardData ก่อนลบออกจาก graveyard
+            CardData cardDataCopy = selectedGraveyardEquip;
+            graveyard.Remove(selectedGraveyardEquip);
+            UpdateGraveyardCountUI();
+            
+            Debug.Log($"📊 Graveyard after removal: {graveyard.Count} cards");
+            Debug.Log($"➕ Adding {cardDataCopy.cardName} to {(isPlayer ? "Player" : "Enemy")} hand");
+            
+            // 🔥 ใช้สำเนา ไม่ใช้ original
+            cardAdditionComplete = false;
+            AddCardToHandFromData(cardDataCopy, isPlayer);
+            
+            // 🔥 รอจนกว่าการเพิ่มการ์ดจะสิ้นสุด (max 5 seconds timeout)
+            float timeout = Time.time + 5f;
+            while (!cardAdditionComplete && Time.time < timeout)
+            {
+                yield return null;
+            }
+            
+            if (Time.time >= timeout)
+            {
+                Debug.LogError("❌ TIMEOUT: AddCardToHandFromData ไม่จบใน 5 วินาที!");
+                cardAdditionComplete = true;
+            }
+            
+            AddBattleLog($"{(isPlayer ? "Player" : "Bot")} returned {cardDataCopy.cardName} from graveyard");
+        }
+        else
+        {
+            Debug.Log($"⚠️ Graveyard selection cancelled (None selected)");
+        }
+    }
+
+    void AddCardToHandFromData(CardData cardData, bool isPlayer)
+    {
+        if (cardData == null || cardPrefab == null)
+        {
+            Debug.LogError($"❌ AddCardToHandFromData: cardData={cardData}, cardPrefab={cardPrefab}");
+            cardAdditionComplete = true;
+            return;
+        }
+
+        Transform targetHand = isPlayer ? handArea : enemyHandArea;
+        if (targetHand == null)
+        {
+            Debug.LogError($"❌ targetHand is NULL for {(isPlayer ? "Player" : "Enemy")}! handArea={handArea}, enemyHandArea={enemyHandArea}");
+            cardAdditionComplete = true;
+            return;
+        }
+
+        cardAdditionInProgress = true;
+        cardAdditionComplete = false;
+
+        Debug.Log($"🔄 AddCardToHandFromData START: {cardData.cardName} to {(isPlayer ? "Player" : "Enemy")} hand");
+        Debug.Log($"   targetHand.name={targetHand.name}, childCount before={targetHand.childCount}");
+
+        var ui = Instantiate(cardPrefab, targetHand).GetComponent<BattleCardUI>();
+        if (ui == null)
+        {
+            Debug.LogError("❌ cardPrefab ไม่มี BattleCardUI component!");
+            cardAdditionInProgress = false;
+            cardAdditionComplete = true;
+            return;
+        }
+
+        Debug.Log($"✅ Card instantiated: {ui.gameObject.name}");
+        Debug.Log($"   parent={ui.transform.parent.name}, parentChildCount={ui.transform.parent.childCount}");
+
+        ui.Setup(cardData);
+        ui.transform.localScale = Vector3.one;
+        ui.transform.localPosition = Vector3.zero;
+
+        Debug.Log($"✅ Card Setup done: localPos={ui.transform.localPosition}");
+
+        if (!isPlayer)
+        {
+            var img = ui.GetComponent<Image>();
+            if (img != null && cardBackPrefab != null)
+            {
+                var backImg = cardBackPrefab.GetComponent<Image>();
+                if (backImg != null && backImg.sprite != null)
+                {
+                    img.sprite = backImg.sprite;
+                }
+            }
+            ui.SetFrameVisible(false);
+
+            var cg = ui.GetComponent<CanvasGroup>();
+            if (cg == null) cg = ui.gameObject.AddComponent<CanvasGroup>();
+            cg.interactable = false;
+            cg.blocksRaycasts = false;
+            cg.alpha = 1f;
+        }
+
+        Debug.Log($"📍 Before Arrange: {(isPlayer ? "Player" : "Enemy")} hand has {targetHand.childCount} cards");
+        
+        try
+        {
+            if (isPlayer)
+            {
+                Debug.Log($"📍 Calling ArrangeCardsInHand()...");
+                ArrangeCardsInHand();
+            }
+            else
+            {
+                Debug.Log($"📍 Calling ArrangeEnemyHand()...");
+                ArrangeEnemyHand();
+            }
+
+            // 🔥 ตรวจสอบว่า card ยังคงมีชีวิต
+            if (ui == null || ui.gameObject == null || !ui.gameObject.activeInHierarchy)
+            {
+                Debug.LogError($"❌ CRITICAL: Card destroyed during arrangement!");
+                cardAdditionInProgress = false;
+                cardAdditionComplete = true;
+                return;
+            }
+
+            Debug.Log($"✅ {cardData.cardName} successfully added! Hand now has {targetHand.childCount} children");
+            
+            // 🔥 ตรวจสอบว่า card ยังคงเป็น child ของ targetHand หรือเปล่า
+            if (ui.transform.parent != targetHand)
+            {
+                Debug.LogError($"❌ CRITICAL: Card parent changed! Was {targetHand.name}, now {ui.transform.parent?.name}");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"❌ EXCEPTION in AddCardToHandFromData: {ex.Message}\n{ex.StackTrace}");
+        }
+        finally
+        {
+            cardAdditionInProgress = false;
+            cardAdditionComplete = true;
+            Debug.Log($"✅ AddCardToHandFromData COMPLETE: {cardData.cardName}");
+        }
+    }
+
     // ========================================================
     // 🪦 GRAVEYARD UI HELPERS (สำหรับปุ่มใน HUD)
     // ========================================================
@@ -5654,6 +5992,140 @@ public class BattleManager : MonoBehaviour
 
         // รีเฟรชเลย์เอาต์เพื่อให้ ScrollRect ปรับขนาดทันที
         LayoutRebuilder.ForceRebuildLayoutImmediate(root as RectTransform);
+    }
+
+    void PopulateGraveyardListForSelection(Transform root, List<CardData> cards)
+    {
+        if (root == null)
+        {
+            Debug.LogError("❌ Graveyard List Root ยังไม่ได้ assign ใน Inspector!");
+            return;
+        }
+
+        if (cards == null) return;
+
+        var oldLayout = root.GetComponent<VerticalLayoutGroup>();
+        if (oldLayout != null) DestroyImmediate(oldLayout);
+
+        var gridLayout = root.GetComponent<GridLayoutGroup>();
+        if (gridLayout == null)
+        {
+            gridLayout = root.gameObject.AddComponent<GridLayoutGroup>();
+        }
+
+        gridLayout.childAlignment = TextAnchor.UpperLeft;
+        gridLayout.spacing = new Vector2(8f, 8f);
+        gridLayout.cellSize = new Vector2(180f, 220f);
+        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        gridLayout.constraintCount = 6;
+
+        var fitter = root.GetComponent<ContentSizeFitter>();
+        if (fitter == null)
+        {
+            fitter = root.gameObject.AddComponent<ContentSizeFitter>();
+        }
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        if (graveyardListItemPrefab == null)
+        {
+            Debug.LogError("❌ graveyardListItemPrefab ยังไม่ได้ตั้งค่า!");
+            return;
+        }
+
+        float scaleFactor = 0.75f;
+        if (cards.Count > 18) scaleFactor = 0.55f;
+        else if (cards.Count > 12) scaleFactor = 0.65f;
+
+        foreach (var card in cards)
+        {
+            if (card == null) continue;
+            var item = Instantiate(graveyardListItemPrefab, root);
+            item.transform.localScale = Vector3.one * scaleFactor;
+            item.name = $"Graveyard_{card.cardName}";
+
+            var ui = item.GetComponent<BattleCardUI>();
+            if (ui != null)
+            {
+                ui.Setup(card);
+
+                var cg = ui.GetComponent<CanvasGroup>();
+                if (cg == null) cg = ui.gameObject.AddComponent<CanvasGroup>();
+                cg.interactable = true;
+                cg.blocksRaycasts = true;
+                cg.alpha = 1f;
+
+                var img = item.GetComponent<Image>();
+                if (img != null) img.raycastTarget = true;
+
+                CardData cardData = card;
+
+                var eventTrigger = item.GetComponent<EventTrigger>();
+                if (eventTrigger == null) eventTrigger = item.AddComponent<EventTrigger>();
+                eventTrigger.triggers.Clear();
+
+                EventTrigger.Entry entry = new EventTrigger.Entry();
+                entry.eventID = EventTriggerType.PointerClick;
+                entry.callback.AddListener((data) =>
+                {
+                    PointerEventData pointerData = (PointerEventData)data;
+                    
+                    Debug.Log($"🎯 GraveyardEquip EventTrigger: button={pointerData.button}, cardType={cardData.type}, isChoosingGraveyardEquip={isChoosingGraveyardEquip}");
+                    
+                    // 🔥 Right-click: เลือกการ์ด, Left-click: ดูรายละเอียด
+                    if (pointerData.button == PointerEventData.InputButton.Right)
+                    {
+                        Debug.Log($"📍 Right-click on {cardData.cardName}, type={cardData.type}");
+                        if (cardData.type == CardType.EquipSpell)
+                        {
+                            if (isChoosingGraveyardEquip)
+                            {
+                                Debug.Log($"✅ Right-click selected: {cardData.cardName}");
+                                OnGraveyardEquipSelected(cardData);
+                            }
+                            else
+                            {
+                                Debug.LogWarning($"⚠️ isChoosingGraveyardEquip ยังเป็น false!");
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"⚠️ Card ไม่ใช่ EquipSpell: {cardData.type}");
+                        }
+                    }
+                    else if (pointerData.button == PointerEventData.InputButton.Left)
+                    {
+                        Debug.Log($"📍 Left-click on {cardData.cardName}");
+                        if (cardDetailView != null)
+                        {
+                            cardDetailView.Open(cardData);
+                            Debug.Log($"🔓 เปิดรายละเอียด: {cardData.cardName}");
+                        }
+                    }
+                });
+                eventTrigger.triggers.Add(entry);
+            }
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(root as RectTransform);
+    }
+
+    void OnGraveyardEquipSelected(CardData cardData)
+    {
+        if (!isChoosingGraveyardEquip || cardData == null)
+        {
+            Debug.LogWarning($"⚠️ OnGraveyardEquipSelected: invalid state (choosing={isChoosingGraveyardEquip}, card={cardData})");
+            return;
+        }
+        if (cardData.type != CardType.EquipSpell)
+        {
+            Debug.LogWarning($"⚠️ OnGraveyardEquipSelected: not an EquipSpell! type={cardData.type}");
+            return;
+        }
+
+        selectedGraveyardEquip = cardData;
+        graveyardEquipConfirmed = true;
+        Debug.Log($"✅ Right-click selected equip from graveyard: {cardData.cardName}");
     }
 
     void ClearListRoot(Transform root)

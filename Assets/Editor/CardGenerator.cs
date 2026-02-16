@@ -379,7 +379,7 @@ public class CardGenerator
             "เลือก Equip Spell 1 ใบในสุสานของคุณ นำกลับขึ้นมือ",
             "[A02: Bad Key] เมื่อกุญแจเก่าถูกบุกรุก ก็ถึงเวลา 'เปลี่ยนกุญแจ' ใหม่ทันที",
             new List<CardEffect> { 
-                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.Self, action = ActionType.ModifyStat } // Placeholder
+                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.Self, action = ActionType.ReturnEquipFromGraveyard }
             });
 
         CreateCard("S_A02_03", "Cryptoanalysis", CardType.Spell, MainCategory.A02, SubCategory.General, 4, 0,
