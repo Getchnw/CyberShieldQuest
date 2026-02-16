@@ -656,14 +656,48 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (_cardData == null) return;
+        if (_cardData == null)
+        {
+            Debug.LogWarning($"❌ OnPointerDown: _cardData is NULL");
+            return;
+        }
 
         bool isPrimary = eventData.button == PointerEventData.InputButton.Left;
         bool isSecondary = eventData.button == PointerEventData.InputButton.Right;
+        
+        bool isRevealed = BattleManager.Instance != null && BattleManager.Instance.IsCardRevealed(_cardData);
+        Debug.Log($"🖱️ Click on {_cardData.cardName}: isPrimary={isPrimary}, isRevealed={isRevealed}, parent={transform.parent?.name}");
 
-        // ห้ามโต้ตอบการ์ดที่อยู่ในมือบอท (ป้องกันการเปิดรายละเอียด)
-        if (BattleManager.Instance != null && transform.parent == BattleManager.Instance.enemyHandArea)
+        // 👁️ หากการ์ดนี้ reveal แล้ว ให้ดูรายละเอียดได้
+        if (isPrimary && BattleManager.Instance != null && BattleManager.Instance.IsCardRevealed(_cardData))
+        {
+            Debug.Log($"✅ Revealed card clicked, opening detail");
+            if (BattleManager.Instance.cardDetailView != null)
+            {
+                if (BattleManager.Instance.cardDetailView.IsShowingCard(_cardData))
+                {
+                    BattleManager.Instance.cardDetailView.Close();
+                    Debug.Log($"❌ Closed detail");
+                }
+                else
+                {
+                    BattleManager.Instance.cardDetailView.Open(_cardData);
+                    Debug.Log($"👁️ Opened detail");
+                }
+            }
+            else
+            {
+                Debug.LogError("❌ cardDetailView is NULL!");
+            }
             return;
+        }
+
+        // ห้ามโต้ตอบการ์ดที่อยู่ในมือบอท (ถ้ายังไม่ reveal)
+        if (BattleManager.Instance != null && transform.parent == BattleManager.Instance.enemyHandArea)
+        {
+            Debug.Log($"⛔ Bot hand card (not revealed): {_cardData.cardName}");
+            return;
+        }
 
         // 🔥 คลิกซ้าย = เปิดรายละเอียดการ์ดเท่านั้น (ถ้าคลิกซ้ำให้ปิด)
         if (isPrimary)

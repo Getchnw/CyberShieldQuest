@@ -156,6 +156,7 @@ public class BattleManager : MonoBehaviour
     private BattleCardUI currentAttackerBot;
     private bool playerHasMadeChoice = false;
     private List<CardData> enemyDeckList = new List<CardData>();
+    private Dictionary<string, CardData> revealedEnemyCards = new Dictionary<string, CardData>(); // เก็บการ์ดที่ทัยเหงแล้วท่อแคส
     private Dictionary<string, CardData> cardLookupCache = null;
     private Dictionary<string, CardData> cardNameLookupCache = null;
     private int lastDestroyedAtkSum = 0;
@@ -272,6 +273,16 @@ public class BattleManager : MonoBehaviour
         if (handRevealPanel) handRevealPanel.SetActive(false);
         SetupLogPanelAppearance();
         UpdateLogText();
+        
+        // 👁️ เปิด raycasts บน enemyHandArea เพื่อให้การ์ดที่ reveal คลิกได้
+        if (enemyHandArea != null)
+        {
+            var cg = enemyHandArea.GetComponent<CanvasGroup>();
+            if (cg == null) cg = enemyHandArea.gameObject.AddComponent<CanvasGroup>();
+            cg.blocksRaycasts = true;
+            Debug.Log("✅ Set enemyHandArea.CanvasGroup.blocksRaycasts = true");
+        }
+        
         StartCoroutine(SetupBattle());
     }
 
@@ -1017,8 +1028,9 @@ public class BattleManager : MonoBehaviour
                 var cg = card.GetComponent<CanvasGroup>();
                 if (cg)
                 {
-                    cg.interactable = false;
-                    cg.blocksRaycasts = false; // กันคลิก/ดูรายละเอียดการ์ดบอท
+                    bool allowClick = IsCardRevealed(card.GetData());
+                    cg.interactable = allowClick;
+                    cg.blocksRaycasts = allowClick;
                     cg.alpha = 1f;
                 }
             }
@@ -1951,6 +1963,9 @@ public class BattleManager : MonoBehaviour
 
         // 🎮 นับ Control duration ตอนจบเทิร์นบอท
         ProcessControlDurationsForAllEquips();
+
+        // 🏁 จบเทิร์นบอท - ซ่อนการ์ดที่ reveal กลับไป
+        EndEnemyTurn();
 
         if (state != BattleState.LOST) StartPlayerTurn();
     }
@@ -2986,10 +3001,20 @@ public class BattleManager : MonoBehaviour
 
         AddBattleLog($"Bot draws {n} card(s) | Deck: {enemyDeckList.Count}");
 
+        // 👁️ เช็คว่าผู้เล่นมีสกิล [Cont.] RevealHand หรือไม่
+        bool shouldRevealDrawnCard = HasPlayerContinuousRevealHandEffect();
+
         for (int i = 0; i < n; i++)
         {
             CardData cardData = enemyDeckList[0];
             enemyDeckList.RemoveAt(0);
+
+            // 👁️ ถ้าผู้เล่นมีสกิล RevealHand ให้แสดงการ์ดที่บอทจั่ว
+            if (shouldRevealDrawnCard)
+            {
+                // รอให้การ์ดเข้ามือก่อน (animation + setup)
+                yield return new WaitForSeconds(0.5f);
+            }
 
             if (cardPrefab && enemyHandArea)
             {
@@ -3063,13 +3088,33 @@ public class BattleManager : MonoBehaviour
                     // ตั้งค่าการ์ดบอท
                     var cg = cardObj.GetComponent<CanvasGroup>();
                     if (cg == null) cg = cardObj.AddComponent<CanvasGroup>();
-                    cg.interactable = false; // ไม่ให้บอทเล่นจากมือ
-                    cg.blocksRaycasts = false; // ไม่ให้คลิก
+                    cg.blocksRaycasts = false; // ซ่อนมือบอทปกติจะไม่ให้คลิก
+                    cg.interactable = true;
 
                     var le = cardObj.GetComponent<LayoutElement>();
                     if (le == null) le = cardObj.AddComponent<LayoutElement>();
                     le.preferredWidth = handCardPreferredSize.x;
                     le.preferredHeight = handCardPreferredSize.y;
+
+                    // 👁️ ถ้ามีสกิล RevealHand ให้แสดงหน้าการ์ดตลอดเทิร์นนี้
+                    if (shouldRevealDrawnCard)
+                    {
+                        // แสดงหน้าการ์ด (ไม่พลิก) - แสดงพิศเลยตลอดเทิร์น
+                        var revealImg = cardObj.GetComponent<Image>();
+                        if (revealImg != null && cardData.artwork != null)
+                        {
+                            revealImg.sprite = cardData.artwork; // แสดงหน้าการ์ดจริง
+                            revealImg.raycastTarget = true; // ✅ บังคับให้รับเมาส์ click
+                            Debug.Log($"🖼️ Set raycast target to TRUE for {cardData.cardName}");
+                        }
+                        ui.SetFrameVisible(true); // แสดงกรอบ
+                        cg.blocksRaycasts = true; // 🔥 อนุญาตให้คลิกการ์ดที่ถูก reveal
+                        
+                        // บันทึกการ์ดที่ reveal เพื่อจัดที่ออกมือ
+                        revealedEnemyCards[cardData.card_id] = cardData;
+                        AddBattleLog($"👁️ [RevealHand] Enemy drew: {cardData.cardName}");
+                        Debug.Log($"👁️ Added to revealedEnemyCards: {cardData.cardName} (id={cardData.card_id}), Total revealed: {revealedEnemyCards.Count}");
+                    }
                 }
 
                 // พักเล็กน้อยระหว่างการ์ด
@@ -5640,6 +5685,16 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
+        // 🔥 เพิ่มการ์ดทั้งหมดลงใน revealedEnemyCards เพื่อให้คลิกดูรายละเอียดได้
+        foreach (var card in cards)
+        {
+            if (card != null && !revealedEnemyCards.ContainsKey(card.card_id))
+            {
+                revealedEnemyCards[card.card_id] = card;
+                Debug.Log($"👁️ Marked as revealed: {card.cardName}");
+            }
+        }
+
         // ตั้งชื่อ Panel
         if (handRevealTitleText != null)
         {
@@ -5788,17 +5843,20 @@ public class BattleManager : MonoBehaviour
 
                     CardData cardData = card; // capture ค่าสำหรับ lambda
 
-                    // ใช้ EventTrigger (PointerClick) เพื่อดูรายละเอียด
-                    var eventTrigger = item.GetComponent<EventTrigger>();
-                    if (eventTrigger == null) eventTrigger = item.AddComponent<EventTrigger>();
+                    // 🔥 เอาปุ่มออกถ้ามี (ป้องกันบัตรสำหรับ click conflict)
+                    var btn = item.GetComponent<Button>();
+                    if (btn != null)
+                    {
+                        btn.onClick.RemoveAllListeners();
+                    }
 
-                    // ล้างเหตุการณ์เก่า
-                    eventTrigger.triggers.Clear();
-
-                    // เพิ่ม PointerClick trigger
-                    EventTrigger.Entry entry = new EventTrigger.Entry();
-                    entry.eventID = EventTriggerType.PointerClick;
-                    entry.callback.AddListener((data) =>
+                    // 🔥 เพิ่มลิสเนอร์คลิกแบบง่ายๆ สำหรับการ์ดบนมือ
+                    var pointerClickHandler = item.GetComponent<PointerClickHandler>();
+                    if (pointerClickHandler == null)
+                    {
+                        pointerClickHandler = item.AddComponent<PointerClickHandler>();
+                    }
+                    pointerClickHandler.OnClickAction = () =>
                     {
                         if (cardDetailView != null)
                         {
@@ -5809,11 +5867,9 @@ public class BattleManager : MonoBehaviour
                         {
                             Debug.LogError("❌ CardDetailView ยังไม่ได้ตั้งค่าใน BattleManager!");
                         }
-                    });
-                    eventTrigger.triggers.Add(entry);
+                    };
 
-                    // 🔥 ยืนยันว่า EventTrigger ทำงาน
-                    Debug.Log($"✅ Card setup: {card.cardName} | Image: {(img != null && img.sprite != null ? "OK" : "MISSING")} | EventTrigger: OK");
+                    Debug.Log($"✅ Card setup: {card.cardName} | Image: {(img != null && img.sprite != null ? "OK" : "MISSING")} | PointerClickHandler: OK");
 
                     successCount++;
                 }
@@ -6152,6 +6208,101 @@ public class BattleManager : MonoBehaviour
                     shield.SetHighlight(false);
                 }
             }
+        }
+    }
+
+    // =================================================================================
+    // 👁️ REVEAL DRAWN CARD SYSTEM (สำหรับ [Cont.] RevealHand)
+    // =================================================================================
+
+    /// <summary>เช็คว่าผู้เล่นมีการ์ดที่มี [Cont.] RevealHand effect บนสนามหรือไม่</summary>
+    bool HasPlayerContinuousRevealHandEffect()
+    {
+        // เช็ค Monster Slots
+        foreach (Transform slot in playerMonsterSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (card != null && card.GetData() != null)
+                {
+                    var data = card.GetData();
+                    foreach (var effect in data.effects)
+                    {
+                        if (effect.trigger == EffectTrigger.Continuous && 
+                            effect.action == ActionType.RevealHand && 
+                            effect.targetType == TargetType.EnemyHand)
+                        {
+                            Debug.Log($"👁️ Found [Cont.] RevealHand: {data.cardName}");
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // เช็ค Equip Slots
+        foreach (Transform slot in playerEquipSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+                if (card != null && card.GetData() != null)
+                {
+                    var data = card.GetData();
+                    foreach (var effect in data.effects)
+                    {
+                        if (effect.trigger == EffectTrigger.Continuous && 
+                            effect.action == ActionType.RevealHand && 
+                            effect.targetType == TargetType.EnemyHand)
+                        {
+                            Debug.Log($"👁️ Found [Cont.] RevealHand: {data.cardName}");
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>เช็คว่าการ์ดเป็นการ์ดที่ reveal จากการ์ด RevealHand หรือไม่</summary>
+    public bool IsCardRevealed(CardData cardData)
+    {
+        if (cardData == null) 
+        {
+            return false;
+        }
+        bool isRevealed = revealedEnemyCards.ContainsKey(cardData.card_id);
+        return isRevealed;
+    }
+
+    /// <summary>จบเทิร์บอท - ซ่อนการ์ดที่ reveal กลับไป</summary>
+    void EndEnemyTurn()
+    {
+        // ซ่อนการ์ดที่ reveal กลับไป
+        if (revealedEnemyCards.Count > 0)
+        {
+            foreach (var card in enemyHandArea.GetComponentsInChildren<BattleCardUI>())
+            {
+                if (card.GetData() != null && revealedEnemyCards.ContainsKey(card.GetData().card_id))
+                {
+                    // เปลี่ยนกลับเป็นหลังการ์ด
+                    var img = card.GetComponent<Image>();
+                    if (img != null && cardBackPrefab != null)
+                    {
+                        var backImg = cardBackPrefab.GetComponent<Image>();
+                        if (backImg != null && backImg.sprite != null)
+                        {
+                            img.sprite = backImg.sprite;
+                        }
+                    }
+                    card.SetFrameVisible(false);
+                    Debug.Log($"🔄 Hiding {card.GetData().cardName}");
+                }
+            }
+            revealedEnemyCards.Clear();
         }
     }
 }
