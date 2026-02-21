@@ -4819,6 +4819,16 @@ public class BattleManager : MonoBehaviour
             return false;
         }
 
+        if (effect.useExcludeFilter)
+        {
+            bool excludedByMain = effect.excludeMainCat != MainCategory.General && card.mainCategory == effect.excludeMainCat;
+            bool excludedBySub = effect.excludeSubCat != SubCategory.General && card.subCategory == effect.excludeSubCat;
+            if (excludedByMain || excludedBySub)
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -5974,6 +5984,18 @@ public class BattleManager : MonoBehaviour
 
     bool MatchesCategory(CardData cardData, CardEffect effect)
     {
+        if (effect.useExcludeFilter)
+        {
+            bool excludedByMain = effect.excludeMainCat != MainCategory.General && cardData.mainCategory == effect.excludeMainCat;
+            bool excludedBySub = effect.excludeSubCat != SubCategory.General && cardData.subCategory == effect.excludeSubCat;
+
+            if (excludedByMain || excludedBySub)
+            {
+                Debug.Log($"❌ Excluded target: {cardData.cardName} (Main={cardData.mainCategory}, Sub={cardData.subCategory})");
+                return false;
+            }
+        }
+
         // 🔥 ถ้าเป็น General ทั้งคู่ = ทุกการ์ด
         if (effect.targetMainCat == MainCategory.General && effect.targetSubCat == SubCategory.General)
             return true;

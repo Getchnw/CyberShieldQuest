@@ -21,6 +21,9 @@ public struct CardEffect {
     public EffectCardTypeFilter targetCardTypeFilter;
     public MainCategory targetMainCat;
     public SubCategory targetSubCat;
+    public bool useExcludeFilter; // 🔥 เปิดใช้เงื่อนไขยกเว้นเป้าหมาย
+    public MainCategory excludeMainCat; // 🔥 MainCategory ที่ไม่ให้โดนเป้า (ใช้เมื่อ useExcludeFilter = true)
+    public SubCategory excludeSubCat; // 🔥 SubCategory ที่ไม่ให้โดนเป้า (ใช้เมื่อ useExcludeFilter = true)
     public int value;
     public int duration; // 🔥 ระยะเวลา (เทิร์น): 0 = ตลอด, >= 1 = จำนวนเทิร์นที่กำหนด (ใช้กับ RemoveCategory, ForceIntercept, DisableIntercept)
     public DestroyMode destroyMode; // 🔥 โหมดการทำลาย (ใช้เมื่อ action = Destroy)
