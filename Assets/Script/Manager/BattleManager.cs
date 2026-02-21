@@ -4210,34 +4210,71 @@ public class BattleManager : MonoBehaviour
     {
         int discardCount = effect.value > 0 ? effect.value : 1;
 
-        if (effect.targetType == TargetType.EnemyDeck && !isPlayer)
+        if (effect.targetType == TargetType.EnemyDeck)
         {
-            for (int i = 0; i < discardCount && enemyDeckList.Count > 0; i++)
+            // target = เด็คฝั่งตรงข้ามของผู้ใช้เอฟเฟกต์
+            List<CardData> targetDeck = isPlayer ? enemyDeckList : deckList;
+            bool targetOwnerIsPlayer = !isPlayer;
+
+            int milledCount = 0;
+            for (int i = 0; i < discardCount && targetDeck.Count > 0; i++)
             {
-                CardData discardedCard = enemyDeckList[0];
-                enemyDeckList.RemoveAt(0);
+                CardData discardedCard = targetDeck[0];
+                targetDeck.RemoveAt(0);
                 // ส่งลงสุสาน
-                SendToGraveyard(discardedCard, isPlayer: false);
-                UpdateGraveyardCountUI();
-                Debug.Log($"🗑️ Discard Enemy Deck Card: {discardedCard.cardName}");
+                SendToGraveyard(discardedCard, isPlayer: targetOwnerIsPlayer);
+                milledCount++;
+                Debug.Log($"🗑️ Discard Opponent Deck Card: {discardedCard.cardName}");
+            }
+
+            AddBattleLog($"{(isPlayer ? "Player" : "Bot")} milled {milledCount} card(s) from {(targetOwnerIsPlayer ? "Player" : "Bot")} deck");
+            if (milledCount > 0)
+            {
+                PlayDeckDiscardFeedback(targetOwnerIsPlayer, milledCount);
             }
             UpdateDeckVisualization();
         }
-        else if (effect.targetType == TargetType.EnemyHand && !isPlayer)
+        else if (effect.targetType == TargetType.EnemyHand)
         {
-            // Discard จากมือศัตรู (ผู้เล่น)
-            if (handArea != null && handArea.childCount > 0)
+            // Discard จากมือฝั่งตรงข้าม
+            Transform targetHand = isPlayer ? enemyHandArea : handArea;
+            int discardedCount = 0;
+
+            if (targetHand != null && targetHand.childCount > 0)
             {
-                for (int i = 0; i < discardCount && handArea.childCount > 0; i++)
+                for (int i = 0; i < discardCount && targetHand.childCount > 0; i++)
                 {
-                    var card = handArea.GetChild(0).GetComponent<BattleCardUI>();
+                    var card = targetHand.GetChild(0).GetComponent<BattleCardUI>();
                     if (card != null && card.GetData() != null)
                     {
                         DestroyCardToGraveyard(card);
-                        Debug.Log($"🗑️ Discard Player Hand Card: {card.GetData().cardName}");
+                        discardedCount++;
+                        Debug.Log($"🗑️ Discard Opponent Hand Card: {card.GetData().cardName}");
                     }
                 }
             }
+
+            AddBattleLog($"{(isPlayer ? "Player" : "Bot")} discarded {discardedCount} card(s) from opponent hand");
+        }
+    }
+
+    void PlayDeckDiscardFeedback(bool targetOwnerIsPlayer, int discardCount)
+    {
+        if (discardCount <= 0) return;
+
+        Transform deckAnchor = targetOwnerIsPlayer ? deckPileTransform : enemyDeckPileTransform;
+        Transform graveAnchor = targetOwnerIsPlayer ? playerGraveyardArea : enemyGraveyardArea;
+
+        if (deckAnchor != null)
+        {
+            ShowDamagePopupString($"Discard {discardCount}", deckAnchor);
+            StartCoroutine(ShakeEffect(deckAnchor, 0.12f, 8f));
+        }
+
+        if (graveAnchor != null)
+        {
+            ShowDamagePopupString("To Grave", graveAnchor);
+            StartCoroutine(ShakeEffect(graveAnchor, 0.12f, 6f));
         }
     }
 
@@ -4365,6 +4402,11 @@ public class BattleManager : MonoBehaviour
         }
 
         AddBattleLog($"{(isPlayer ? "Player" : "Bot")} peeked {peekCount} and discarded {removedCount} card(s)");
+
+        if (removedCount > 0)
+        {
+            PlayDeckDiscardFeedback(targetIsPlayerDeck, removedCount);
+        }
 
         UpdateDeckVisualization();
     }
