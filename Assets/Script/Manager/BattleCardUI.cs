@@ -40,6 +40,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public SubCategory bypassAllowedSubCat = SubCategory.General; // SubCategory ที่สามารถ Intercept ได้ (General = ข้ามทั้งหมด)
     public bool mustIntercept = false; // การ์ดนี้ต้องกันการโจมตีถัดไปบังคับ
     public bool cannotIntercept = false; // การ์ดนี้ไม่สามารถกันการโจมตีได้ในเทิร์นนี้
+    public BattleCardUI markedInterceptTarget = null; // เป้าหมาย Equip ที่ถูกเลือกไว้สำหรับเงื่อนไข Intercept
+    public int markedInterceptMillCount = 0; // จำนวนการ์ดเด็คที่ต้องส่งลงสุสานเมื่อ trigger สำเร็จ
     public bool hasLostCategory = false; // Category lost from effect (independent of ATK/HP = 0)
     public int categoryLostTurnsRemaining = 0; // จำนวนเทิร์นที่เหลือก่อนคืน category: 0 = ไม่เสีย, -1 = ตลอด, >= 1 = จำนวนเทิร์น
     

@@ -32,8 +32,17 @@ MonoBehaviour:
     \u0E42\u0E14\u0E22\u0E1A\u0E31\u0E07\u0E04\u0E31\u0E1A\u0E43\u0E2B\u0E49\u0E43\u0E0A\u0E49\u0E01\u0E32\u0E23\u0E40\u0E02\u0E49\u0E32\u0E23\u0E2B\u0E31\u0E2A\u0E23\u0E38\u0E48\u0E19\u0E40\u0E01\u0E48\u0E32"
   effects:
   - trigger: 2
-    targetType: 5
-    action: 5
-    targetMainCat: 0
+    targetType: 3
+    action: 23
+    targetCardTypeFilter: 3
+    targetMainCat: 3
     targetSubCat: 0
+    useExcludeFilter: 0
+    excludeMainCat: 0
+    excludeSubCat: 0
     value: 2
+    duration: 0
+    destroyMode: 0
+    tokenCardId: 
+    bypassAllowedMainCat: 0
+    bypassAllowedSubCat: 0

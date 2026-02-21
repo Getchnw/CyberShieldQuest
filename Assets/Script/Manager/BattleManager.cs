@@ -1886,6 +1886,7 @@ public class BattleManager : MonoBehaviour
             attacker.bypassCostThreshold = 0;
             attacker.bypassAllowedMainCat = MainCategory.General;
             attacker.bypassAllowedSubCat = SubCategory.General;
+            ClearMarkedInterceptPunish(attacker);
 
             yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
 
@@ -1967,6 +1968,8 @@ public class BattleManager : MonoBehaviour
 
         if (botShield != null)
         {
+            TryResolveMarkedInterceptPunish(attacker, botShield, attackerIsPlayer: true);
+
             Debug.Log($"🛡️ บอทกันด้วย {botShield.GetData().cardName} ({botShield.GetData().subCategory})");
             AddBattleLog($"Bot blocks with {botShield.GetData().cardName} ({botShield.GetData().subCategory})");
             if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Block");
@@ -2014,6 +2017,8 @@ public class BattleManager : MonoBehaviour
 
             yield return StartCoroutine(MoveToTarget(attacker.transform, startPos, 0.25f));
         }
+
+        ClearMarkedInterceptPunish(attacker);
 
         // เช็คชนะ
         if (enemyCurrentHP <= 0)
@@ -2388,6 +2393,7 @@ public class BattleManager : MonoBehaviour
                         monster.bypassCostThreshold = 0;
                         monster.bypassAllowedMainCat = MainCategory.General;
                         monster.bypassAllowedSubCat = SubCategory.General;
+                        ClearMarkedInterceptPunish(monster);
 
                         // ดึงกลับ
                         if (monster != null && monster.gameObject != null && monster.transform != null)
@@ -2413,6 +2419,8 @@ public class BattleManager : MonoBehaviour
                         BattleCardUI forcedShield = GetMustInterceptCard(true);
                         if (forcedShield != null)
                         {
+                            TryResolveMarkedInterceptPunish(monster, forcedShield, attackerIsPlayer: false);
+
                             Debug.Log($"🛡️ {forcedShield.GetData().cardName} is forced to intercept bot's attack!");
                             AddBattleLog($"{forcedShield.GetData().cardName} forced to block {monster.GetData().cardName}");
 
@@ -2493,6 +2501,11 @@ public class BattleManager : MonoBehaviour
                     else
                     {
                         Debug.Log("✅ มอนสเตอร์ถูกทำลายแล้ว (กันได้) → ไม่ต้องดึงกลับ");
+                    }
+
+                    if (monster != null)
+                    {
+                        ClearMarkedInterceptPunish(monster);
                     }
 
                     if (state == BattleState.LOST) break;
@@ -2605,6 +2618,8 @@ public class BattleManager : MonoBehaviour
         CardData attackerData = currentAttackerBot.GetData();
         CardData shieldData = myShield.GetData();
 
+        TryResolveMarkedInterceptPunish(currentAttackerBot, myShield, attackerIsPlayer: false);
+
         Debug.Log($"🛡️ ตรวจสอบการกัน: โจมตี={attackerData.cardName} ({attackerData.subCategory}), โล่={shieldData.cardName} ({shieldData.subCategory})");
 
         // 📊 บันทึกสถิติ: การกันสำเร็จ
@@ -2638,6 +2653,35 @@ public class BattleManager : MonoBehaviour
         // 🔥 เซ็ตแล้วหลัง logic กันค้าง
         playerHasMadeChoice = true;
         if (takeDamageButton) takeDamageButton.SetActive(false);
+    }
+
+    void TryResolveMarkedInterceptPunish(BattleCardUI attacker, BattleCardUI blocker, bool attackerIsPlayer)
+    {
+        if (attacker == null || blocker == null) return;
+        if (attacker.markedInterceptTarget == null || attacker.markedInterceptMillCount <= 0) return;
+        if (attacker.markedInterceptTarget != blocker) return;
+
+        CardEffect millEffect = new CardEffect
+        {
+            targetType = TargetType.EnemyDeck,
+            value = attacker.markedInterceptMillCount
+        };
+
+        ApplyDiscardDeck(attacker, millEffect, attackerIsPlayer);
+
+        if (attacker.GetData() != null && blocker.GetData() != null)
+        {
+            AddBattleLog($"{blocker.GetData().cardName} intercepted marked attacker -> mill {attacker.markedInterceptMillCount}");
+        }
+
+        ClearMarkedInterceptPunish(attacker);
+    }
+
+    void ClearMarkedInterceptPunish(BattleCardUI attacker)
+    {
+        if (attacker == null) return;
+        attacker.markedInterceptTarget = null;
+        attacker.markedInterceptMillCount = 0;
     }
 
     // --------------------------------------------------------
@@ -3795,6 +3839,9 @@ public class BattleManager : MonoBehaviour
             case ActionType.PeekDiscardTopDeck:
                 yield return StartCoroutine(ApplyPeekDiscardTopDeckCoroutine(sourceCard, effect, isPlayer));
                 break;
+            case ActionType.MarkInterceptMillDeck:
+                yield return StartCoroutine(ApplyMarkInterceptMillDeck(sourceCard, effect, isPlayer));
+                break;
             case ActionType.ForceChooseDiscard:
                 yield return StartCoroutine(ApplyForceChooseDiscardCoroutine(sourceCard, effect, isPlayer));
                 break;
@@ -4133,6 +4180,62 @@ public class BattleManager : MonoBehaviour
             UpdateUI();
             Debug.Log($"✅ Token สร้างเสร็จ {summoned}/{tokenCount} ตัว บนฝั่ง {(summonOnPlayerSide ? "Player" : "Bot")}");
         }
+    }
+
+    IEnumerator ApplyMarkInterceptMillDeck(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        if (sourceCard == null || sourceCard.GetData() == null)
+        {
+            yield break;
+        }
+
+        List<BattleCardUI> targets = GetTargetCards(effect, isPlayer)
+            .Where(t => t != null && t.GetData() != null && t.GetData().type == CardType.EquipSpell && !t.cannotIntercept)
+            .Where(t => !CanAttackerBypassShield(sourceCard, t))
+            .ToList();
+
+        if (targets.Count == 0)
+        {
+            sourceCard.markedInterceptTarget = null;
+            sourceCard.markedInterceptMillCount = 0;
+            Debug.Log("⚠️ MarkInterceptMillDeck: ไม่มี Equip ที่ใช้ Intercept ได้");
+            yield break;
+        }
+
+        BattleCardUI chosenTarget = null;
+        if (isPlayer && targets.Count > 1)
+        {
+            yield return StartCoroutine(WaitForTargetSelection(targets, 1));
+            if (selectedTargets != null && selectedTargets.Count > 0)
+            {
+                chosenTarget = selectedTargets[0];
+            }
+            selectedTargets.Clear();
+        }
+        else if (!isPlayer && targets.Count > 1)
+        {
+            int idx = Random.Range(0, targets.Count);
+            chosenTarget = targets[idx];
+        }
+        else
+        {
+            chosenTarget = targets[0];
+        }
+
+        if (chosenTarget == null || chosenTarget.GetData() == null)
+        {
+            sourceCard.markedInterceptTarget = null;
+            sourceCard.markedInterceptMillCount = 0;
+            yield break;
+        }
+
+        int millCount = effect.value > 0 ? effect.value : 2;
+        sourceCard.markedInterceptTarget = chosenTarget;
+        sourceCard.markedInterceptMillCount = millCount;
+
+        ShowDamagePopupString($"Marked: {chosenTarget.GetData().cardName}", chosenTarget.transform);
+        AddBattleLog($"{sourceCard.GetData().cardName} marked {chosenTarget.GetData().cardName} ({millCount} deck discard on intercept)");
+        Debug.Log($"🎯 MarkInterceptMillDeck: {sourceCard.GetData().cardName} -> {chosenTarget.GetData().cardName} (mill={millCount})");
     }
 
     void ApplyRevealHand(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
