@@ -1620,6 +1620,22 @@ public class BattleManager : MonoBehaviour
                     // เทพอกพ/ดูมือ is ok ก็ว่า ok (ต้องการ discard/reveal ได้)
                     break;
 
+                case ActionType.BypassIntercept:
+                    // กรณีเวทย์เลือกมอนสเตอร์ฝ่ายเรา ต้องมีเป้าหมายให้เลือก
+                    if (spellData.type != CardType.Monster
+                        && effect.targetType == TargetType.Self
+                        && effect.targetCardTypeFilter == EffectCardTypeFilter.Monster)
+                    {
+                        List<BattleCardUI> bypassTargets = GetTargetCards(effect, isPlayer);
+                        int monsterTargetCount = bypassTargets.Count(t => t != null && t.GetData() != null && t.GetData().type == CardType.Monster);
+                        if (monsterTargetCount == 0)
+                        {
+                            Debug.Log($"🚫 Effect {effect.action} ไม่มีมอนสเตอร์ฝั่งตัวเองให้เลือก!");
+                            return false;
+                        }
+                    }
+                    break;
+
                 case ActionType.ReturnEquipFromGraveyard:
                     if (!HasEquipInGraveyard(isPlayer))
                     {
@@ -3795,8 +3811,8 @@ public class BattleManager : MonoBehaviour
                 yield return StartCoroutine(ApplyZeroStats(sourceCard, effect, isPlayer));
                 break;
             case ActionType.BypassIntercept:
-                ApplyBypassIntercept(sourceCard, effect, isPlayer);
-                yield break;
+                yield return StartCoroutine(ApplyBypassIntercept(sourceCard, effect, isPlayer));
+                break;
             case ActionType.ForceIntercept:
                 yield return StartCoroutine(ApplyForceIntercept(sourceCard, effect, isPlayer));
                 break;
@@ -5257,19 +5273,79 @@ public class BattleManager : MonoBehaviour
         UpdateUI();
     }
 
-    /// <summary>ให้การ์ด source สามารถข้ามการกัน (Bypass Intercept) ได้ โดย value = cost threshold
-    /// value = 0 → ไม่สามารถข้ามไม่ได้เลย
-    /// value = 3 → ข้ามได้เฉพาะ Equip ที่ cost < 3 และไม่ตรงกับ bypassAllowedMainCat/SubCat
-    /// value = -1 → ข้ามการกันทั้งหมด
-    /// 🔥 bypassAllowedMainCat/SubCat: ถ้าโล่ตรงกับ Category นี้ = โล่สามารถ Intercept ได้ (ไม่ถูกข้าม)
-    /// สกิลนี้ติดตัวมอนสเตอร์ที่ใช้สกิลเท่านั้น ไม่ใช่ทั้งสนาม
+    /// <summary>ให้การ์ดข้ามการกัน (Bypass Intercept)
+    /// - โหมดเดิม: ติดให้ sourceCard ใบเดียว โดย value = threshold (-1 = ข้ามทั้งหมด)
+    /// - โหมดเลือก: ถ้าเป็น Spell/Equip และ targetType = Self จะเลือก Monster ฝั่งตัวเอง x ใบ (x = value) แล้วข้ามการกันทั้งหมดในเทิร์นนี้
     /// </summary>
-    void ApplyBypassIntercept(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    IEnumerator ApplyBypassIntercept(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         if (sourceCard == null || sourceCard.GetData() == null)
         {
             Debug.LogError("❌ ApplyBypassIntercept: sourceCard เป็น null!");
-            return;
+            yield break;
+        }
+
+        CardData sourceData = sourceCard.GetData();
+
+        bool isSelectableSelfMonsterSkill =
+            sourceData.type != CardType.Monster &&
+            effect.targetType == TargetType.Self &&
+            effect.targetCardTypeFilter == EffectCardTypeFilter.Monster;
+
+        if (isSelectableSelfMonsterSkill)
+        {
+            List<BattleCardUI> targets = GetTargetCards(effect, isPlayer)
+                .Where(t => t != null && t.GetData() != null && t.GetData().type == CardType.Monster)
+                .ToList();
+
+            if (targets.Count == 0)
+            {
+                Debug.Log("⚠️ ApplyBypassIntercept: ไม่มี Monster ฝั่งตัวเองให้เลือก");
+                yield break;
+            }
+
+            int selectCount = effect.value > 0 ? effect.value : 1;
+            selectCount = Mathf.Clamp(selectCount, 1, targets.Count);
+
+            List<BattleCardUI> selected = new List<BattleCardUI>();
+
+            if (isPlayer && targets.Count > selectCount)
+            {
+                yield return StartCoroutine(WaitForTargetSelection(targets, selectCount));
+                if (selectedTargets != null && selectedTargets.Count > 0)
+                {
+                    selected.AddRange(selectedTargets.Where(t => t != null && t.GetData() != null && t.GetData().type == CardType.Monster));
+                }
+                selectedTargets.Clear();
+            }
+            else if (!isPlayer && targets.Count > selectCount)
+            {
+                List<BattleCardUI> pool = new List<BattleCardUI>(targets);
+                for (int i = 0; i < selectCount && pool.Count > 0; i++)
+                {
+                    int idx = Random.Range(0, pool.Count);
+                    selected.Add(pool[idx]);
+                    pool.RemoveAt(idx);
+                }
+            }
+            else
+            {
+                selected.AddRange(targets.Take(selectCount));
+            }
+
+            foreach (var target in selected)
+            {
+                target.canBypassIntercept = true;
+                target.bypassCostThreshold = -1;
+                target.bypassAllowedMainCat = MainCategory.General;
+                target.bypassAllowedSubCat = SubCategory.General;
+
+                ShowDamagePopupString("Bypass!", target.transform);
+                AddBattleLog($"{target.GetData().cardName} cannot be intercepted this turn");
+                Debug.Log($"🚀 ApplyBypassIntercept(Selected): {target.GetData().cardName} can bypass all intercept this turn");
+            }
+
+            yield break;
         }
 
         int costThreshold = effect.value;
@@ -5291,6 +5367,7 @@ public class BattleManager : MonoBehaviour
 
         Debug.Log($"🚀 {sourceCard.GetData().cardName} gained Bypass Intercept ({thresholdText}{categoryText})!");
         AddBattleLog($"{sourceCard.GetData().cardName} gained Bypass Intercept ({thresholdText}{categoryText})");
+        yield break;
     }
 
     /// <summary>บังคับให้การ์ดต้องกันการโจมตี (Force Intercept)</summary>

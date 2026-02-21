@@ -13,6 +13,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     private Image frameImage; // 🔥 กรอบการ์ด
     private TextMeshProUGUI atkText; // 🔥 แสดงพลังปัจจุบัน (ซ้ายล่าง)
     private TextMeshProUGUI costText; // 🔥 แสดงคอส (ขวาบน)
+    private TextMeshProUGUI statusText; // 🔥 แสดงสถานะพิเศษบนการ์ด (เช่น ห้าม Intercept)
 
     [Header("Card Frame")]
     public Sprite frameSprite; // 🔥 Sprite ของกรอบการ์ด (ตั้งใน Inspector)
@@ -95,6 +96,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
         // 🔥 อัพเดตแสดงพลังปัจจุบัน
         UpdateATKDisplay();
+        UpdateStatusDisplay();
 
         // 🔥 Auto-highlight สำหรับการ์ดบนสนาม
         if (isOnField && _cardData != null && artworkImage != null)
@@ -123,6 +125,17 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 if (artworkImage.color != new Color(1f, 0.5f, 0.5f, 1f))
                 {
                     artworkImage.color = new Color(1f, 0.5f, 0.5f, 1f); // แดงอ่อน - Cannot Intercept
+                }
+                return;
+            }
+
+            // 🚀 ถ้า Monster/Token มีสถานะข้ามการกัน ให้แสดงสีฟ้าไซเบอร์ชัดเจน
+            if ((_cardData.type == CardType.Monster || _cardData.type == CardType.Token) && canBypassIntercept)
+            {
+                Color bypassColor = new Color(0.45f, 0.95f, 1f, 1f);
+                if (artworkImage.color != bypassColor)
+                {
+                    artworkImage.color = bypassColor;
                 }
                 return;
             }
@@ -211,6 +224,14 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             atkText.gameObject.SetActive(false);
             costText.gameObject.SetActive(false);
         }
+    }
+
+    void UpdateStatusDisplay()
+    {
+        if (statusText == null) return;
+
+        // ใช้การเปลี่ยนสีการ์ดแทนข้อความสถานะ
+        statusText.gameObject.SetActive(false);
     }
 
     public int GetMaxAttacksPerTurn()
@@ -432,6 +453,37 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 costRect.offsetMin = new Vector2(12, 13);
                 costRect.offsetMax = new Vector2(-10, -1 ); // 🔥 มุมขวาบน (สูงขึ้นอีก 10px)
             }
+
+            // 🔥 สร้างข้อความสถานะพิเศษ (กึ่งกลางด้านบน)
+            if (statusText == null)
+            {
+                foreach (Transform child in transform)
+                {
+                    if (child.name == "StatusDisplay")
+                    {
+                        Destroy(child.gameObject);
+                    }
+                }
+
+                GameObject statusObj = new GameObject("StatusDisplay");
+                statusObj.transform.SetParent(transform, false);
+                statusObj.transform.SetAsLastSibling();
+
+                statusText = statusObj.AddComponent<TextMeshProUGUI>();
+                statusText.fontSize = 24;
+                statusText.alignment = TextAlignmentOptions.Top;
+                statusText.color = new Color(1f, 0.9f, 0.2f, 1f);
+                statusText.fontStyle = FontStyles.Bold;
+                statusText.text = "";
+                statusText.raycastTarget = false;
+                statusText.gameObject.SetActive(false);
+
+                RectTransform statusRect = statusObj.GetComponent<RectTransform>();
+                statusRect.anchorMin = Vector2.zero;
+                statusRect.anchorMax = Vector2.one;
+                statusRect.offsetMin = new Vector2(8, 8);
+                statusRect.offsetMax = new Vector2(-8, -8);
+            }
     }
 
     /// <summary>ปรับขนาดการ์ดตามตำแหน่ง (ในมือ vs บนสนาม)</summary>
@@ -490,6 +542,11 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
         // 🔥 ตั้งกรอบตามความหายาก
         ApplyFrameByRarity();
+
+        if (statusText != null)
+        {
+            statusText.gameObject.SetActive(false);
+        }
         
         // 🎈 หยุดอนิเมชั่นลอยเพื่อไม่รบกวน HorizontalLayoutGroup
         floatTime = 0f;
