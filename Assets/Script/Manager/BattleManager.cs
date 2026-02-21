@@ -172,6 +172,19 @@ public class BattleManager : MonoBehaviour
     private int requiredDiscardCount = 0;
     private bool discardConfirmed = false;
 
+    // 🔥 Peek & Choose Discard From Deck System
+    private bool isChoosingPeekDiscard = false;
+    private bool peekDiscardConfirmed = false;
+    private CardData selectedPeekDiscardCard = null;
+    private bool isPeekDiscardMultiSelectMode = false;
+    private int requiredPeekDiscardCount = 0;
+    private List<CardData> selectedPeekDiscardCards = new List<CardData>();
+    private List<int> selectedPeekDiscardIndices = new List<int>();
+    private List<CardData> currentPeekCards = new List<CardData>();
+    private List<CardData> currentPeekSelectableCards = new List<CardData>();
+    private CardEffect currentPeekEffect;
+    private bool hasCurrentPeekEffect = false;
+
     // 🔥 Return Equip From Graveyard System
     private bool cardAdditionInProgress = false;
     private bool cardAdditionComplete = false;
@@ -1603,6 +1616,7 @@ public class BattleManager : MonoBehaviour
                 case ActionType.DiscardDeck:
                 case ActionType.RevealHand:
                 case ActionType.RevealHandMultiple:
+                case ActionType.PeekDiscardTopDeck:
                     // เทพอกพ/ดูมือ is ok ก็ว่า ok (ต้องการ discard/reveal ได้)
                     break;
 
@@ -3762,6 +3776,9 @@ public class BattleManager : MonoBehaviour
             case ActionType.DiscardDeck:
                 ApplyDiscardDeck(sourceCard, effect, isPlayer);
                 yield break;
+            case ActionType.PeekDiscardTopDeck:
+                yield return StartCoroutine(ApplyPeekDiscardTopDeckCoroutine(sourceCard, effect, isPlayer));
+                break;
             case ActionType.ForceChooseDiscard:
                 yield return StartCoroutine(ApplyForceChooseDiscardCoroutine(sourceCard, effect, isPlayer));
                 break;
@@ -4222,6 +4239,573 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    IEnumerator ApplyPeekDiscardTopDeckCoroutine(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
+    {
+        if (effect.targetType != TargetType.EnemyDeck)
+        {
+            Debug.LogWarning($"⚠️ PeekDiscardTopDeck รองรับเฉพาะ TargetType.EnemyDeck (current: {effect.targetType})");
+            yield break;
+        }
+
+        List<CardData> targetDeck = isPlayer ? enemyDeckList : deckList;
+        bool targetIsPlayerDeck = !isPlayer;
+
+        if (targetDeck == null || targetDeck.Count == 0)
+        {
+            AddBattleLog($"{(targetIsPlayerDeck ? "Player" : "Bot")} deck is empty");
+            yield break;
+        }
+
+        int peekCount;
+        if (effect.value == 0)
+        {
+            // value = 0 => ดูทุกใบในเด็คเป้าหมาย
+            peekCount = targetDeck.Count;
+        }
+        else
+        {
+            // value > 0 => ดูตามจำนวนที่กำหนด, value < 0 => ใช้ค่า default
+            peekCount = effect.value > 0 ? effect.value : 3;
+            peekCount = Mathf.Min(peekCount, targetDeck.Count);
+        }
+        int discardCount = effect.duration > 0 ? effect.duration : 1;
+
+        List<CardData> peekedCards = targetDeck.Take(peekCount).ToList();
+        if (peekedCards.Count == 0)
+        {
+            yield break;
+        }
+
+        List<CardData> selectableCards = peekedCards.Where(card => MatchesPeekDiscardFilter(card, effect)).ToList();
+        if (selectableCards.Count == 0)
+        {
+            string filterText = GetPeekDiscardFilterText(effect);
+            AddBattleLog($"Peeked {peekCount} cards but no selectable card matches: {filterText}");
+            if (isPlayer)
+            {
+                yield return StartCoroutine(ShowPeekDiscardNoMatchFeedback(peekedCards, effect));
+            }
+            UpdateDeckVisualization();
+            yield break;
+        }
+
+        discardCount = Mathf.Clamp(discardCount, 1, selectableCards.Count);
+
+        List<CardData> chosenCards = new List<CardData>();
+        List<CardData> remainingSelectable = new List<CardData>(selectableCards);
+
+        if (isPlayer)
+        {
+            if (discardCount > 1)
+            {
+                yield return StartCoroutine(PlayerChoosePeekDiscardCardsMulti(peekedCards, remainingSelectable, effect, discardCount));
+                if (selectedPeekDiscardCards != null && selectedPeekDiscardCards.Count > 0)
+                {
+                    chosenCards.AddRange(selectedPeekDiscardCards);
+                }
+            }
+            else
+            {
+                for (int pickIndex = 0; pickIndex < discardCount && remainingSelectable.Count > 0; pickIndex++)
+                {
+                    yield return StartCoroutine(PlayerChoosePeekDiscardCard(peekedCards, remainingSelectable, effect, pickIndex + 1, discardCount));
+
+                    if (selectedPeekDiscardCard == null)
+                    {
+                        break;
+                    }
+
+                    chosenCards.Add(selectedPeekDiscardCard);
+                    remainingSelectable.Remove(selectedPeekDiscardCard);
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < discardCount && remainingSelectable.Count > 0; i++)
+            {
+                int randomIndex = Random.Range(0, remainingSelectable.Count);
+                CardData picked = remainingSelectable[randomIndex];
+                chosenCards.Add(picked);
+                remainingSelectable.RemoveAt(randomIndex);
+            }
+        }
+
+        if (chosenCards.Count == 0 && selectableCards.Count > 0)
+        {
+            chosenCards.Add(selectableCards[0]);
+        }
+
+        int removedCount = 0;
+        foreach (CardData chosenCard in chosenCards)
+        {
+            int removeIndex = targetDeck.IndexOf(chosenCard);
+            if (removeIndex < 0)
+            {
+                int searchLimit = Mathf.Min(peekCount + removedCount, targetDeck.Count);
+                for (int i = 0; i < searchLimit; i++)
+                {
+                    if (targetDeck[i] == chosenCard || targetDeck[i].card_id == chosenCard.card_id)
+                    {
+                        removeIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (removeIndex >= 0)
+            {
+                CardData removed = targetDeck[removeIndex];
+                targetDeck.RemoveAt(removeIndex);
+                SendToGraveyard(removed, isPlayer: targetIsPlayerDeck);
+                removedCount++;
+            }
+        }
+
+        AddBattleLog($"{(isPlayer ? "Player" : "Bot")} peeked {peekCount} and discarded {removedCount} card(s)");
+
+        UpdateDeckVisualization();
+    }
+
+    IEnumerator PlayerChoosePeekDiscardCardsMulti(List<CardData> cards, List<CardData> selectableCards, CardEffect effect, int requiredCount)
+    {
+        selectedPeekDiscardCards.Clear();
+        selectedPeekDiscardIndices.Clear();
+        requiredPeekDiscardCount = Mathf.Max(1, requiredCount);
+        peekDiscardConfirmed = false;
+        isChoosingPeekDiscard = true;
+        isPeekDiscardMultiSelectMode = true;
+
+        if (cards == null || cards.Count == 0)
+        {
+            isChoosingPeekDiscard = false;
+            isPeekDiscardMultiSelectMode = false;
+            yield break;
+        }
+
+        if (handRevealPanel == null || handRevealListRoot == null)
+        {
+            Debug.LogWarning("⚠️ HandRevealPanel/ListRoot ไม่พร้อม ใช้การเลือกอัตโนมัติ");
+            selectedPeekDiscardCards = selectableCards.Take(requiredPeekDiscardCount).ToList();
+            peekDiscardConfirmed = true;
+            isChoosingPeekDiscard = false;
+            isPeekDiscardMultiSelectMode = false;
+            yield break;
+        }
+
+        currentPeekCards = new List<CardData>(cards);
+        currentPeekSelectableCards = new List<CardData>(selectableCards);
+        currentPeekEffect = effect;
+        hasCurrentPeekEffect = true;
+
+        if (handRevealCloseButton != null)
+        {
+            handRevealCloseButton.onClick.RemoveAllListeners();
+            handRevealCloseButton.onClick.AddListener(OnPeekDiscardConfirmPressed);
+            handRevealCloseButton.interactable = true;
+
+            var closeCg = handRevealCloseButton.GetComponent<CanvasGroup>();
+            if (closeCg == null) closeCg = handRevealCloseButton.gameObject.AddComponent<CanvasGroup>();
+            closeCg.blocksRaycasts = true;
+        }
+
+        ClearListRoot(handRevealListRoot);
+        SetupHandRevealScroll();
+        PopulatePeekDiscardSelectionList(currentPeekCards, currentPeekSelectableCards, selectedPeekDiscardIndices);
+        UpdatePeekDiscardMultiTitle();
+        handRevealPanel.SetActive(true);
+
+        while (!peekDiscardConfirmed)
+        {
+            yield return null;
+        }
+
+        CloseHandRevealPanel();
+
+        if (handRevealCloseButton != null)
+        {
+            handRevealCloseButton.interactable = true;
+            var closeCg = handRevealCloseButton.GetComponent<CanvasGroup>();
+            if (closeCg != null) closeCg.blocksRaycasts = true;
+            handRevealCloseButton.onClick.RemoveAllListeners();
+            handRevealCloseButton.onClick.AddListener(CloseHandRevealPanel);
+        }
+
+        isChoosingPeekDiscard = false;
+        isPeekDiscardMultiSelectMode = false;
+    }
+
+    void UpdatePeekDiscardMultiTitle()
+    {
+        if (handRevealTitleText == null) return;
+
+        string filterText = hasCurrentPeekEffect ? GetPeekDiscardFilterText(currentPeekEffect) : "Any";
+        handRevealTitleText.text = $"🔍 เลือกการ์ดทิ้ง {selectedPeekDiscardCards.Count}/{requiredPeekDiscardCount} [{filterText}] | คลิกซ้าย=เลือก/ยกเลิก, คลิกขวา=ดูรายละเอียด, ปุ่มปิด=ยืนยัน";
+    }
+
+    void OnPeekDiscardConfirmPressed()
+    {
+        if (!isChoosingPeekDiscard || !isPeekDiscardMultiSelectMode) return;
+
+        if (selectedPeekDiscardCards.Count != requiredPeekDiscardCount)
+        {
+            ShowDamagePopupString($"เลือกให้ครบ {requiredPeekDiscardCount} ใบ", handRevealListRoot != null ? handRevealListRoot : transform);
+            return;
+        }
+
+        peekDiscardConfirmed = true;
+    }
+
+    IEnumerator PlayerChoosePeekDiscardCard(List<CardData> cards, List<CardData> selectableCards, CardEffect effect, int pickNumber, int pickTotal)
+    {
+        selectedPeekDiscardCard = null;
+        peekDiscardConfirmed = false;
+        isChoosingPeekDiscard = true;
+
+        if (cards == null || cards.Count == 0)
+        {
+            isChoosingPeekDiscard = false;
+            yield break;
+        }
+
+        if (handRevealPanel == null || handRevealListRoot == null)
+        {
+            Debug.LogWarning("⚠️ HandRevealPanel/ListRoot ไม่พร้อม ใช้การเลือกใบแรกอัตโนมัติ");
+            selectedPeekDiscardCard = selectableCards[0];
+            peekDiscardConfirmed = true;
+            isChoosingPeekDiscard = false;
+            yield break;
+        }
+
+        if (handRevealTitleText != null)
+        {
+            handRevealTitleText.text = $"🔍 เลือกการ์ดที่จะทิ้ง ({pickNumber}/{pickTotal}) [{GetPeekDiscardFilterText(effect)}] | คลิกซ้าย=ทิ้ง, คลิกขวา=ดูรายละเอียด";
+        }
+
+        if (handRevealCloseButton != null)
+        {
+            handRevealCloseButton.onClick.RemoveAllListeners();
+            handRevealCloseButton.interactable = false;
+
+            var closeCg = handRevealCloseButton.GetComponent<CanvasGroup>();
+            if (closeCg == null) closeCg = handRevealCloseButton.gameObject.AddComponent<CanvasGroup>();
+            closeCg.blocksRaycasts = false;
+        }
+
+        ClearListRoot(handRevealListRoot);
+        SetupHandRevealScroll();
+        PopulatePeekDiscardSelectionList(cards, selectableCards);
+        handRevealPanel.SetActive(true);
+
+        while (!peekDiscardConfirmed)
+        {
+            yield return null;
+        }
+
+        CloseHandRevealPanel();
+
+        if (handRevealCloseButton != null)
+        {
+            handRevealCloseButton.interactable = true;
+            var closeCg = handRevealCloseButton.GetComponent<CanvasGroup>();
+            if (closeCg != null) closeCg.blocksRaycasts = true;
+            handRevealCloseButton.onClick.RemoveAllListeners();
+            handRevealCloseButton.onClick.AddListener(CloseHandRevealPanel);
+        }
+
+        isChoosingPeekDiscard = false;
+    }
+
+    IEnumerator ShowPeekDiscardNoMatchFeedback(List<CardData> cards, CardEffect effect)
+    {
+        if (cards == null || cards.Count == 0)
+        {
+            yield break;
+        }
+
+        if (handRevealPanel == null || handRevealListRoot == null)
+        {
+            yield break;
+        }
+
+        if (handRevealTitleText != null)
+        {
+            handRevealTitleText.text = $"🔍 ไม่มีการ์ดที่เข้าเงื่อนไขทิ้ง [{GetPeekDiscardFilterText(effect)}]";
+        }
+
+        if (handRevealCloseButton != null)
+        {
+            handRevealCloseButton.onClick.RemoveAllListeners();
+            handRevealCloseButton.interactable = false;
+
+            var closeCg = handRevealCloseButton.GetComponent<CanvasGroup>();
+            if (closeCg == null) closeCg = handRevealCloseButton.gameObject.AddComponent<CanvasGroup>();
+            closeCg.blocksRaycasts = false;
+        }
+
+        ClearListRoot(handRevealListRoot);
+        SetupHandRevealScroll();
+        PopulatePeekDiscardSelectionList(cards, new List<CardData>());
+        handRevealPanel.SetActive(true);
+
+        yield return new WaitForSeconds(1.25f);
+
+        CloseHandRevealPanel();
+
+        if (handRevealCloseButton != null)
+        {
+            handRevealCloseButton.interactable = true;
+            var closeCg = handRevealCloseButton.GetComponent<CanvasGroup>();
+            if (closeCg != null) closeCg.blocksRaycasts = true;
+            handRevealCloseButton.onClick.RemoveAllListeners();
+            handRevealCloseButton.onClick.AddListener(CloseHandRevealPanel);
+        }
+    }
+
+    void PopulatePeekDiscardSelectionList(List<CardData> cards, List<CardData> selectableCards, List<int> selectedIndices = null)
+    {
+        if (handRevealListRoot == null || cards == null || cards.Count == 0)
+        {
+            return;
+        }
+
+        HashSet<string> selectableIds = new HashSet<string>(
+            selectableCards
+                .Where(c => c != null && !string.IsNullOrEmpty(c.card_id))
+                .Select(c => c.card_id)
+        );
+
+        var gridLayout = handRevealListRoot.GetComponent<GridLayoutGroup>();
+        if (gridLayout == null)
+        {
+            gridLayout = handRevealListRoot.gameObject.AddComponent<GridLayoutGroup>();
+        }
+
+        gridLayout.childAlignment = TextAnchor.UpperCenter;
+        gridLayout.spacing = new Vector2(10f, 10f);
+        gridLayout.cellSize = new Vector2(200f, 280f);
+        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        gridLayout.constraintCount = GetHandRevealColumnCount(gridLayout.cellSize.x + gridLayout.spacing.x, 6);
+
+        var fitter = handRevealListRoot.GetComponent<ContentSizeFitter>();
+        if (fitter == null)
+        {
+            fitter = handRevealListRoot.gameObject.AddComponent<ContentSizeFitter>();
+        }
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        for (int cardIndex = 0; cardIndex < cards.Count; cardIndex++)
+        {
+            var card = cards[cardIndex];
+            if (card == null) continue;
+
+            var item = Instantiate(cardPrefab, handRevealListRoot);
+            item.name = $"PeekDeck_{card.cardName}";
+
+            var ui = item.GetComponent<BattleCardUI>();
+            if (ui != null)
+            {
+                ui.Setup(card);
+                // ปิด interaction ของ BattleCardUI บนการ์ด preview ใน panel นี้
+                // เพื่อไม่ให้คลิกขวาไปเข้าลอจิกเล่นการ์ด/โจมตี/ลาก
+                ui.enabled = false;
+            }
+
+            var img = item.GetComponent<Image>();
+            if (img != null)
+            {
+                if (card.artwork != null)
+                {
+                    img.sprite = card.artwork;
+                    img.color = Color.white;
+                }
+                img.raycastTarget = true;
+            }
+
+            bool canSelect = !string.IsNullOrEmpty(card.card_id) && selectableIds.Contains(card.card_id);
+            if (!canSelect && img != null)
+            {
+                img.color = new Color(0.65f, 0.65f, 0.65f, 0.95f);
+            }
+
+            bool isSelected = selectedIndices != null && selectedIndices.Contains(cardIndex);
+            if (isSelected && img != null)
+            {
+                img.color = new Color(0.7f, 1f, 0.7f, 1f);
+            }
+
+            var cg = item.GetComponent<CanvasGroup>();
+            if (cg == null) cg = item.AddComponent<CanvasGroup>();
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+            cg.alpha = 1f;
+
+            var btn = item.GetComponent<Button>();
+            if (btn != null)
+            {
+                btn.onClick.RemoveAllListeners();
+            }
+
+            CardData selectedCard = card;
+            var trigger = item.GetComponent<EventTrigger>();
+            if (trigger == null) trigger = item.AddComponent<EventTrigger>();
+            trigger.triggers = new List<EventTrigger.Entry>();
+            int displayIndex = cardIndex;
+
+            var leftEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
+            leftEntry.callback.AddListener((data) =>
+            {
+                var pointerData = data as PointerEventData;
+                if (pointerData == null) return;
+
+                if (pointerData.button == PointerEventData.InputButton.Left)
+                {
+                    if (canSelect)
+                    {
+                        OnPeekDiscardCardSelected(selectedCard, displayIndex);
+                    }
+                    else
+                    {
+                        ShowDamagePopupString("เลือกใบนี้ไม่ได้", item.transform);
+                    }
+                }
+                else if (pointerData.button == PointerEventData.InputButton.Right)
+                {
+                    if (cardDetailView != null)
+                    {
+                        cardDetailView.Open(selectedCard);
+                    }
+                }
+            });
+            trigger.triggers.Add(leftEntry);
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(handRevealListRoot as RectTransform);
+    }
+
+    void OnPeekDiscardCardSelected(CardData card, int displayIndex = -1)
+    {
+        if (!isChoosingPeekDiscard || card == null) return;
+
+        if (isPeekDiscardMultiSelectMode)
+        {
+            bool isSelectable = currentPeekSelectableCards.Any(c => c != null && c.card_id == card.card_id);
+            if (!isSelectable)
+            {
+                return;
+            }
+
+            if (displayIndex < 0 || displayIndex >= currentPeekCards.Count)
+            {
+                return;
+            }
+
+            int existingIndex = selectedPeekDiscardIndices.IndexOf(displayIndex);
+            if (existingIndex >= 0)
+            {
+                selectedPeekDiscardIndices.RemoveAt(existingIndex);
+            }
+            else
+            {
+                if (selectedPeekDiscardIndices.Count >= requiredPeekDiscardCount)
+                {
+                    ShowDamagePopupString($"เลือกได้สูงสุด {requiredPeekDiscardCount} ใบ", handRevealListRoot != null ? handRevealListRoot : transform);
+                    return;
+                }
+
+                selectedPeekDiscardIndices.Add(displayIndex);
+            }
+
+            selectedPeekDiscardCards = selectedPeekDiscardIndices
+                .Where(i => i >= 0 && i < currentPeekCards.Count)
+                .Select(i => currentPeekCards[i])
+                .ToList();
+
+            UpdatePeekDiscardMultiTitle();
+            ClearListRoot(handRevealListRoot);
+            PopulatePeekDiscardSelectionList(currentPeekCards, currentPeekSelectableCards, selectedPeekDiscardIndices);
+            return;
+        }
+
+        selectedPeekDiscardCard = card;
+        peekDiscardConfirmed = true;
+        Debug.Log($"✅ PeekDiscard selected: {card.cardName}");
+    }
+
+    bool MatchesPeekDiscardFilter(CardData card, CardEffect effect)
+    {
+        if (card == null)
+        {
+            return false;
+        }
+
+        if (effect.targetCardTypeFilter != EffectCardTypeFilter.Any)
+        {
+            CardType expectedType = ConvertFilterToCardType(effect.targetCardTypeFilter);
+            if (card.type != expectedType)
+            {
+                return false;
+            }
+        }
+
+        if (effect.targetMainCat != MainCategory.General && card.mainCategory != effect.targetMainCat)
+        {
+            return false;
+        }
+
+        if (effect.targetSubCat != SubCategory.General && card.subCategory != effect.targetSubCat)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    CardType ConvertFilterToCardType(EffectCardTypeFilter filter)
+    {
+        switch (filter)
+        {
+            case EffectCardTypeFilter.Monster:
+                return CardType.Monster;
+            case EffectCardTypeFilter.Spell:
+                return CardType.Spell;
+            case EffectCardTypeFilter.EquipSpell:
+                return CardType.EquipSpell;
+            case EffectCardTypeFilter.Token:
+                return CardType.Token;
+            default:
+                return CardType.Monster;
+        }
+    }
+
+    string GetPeekDiscardFilterText(CardEffect effect)
+    {
+        List<string> parts = new List<string>();
+
+        if (effect.targetCardTypeFilter != EffectCardTypeFilter.Any)
+        {
+            parts.Add(effect.targetCardTypeFilter.ToString());
+        }
+
+        if (effect.targetMainCat != MainCategory.General)
+        {
+            parts.Add(effect.targetMainCat.ToString());
+        }
+
+        if (effect.targetSubCat != SubCategory.General)
+        {
+            parts.Add(effect.targetSubCat.ToString());
+        }
+
+        if (parts.Count == 0)
+        {
+            return "Any";
+        }
+
+        return string.Join(" / ", parts);
     }
 
     IEnumerator ApplyForceChooseDiscardCoroutine(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
@@ -6223,23 +6807,53 @@ public class BattleManager : MonoBehaviour
         scrollRect.movementType = ScrollRect.MovementType.Clamped;
         scrollRect.scrollSensitivity = 20f;
 
-        // เพิ่ม Mask เพื่อซ่อนการ์ดที่ออกนอกขอบ
-        var mask = handRevealPanel.GetComponent<Mask>();
-        if (mask == null)
+        // ใช้ parent ของ list root เป็น viewport เพื่อ clip การ์ดไม่ให้ล้นทะลุ
+        RectTransform viewportRect = handRevealListRoot.parent as RectTransform;
+        if (viewportRect == null)
         {
-            mask = handRevealPanel.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
+            viewportRect = handRevealPanel.transform as RectTransform;
         }
 
-        // ต้องมี Image component สำหรับ Mask
-        var img = handRevealPanel.GetComponent<Image>();
+        scrollRect.viewport = viewportRect;
+
+        var rectMask = viewportRect.GetComponent<RectMask2D>();
+        if (rectMask == null)
+        {
+            rectMask = viewportRect.gameObject.AddComponent<RectMask2D>();
+        }
+
+        // ต้องมี Image component เพื่อให้ viewport รับ raycast ได้ตามปกติ
+        var img = viewportRect.GetComponent<Image>();
         if (img == null)
         {
-            img = handRevealPanel.AddComponent<Image>();
+            img = viewportRect.gameObject.AddComponent<Image>();
             img.color = new Color(0, 0, 0, 0.9f); // พื้นหลังสีดำโปร่งใส
         }
 
         Debug.Log($"✅ Setup Scroll for Hand Reveal Panel");
+    }
+
+    int GetHandRevealColumnCount(float cellWidth, int maxColumns = 8)
+    {
+        if (handRevealListRoot == null || handRevealListRoot.parent == null)
+        {
+            return Mathf.Clamp(maxColumns, 1, 8);
+        }
+
+        RectTransform viewportRect = handRevealListRoot.parent as RectTransform;
+        if (viewportRect == null)
+        {
+            return Mathf.Clamp(maxColumns, 1, 8);
+        }
+
+        float viewportWidth = viewportRect.rect.width;
+        if (viewportWidth <= 0f)
+        {
+            return Mathf.Clamp(maxColumns, 1, 8);
+        }
+
+        int fitColumns = Mathf.FloorToInt(viewportWidth / Mathf.Max(1f, cellWidth));
+        return Mathf.Clamp(fitColumns, 1, maxColumns);
     }
 
     /// <summary>สร้างการ์ดและแสดงใน Hand Reveal Panel</summary>
@@ -6266,7 +6880,7 @@ public class BattleManager : MonoBehaviour
         gridLayout.spacing = new Vector2(10f, 10f);
         gridLayout.cellSize = new Vector2(200f, 280f);
         gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        gridLayout.constraintCount = 8; // 8 การ์ดต่อแถว
+        gridLayout.constraintCount = GetHandRevealColumnCount(gridLayout.cellSize.x + gridLayout.spacing.x, 6);
 
         var fitter = handRevealListRoot.GetComponent<ContentSizeFitter>();
         if (fitter == null)

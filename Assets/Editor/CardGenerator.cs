@@ -189,7 +189,7 @@ public class CardGenerator
             "[Deploy] ดูการ์ด 3 ใบบนสุดของเด็คฝ่ายตรงข้าม เลือก Equip Spell 1 ใบ ส่งลงสุสาน",
             "[A01: MFLAC] มันเดาสุ่ม URL ที่ถูกซ่อนไว้ จนกว่าจะเจอประตูที่ลืมล็อก",
             new List<CardEffect> { 
-                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyDeck, action = ActionType.Destroy } 
+                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyDeck, action = ActionType.PeekDiscardTopDeck, value = 3, targetCardTypeFilter = EffectCardTypeFilter.EquipSpell } 
             });
 
         CreateCard("M_A01_12", "Admin Gate-Crasher", CardType.Monster, MainCategory.A01, SubCategory.MFLAC, 5, 2,
@@ -281,7 +281,7 @@ public class CardGenerator
             "ดูการ์ด 5 ใบบนสุดของเด็คฝ่ายตรงข้าม เลือก 1 ใบส่งลงสุสาน",
             "[A02: Insecure Rest] การโจมตีที่สำเร็จ! คัดลอกข้อมูลสำคัญทั้งหมดออกมา",
             new List<CardEffect> { 
-                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyDeck, action = ActionType.DiscardDeck } 
+                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyDeck, action = ActionType.PeekDiscardTopDeck, value = 5 } 
             });
 
         // --- 2.3 Weak Hash --- [cite: 534-556]
@@ -465,7 +465,7 @@ public class CardGenerator
             "[Deploy] ดูการ์ด 3 ใบบนสุดของเด็คฝ่ายตรงข้าม เลือก 1 ใบส่งลงสุสาน",
             "[A03: XXE] มันหลอกให้ XML parser อ่านไฟล์สำคัญในระบบ",
             new List<CardEffect> { 
-                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyDeck, action = ActionType.DiscardDeck, value = 1 } 
+                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.EnemyDeck, action = ActionType.PeekDiscardTopDeck, value = 3 } 
             });
 
         CreateCard("E_A03_04", "XML Parser Hardening", CardType.EquipSpell, MainCategory.A03, SubCategory.XXE, 2, 0,
