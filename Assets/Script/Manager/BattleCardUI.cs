@@ -248,6 +248,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (_cardData == null) return false;
         if (_cardData.type != CardType.Monster && _cardData.type != CardType.Token) return false;
         if (hasAttacked) return false;
+        if (BattleManager.Instance != null && BattleManager.Instance.IsMonsterAttackBlockedByContinuousEffect(this)) return false;
         return attacksThisTurn < GetMaxAttacksPerTurn();
     }
 

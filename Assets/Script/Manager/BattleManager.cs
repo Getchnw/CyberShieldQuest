@@ -6047,6 +6047,69 @@ public class BattleManager : MonoBehaviour
         return true;
     }
 
+    public bool IsMonsterAttackBlockedByContinuousEffect(BattleCardUI attacker)
+    {
+        if (attacker == null || attacker.GetData() == null) return false;
+
+        CardData attackerData = attacker.GetData();
+        if (attackerData.type != CardType.Monster && attackerData.type != CardType.Token) return false;
+
+        bool attackerIsPlayer = IsCardOwnedByPlayer(attacker);
+
+        Transform[] enemyMonsterLine = attackerIsPlayer ? enemyMonsterSlots : playerMonsterSlots;
+        Transform[] enemyEquipLine = attackerIsPlayer ? enemyEquipSlots : playerEquipSlots;
+
+        bool blockedByMonsterLine = HasContinuousDisableAttackFromLine(enemyMonsterLine, attackerData);
+        if (blockedByMonsterLine) return true;
+
+        bool blockedByEquipLine = HasContinuousDisableAttackFromLine(enemyEquipLine, attackerData);
+        return blockedByEquipLine;
+    }
+
+    bool HasContinuousDisableAttackFromLine(Transform[] sourceSlots, CardData attackerData)
+    {
+        if (sourceSlots == null || attackerData == null) return false;
+
+        foreach (Transform slot in sourceSlots)
+        {
+            if (slot == null || slot.childCount == 0) continue;
+
+            BattleCardUI sourceCard = slot.GetChild(0).GetComponent<BattleCardUI>();
+            if (sourceCard == null || sourceCard.GetData() == null) continue;
+
+            CardData sourceData = sourceCard.GetData();
+            if (sourceData.effects == null || sourceData.effects.Count == 0) continue;
+
+            foreach (CardEffect effect in sourceData.effects)
+            {
+                if (effect.trigger != EffectTrigger.Continuous) continue;
+                if (effect.action != ActionType.DisableAttack) continue;
+                if (effect.targetType != TargetType.EnemyMonster) continue;
+
+                bool categoryMatch = true;
+                if (effect.targetMainCat != MainCategory.General)
+                {
+                    categoryMatch = attackerData.mainCategory == effect.targetMainCat;
+                }
+                if (categoryMatch && effect.targetSubCat != SubCategory.General)
+                {
+                    categoryMatch = attackerData.subCategory == effect.targetSubCat;
+                }
+
+                if (!categoryMatch) continue;
+
+                // value <= 0 หมายถึงไม่จำกัด cost, value > 0 หมายถึง cost ต้อง <= value
+                bool costMatch = effect.value <= 0 || attackerData.cost <= effect.value;
+                if (!costMatch) continue;
+
+                Debug.Log($"🚫 [Cont.DisableAttack] {attackerData.cardName} ถูกห้ามโจมตีโดย {sourceData.cardName}");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>ทำลายการ์ดบนสนาม/มือ พร้อมส่งลงสุสาน และอัปเดตตัวนับ</summary>
     void DestroyCardToGraveyard(BattleCardUI card)
     {
