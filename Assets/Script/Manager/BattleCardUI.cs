@@ -620,10 +620,21 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         return _cardData;
     }
 
+    bool IsInsideHandRevealPreview()
+    {
+        if (BattleManager.Instance == null) return false;
+
+        Transform revealRoot = BattleManager.Instance.handRevealListRoot;
+        return revealRoot != null && transform.IsChildOf(revealRoot);
+    }
+
     // --- 🖱️ ส่วนการลาก (Drag System) ---
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (IsInsideHandRevealPreview())
+            return;
+
         // ห้ามลากการ์ดฝั่งบอทในมือ
         if (BattleManager.Instance != null && transform.parent == BattleManager.Instance.enemyHandArea)
             return;
@@ -651,6 +662,9 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (IsInsideHandRevealPreview())
+            return;
+
         if (BattleManager.Instance != null && transform.parent == BattleManager.Instance.enemyHandArea)
             return;
         if (isOnField) return;
@@ -660,6 +674,9 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (IsInsideHandRevealPreview())
+            return;
+
         if (BattleManager.Instance != null && transform.parent == BattleManager.Instance.enemyHandArea)
             return;
         if (isOnField) return;
@@ -718,6 +735,11 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (_cardData == null)
         {
             Debug.LogWarning($"❌ OnPointerDown: _cardData is NULL");
+            return;
+        }
+
+        if (IsInsideHandRevealPreview())
+        {
             return;
         }
 

@@ -7152,6 +7152,10 @@ public class BattleManager : MonoBehaviour
                 {
                     ui.Setup(card);
 
+                    // ปิด interaction ของ BattleCardUI บนการ์ด preview ใน panel นี้
+                    // เพื่อไม่ให้คลิกขวาไปเข้าลอจิกเล่นการ์ด/โจมตี/ลาก
+                    ui.enabled = false;
+
                     // 🔥 แสดงรูปการ์ด
                     var img = item.GetComponent<Image>();
                     if (img != null)
