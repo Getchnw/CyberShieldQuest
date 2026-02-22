@@ -25,20 +25,42 @@ MonoBehaviour:
   hp: 0
   abilityText: "[Cont.] \u0E1D\u0E48\u0E32\u0E22\u0E15\u0E23\u0E07\u0E02\u0E49\u0E32\u0E21\u0E44\u0E21\u0E48\u0E2A\u0E32\u0E21\u0E32\u0E23\u0E16\u0E14\u0E39\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E43\u0E19\u0E21\u0E37\u0E2D\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E44\u0E14\u0E49
     [Cont.] Monster [A01: IDOR] \u0E02\u0E2D\u0E07\u0E1D\u0E48\u0E32\u0E22\u0E15\u0E23\u0E07\u0E02\u0E49\u0E32\u0E21\u0E44\u0E21\u0E48\u0E2A\u0E32\u0E21\u0E32\u0E23\u0E16\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19
-    Ability"
+    Ability \u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17 Strike Hit \u0E44\u0E14\u0E49"
   flavorText: "\u0E1C\u0E39\u0E49\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E17\u0E35\u0E48\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E27\u0E48\u0E32
     ID \u0E02\u0E2D\u0E07 User \u0E17\u0E35\u0E48\u0E25\u0E47\u0E2D\u0E01\u0E2D\u0E34\u0E19
     \u0E15\u0E23\u0E07\u0E01\u0E31\u0E1A ID \u0E02\u0E2D\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E17\u0E35\u0E48\u0E02\u0E2D\u0E2B\u0E23\u0E37\u0E2D\u0E44\u0E21\u0E48"
   effects:
   - trigger: 4
-    targetType: 1
+    targetType: 4
     action: 3
+    targetCardTypeFilter: 0
     targetMainCat: 0
     targetSubCat: 0
+    useExcludeFilter: 0
+    excludeMainCat: 0
+    excludeSubCat: 0
     value: 0
+    duration: 0
+    destroyMode: 0
+    tokenCardId: 
+    bypassAllowedMainCat: 0
+    bypassAllowedSubCat: 0
+    disableAbilityTriggerFilter: 0
+    disableAbilityActionFilter: 5
   - trigger: 4
     targetType: 2
     action: 3
+    targetCardTypeFilter: 0
     targetMainCat: 0
     targetSubCat: 1
+    useExcludeFilter: 0
+    excludeMainCat: 0
+    excludeSubCat: 0
     value: 0
+    duration: 0
+    destroyMode: 0
+    tokenCardId: 
+    bypassAllowedMainCat: 0
+    bypassAllowedSubCat: 0
+    disableAbilityTriggerFilter: 3
+    disableAbilityActionFilter: 0

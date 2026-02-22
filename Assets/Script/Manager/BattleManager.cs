@@ -3802,6 +3802,13 @@ public class BattleManager : MonoBehaviour
         {
             if (effect.trigger == triggerType)
             {
+                if (IsEffectSuppressedByOpponentContinuousAura(sourceCard, effect, triggerType, isPlayer))
+                {
+                    Debug.Log($"🚫 Effect suppressed: {cardData.cardName} | Trigger={triggerType} | Action={effect.action}");
+                    AddBattleLog($"{cardData.cardName} ability was suppressed");
+                    continue;
+                }
+
                 // 🔥 รอให้ ApplyEffect เสร็จก่อนไปยัง effect ถัดไป (สำหรับ Destroy ที่มี async target selection)
                 yield return StartCoroutine(ApplyEffect(sourceCard, effect, isPlayer));
             }
@@ -4240,6 +4247,16 @@ public class BattleManager : MonoBehaviour
 
     void ApplyRevealHand(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
+        if (effect.targetType == TargetType.EnemyHand)
+        {
+            bool targetIsPlayer = !isPlayer;
+            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer))
+            {
+                AddBattleLog($"{(isPlayer ? "Player" : "Bot")} tried to reveal hand but it was blocked");
+                return;
+            }
+        }
+
         // ผู้เล่นดูมือบอท
         if (isPlayer && effect.targetType == TargetType.EnemyHand)
         {
@@ -4273,6 +4290,16 @@ public class BattleManager : MonoBehaviour
     /// <summary>ดูการ์ดหลายใบบนมือของฝ่ายตรงข้าม</summary>
     void ApplyRevealHandMultiple(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
+        if (effect.targetType == TargetType.EnemyHand)
+        {
+            bool targetIsPlayer = !isPlayer;
+            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer))
+            {
+                AddBattleLog($"{(isPlayer ? "Player" : "Bot")} tried to reveal multiple hand cards but it was blocked");
+                return;
+            }
+        }
+
         // กำหนดจำนวนการ์ดที่จะดู (ถ้าไม่ระบุ value ให้ดูทั้งหมด)
         int revealCount = effect.value > 0 ? effect.value : 99;
 
@@ -6047,6 +6074,188 @@ public class BattleManager : MonoBehaviour
         return true;
     }
 
+    bool IsEffectSuppressedByOpponentContinuousAura(BattleCardUI sourceCard, CardEffect pendingEffect, EffectTrigger triggerType, bool sourceIsPlayer)
+    {
+        if (sourceCard == null || sourceCard.GetData() == null) return false;
+
+        Transform[] opponentMonsterLine = sourceIsPlayer ? enemyMonsterSlots : playerMonsterSlots;
+        Transform[] opponentEquipLine = sourceIsPlayer ? enemyEquipSlots : playerEquipSlots;
+
+        return HasContinuousDisableAbilitySuppression(opponentMonsterLine, sourceCard, pendingEffect, triggerType)
+            || HasContinuousDisableAbilitySuppression(opponentEquipLine, sourceCard, pendingEffect, triggerType);
+    }
+
+    bool HasContinuousDisableAbilitySuppression(Transform[] sourceSlots, BattleCardUI sourceCard, CardEffect pendingEffect, EffectTrigger triggerType)
+    {
+        if (sourceSlots == null || sourceCard == null || sourceCard.GetData() == null) return false;
+
+        foreach (Transform slot in sourceSlots)
+        {
+            if (slot == null || slot.childCount == 0) continue;
+
+            BattleCardUI auraCard = slot.GetChild(0).GetComponent<BattleCardUI>();
+            if (auraCard == null || auraCard.GetData() == null) continue;
+
+            CardData auraData = auraCard.GetData();
+            if (auraData.effects == null || auraData.effects.Count == 0) continue;
+
+            foreach (CardEffect aura in auraData.effects)
+            {
+                if (aura.trigger != EffectTrigger.Continuous) continue;
+                if (aura.action != ActionType.DisableAbility) continue;
+
+                if (!DoesDisableAbilityAuraMatch(aura, sourceCard, pendingEffect, triggerType)) continue;
+
+                Debug.Log($"🚫 [Cont.DisableAbility] {sourceCard.GetData().cardName} blocked by {auraData.cardName} | Trigger={triggerType} Action={pendingEffect.action}");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool DoesDisableAbilityAuraMatch(CardEffect aura, BattleCardUI sourceCard, CardEffect pendingEffect, EffectTrigger triggerType)
+    {
+        CardData sourceData = sourceCard.GetData();
+        if (sourceData == null) return false;
+
+        if (aura.disableAbilityTriggerFilter != EffectTrigger.None && aura.disableAbilityTriggerFilter != triggerType)
+        {
+            return false;
+        }
+
+        if (aura.disableAbilityActionFilter != ActionType.None && aura.disableAbilityActionFilter != pendingEffect.action)
+        {
+            return false;
+        }
+
+        bool targetScopeMatch = false;
+        switch (aura.targetType)
+        {
+            case TargetType.EnemyMonster:
+                targetScopeMatch = sourceData.type == CardType.Monster || sourceData.type == CardType.Token;
+                break;
+            case TargetType.EnemyEquip:
+                targetScopeMatch = sourceData.type == CardType.EquipSpell;
+                break;
+            case TargetType.EnemyPlayer:
+            case TargetType.AllGlobal:
+                targetScopeMatch = true;
+                break;
+            case TargetType.EnemyHand:
+                targetScopeMatch = pendingEffect.targetType == TargetType.EnemyHand;
+                break;
+            case TargetType.EnemyDeck:
+                targetScopeMatch = pendingEffect.targetType == TargetType.EnemyDeck;
+                break;
+            default:
+                targetScopeMatch = false;
+                break;
+        }
+
+        if (!targetScopeMatch) return false;
+
+        if (aura.targetCardTypeFilter != EffectCardTypeFilter.Any)
+        {
+            bool typeMatch = false;
+            switch (aura.targetCardTypeFilter)
+            {
+                case EffectCardTypeFilter.Monster:
+                    typeMatch = sourceData.type == CardType.Monster;
+                    break;
+                case EffectCardTypeFilter.Spell:
+                    typeMatch = sourceData.type == CardType.Spell;
+                    break;
+                case EffectCardTypeFilter.EquipSpell:
+                    typeMatch = sourceData.type == CardType.EquipSpell;
+                    break;
+                case EffectCardTypeFilter.Token:
+                    typeMatch = sourceData.type == CardType.Token;
+                    break;
+            }
+
+            if (!typeMatch) return false;
+        }
+
+        if (aura.targetMainCat != MainCategory.General && sourceData.mainCategory != aura.targetMainCat)
+        {
+            return false;
+        }
+
+        SubCategory sourceSubCategory = sourceCard.GetModifiedSubCategory();
+        if (aura.targetSubCat != SubCategory.General && sourceSubCategory != aura.targetSubCat)
+        {
+            return false;
+        }
+
+        if (aura.useExcludeFilter)
+        {
+            bool excludedByMain = aura.excludeMainCat != MainCategory.General && sourceData.mainCategory == aura.excludeMainCat;
+            bool excludedBySub = aura.excludeSubCat != SubCategory.General && sourceSubCategory == aura.excludeSubCat;
+            if (excludedByMain || excludedBySub)
+            {
+                return false;
+            }
+        }
+
+        if (aura.value > 0 && sourceData.cost > aura.value)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool IsHandRevealBlockedByContinuousEffect(bool protectedSideIsPlayer)
+    {
+        Transform[] ownMonsterSlots = protectedSideIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
+        Transform[] ownEquipSlots = protectedSideIsPlayer ? playerEquipSlots : enemyEquipSlots;
+
+        return HasHandRevealSuppressionAura(ownMonsterSlots)
+            || HasHandRevealSuppressionAura(ownEquipSlots);
+    }
+
+    bool HasHandRevealSuppressionAura(Transform[] sourceSlots)
+    {
+        if (sourceSlots == null) return false;
+
+        foreach (Transform slot in sourceSlots)
+        {
+            if (slot == null || slot.childCount == 0) continue;
+
+            BattleCardUI auraCard = slot.GetChild(0).GetComponent<BattleCardUI>();
+            if (auraCard == null || auraCard.GetData() == null) continue;
+
+            CardData auraData = auraCard.GetData();
+            if (auraData.effects == null || auraData.effects.Count == 0) continue;
+
+            foreach (CardEffect aura in auraData.effects)
+            {
+                if (aura.trigger != EffectTrigger.Continuous || aura.action != ActionType.DisableAbility) continue;
+
+                bool targetsRevealZone = aura.targetType == TargetType.EnemyHand || aura.targetType == TargetType.EnemyPlayer || aura.targetType == TargetType.AllGlobal;
+                if (!targetsRevealZone) continue;
+
+                bool allowsRevealAction = aura.disableAbilityActionFilter == ActionType.None
+                    || aura.disableAbilityActionFilter == ActionType.RevealHand
+                    || aura.disableAbilityActionFilter == ActionType.RevealHandMultiple;
+                if (!allowsRevealAction) continue;
+
+                bool allowsContinuousTrigger = aura.disableAbilityTriggerFilter == EffectTrigger.None
+                    || aura.disableAbilityTriggerFilter == EffectTrigger.Continuous
+                    || aura.disableAbilityTriggerFilter == EffectTrigger.OnDeploy;
+
+                if (allowsContinuousTrigger)
+                {
+                    Debug.Log($"🔒 Hand reveal blocked by {auraData.cardName}");
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public bool IsMonsterAttackBlockedByContinuousEffect(BattleCardUI attacker)
     {
         if (attacker == null || attacker.GetData() == null) return false;
@@ -7615,6 +7824,12 @@ public class BattleManager : MonoBehaviour
     /// <summary>เช็คว่าผู้เล่นมีการ์ดที่มี [Cont.] RevealHand effect บนสนามหรือไม่</summary>
     bool HasPlayerContinuousRevealHandEffect()
     {
+        if (IsHandRevealBlockedByContinuousEffect(protectedSideIsPlayer: false))
+        {
+            Debug.Log("🔒 Enemy hand is protected by continuous effect, skip reveal-drawn-card");
+            return false;
+        }
+
         // เช็ค Monster Slots
         foreach (Transform slot in playerMonsterSlots)
         {
@@ -7630,6 +7845,11 @@ public class BattleManager : MonoBehaviour
                             effect.action == ActionType.RevealHand && 
                             effect.targetType == TargetType.EnemyHand)
                         {
+                            if (IsEffectSuppressedByOpponentContinuousAura(card, effect, EffectTrigger.Continuous, sourceIsPlayer: true))
+                            {
+                                continue;
+                            }
+
                             Debug.Log($"👁️ Found [Cont.] RevealHand: {data.cardName}");
                             return true;
                         }
@@ -7653,6 +7873,11 @@ public class BattleManager : MonoBehaviour
                             effect.action == ActionType.RevealHand && 
                             effect.targetType == TargetType.EnemyHand)
                         {
+                            if (IsEffectSuppressedByOpponentContinuousAura(card, effect, EffectTrigger.Continuous, sourceIsPlayer: true))
+                            {
+                                continue;
+                            }
+
                             Debug.Log($"👁️ Found [Cont.] RevealHand: {data.cardName}");
                             return true;
                         }

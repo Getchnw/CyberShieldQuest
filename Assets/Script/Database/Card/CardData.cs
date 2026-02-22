@@ -30,6 +30,8 @@ public struct CardEffect {
     public string tokenCardId; // 🔥 card_id ของ Token ที่จะ summon (ใช้เมื่อ action = SummonToken)
     public MainCategory bypassAllowedMainCat; // 🔥 MainCategory ที่สามารถ Intercept ได้ (ใช้กับ BypassIntercept, General = ข้าวทั้งหมด)
     public SubCategory bypassAllowedSubCat; // 🔥 SubCategory ที่สามารถ Intercept ได้ (ใช้กับ BypassIntercept, General = ข้ามทั้งหมด)
+    public EffectTrigger disableAbilityTriggerFilter; // 🔥 ใช้กับ DisableAbility: None = ปิดได้ทุก Trigger, อื่นๆ = ปิดเฉพาะ Trigger นั้น
+    public ActionType disableAbilityActionFilter; // 🔥 ใช้กับ DisableAbility: None = ปิดได้ทุก Action, อื่นๆ = ปิดเฉพาะ Action นั้น
 }
 
 [CreateAssetMenu(fileName = "New Card", menuName = "Game Content/Card")]
