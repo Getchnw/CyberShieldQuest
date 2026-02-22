@@ -156,8 +156,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -1, y: 243}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 43.727966, y: 243}
+  m_SizeDelta: {x: 286.09, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &38154899
 CanvasRenderer:
@@ -454,6 +454,10 @@ PrefabInstance:
     - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5734825736610418952, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_text
+      value: 02
       objectReference: {fileID: 0}
     - target: {fileID: 5998003994673233261, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
       propertyPath: m_Color.b
@@ -813,9 +817,9 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 769705371}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 100, y: -113.73285}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &297046185
@@ -1305,9 +1309,9 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 769705371}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 100, y: -37.91095}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &584448700
@@ -1493,7 +1497,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &667100743
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1518,7 +1522,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -18.672974}
+  m_AnchoredPosition: {x: 0, y: -18.672913}
   m_SizeDelta: {x: -721.0791, y: -357.3165}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &667100744
@@ -1620,6 +1624,7 @@ RectTransform:
   - {fileID: 388062383}
   - {fileID: 453352259}
   - {fileID: 999664413}
+  - {fileID: 1806599167}
   - {fileID: 2058579813}
   - {fileID: 667100743}
   m_Father: {fileID: 119846033}
@@ -1764,9 +1769,9 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 769705371}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 100, y: -189.55475}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &798275505
@@ -1903,6 +1908,7 @@ MonoBehaviour:
   - {fileID: 388062383}
   - {fileID: 453352259}
   - {fileID: 999664413}
+  - {fileID: 1806599167}
   popUpSpeed: 0.5
   delayBetweenNodes: 0.2
   connectionLines: []
@@ -1946,7 +1952,7 @@ MonoBehaviour:
     - type: 1
       description: win within 12 turn
       description_th: "\u0E0A\u0E19\u0E30\u0E20\u0E32\u0E22\u0E43\u0E19 12 \u0E15\u0E32"
-      intValue: 10
+      intValue: 12
       floatValue: 0
       category: 0
       cardType: 0
@@ -1957,60 +1963,67 @@ MonoBehaviour:
         spell 3 \u0E43\u0E1A"
       intValue: 3
       floatValue: 0
-      category: 0
-      cardType: 0
+      category: 3
+      cardType: 1
       subCategory: 0
     requiredChapters: 
     requiredPrevStages: []
     botDecks: 00000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   - stageName: Sector A-02
     stageName_th: "\u0E14\u0E48\u0E32\u0E19 A02"
     stageID: ' L1_A02'
     stageButton: {fileID: 1519608694}
     lockIcon: {fileID: 1628630799}
-    starSprite: {fileID: 0}
-    starSize: 0.6
+    starSprite: {fileID: 21300000, guid: 43975bb2f811f0d47bdb29ad2067409e, type: 3}
+    starSize: 0.15
     botSprite: {fileID: 21300000, guid: 3b1926ec88c69b0498cb518150c3dc75, type: 3}
     botLevel: 1
     deckDescription: conclude A02 card
     deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
-      A01"
+      A02"
     starConditions:
     - type: 0
-      description: 
-      description_th: 
+      description: Win battle
+      description_th: "\u0E0A\u0E19\u0E30\u0E01\u0E32\u0E23\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49"
       intValue: 0
       floatValue: 0
       category: 0
       cardType: 0
       subCategory: 0
-    - type: 0
-      description: 
-      description_th: 
-      intValue: 0
+    - type: 1
+      description: win within 12 turn
+      description_th: "\u0E0A\u0E19\u0E30\u0E20\u0E32\u0E22\u0E43\u0E19 12 \u0E15\u0E32"
+      intValue: 12
       floatValue: 0
-      category: 0
+      category: 1
       cardType: 0
       subCategory: 0
-    - type: 0
-      description: 
-      description_th: 
-      intValue: 0
+    - type: 28
+      description: Successfully defended against 5 attacks.
+      description_th: "\u0E1B\u0E49\u0E2D\u0E07\u0E01\u0E31\u0E19\u0E01\u0E32\u0E23\u0E42\u0E08\u0E21\u0E15\u0E35\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08
+        5 \u0E04\u0E23\u0E31\u0E49\u0E07"
+      intValue: 5
       floatValue: 0
-      category: 0
-      cardType: 0
+      category: 3
+      cardType: 2
       subCategory: 0
     requiredChapters: 0100000002000000
     requiredPrevStages:
     - ' L1_A01'
-    botDecks: 0000000000000000
+    botDecks: 01000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   - stageName: Sector A-03
     stageName_th: "\u0E14\u0E48\u0E32\u0E19 A03"
     stageID: ' L1_A03'
     stageButton: {fileID: 1459265819}
     lockIcon: {fileID: 106721440}
-    starSprite: {fileID: 0}
-    starSize: 0.6
+    starSprite: {fileID: 21300000, guid: 43975bb2f811f0d47bdb29ad2067409e, type: 3}
+    starSize: 0.15
     botSprite: {fileID: 21300000, guid: f24b940388e25314da955ed7dc899fcd, type: 3}
     botLevel: 1
     deckDescription: conclude A03 card
@@ -2018,41 +2031,45 @@ MonoBehaviour:
       A03"
     starConditions:
     - type: 0
-      description: 
-      description_th: 
+      description: Win battle
+      description_th: "\u0E0A\u0E19\u0E30\u0E01\u0E32\u0E23\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49"
       intValue: 0
       floatValue: 0
       category: 0
       cardType: 0
       subCategory: 0
-    - type: 0
-      description: 
-      description_th: 
-      intValue: 0
+    - type: 1
+      description: win within 12 turn
+      description_th: "\u0E0A\u0E19\u0E30\u0E20\u0E32\u0E22\u0E43\u0E19 12 \u0E15\u0E32"
+      intValue: 12
       floatValue: 0
       category: 0
       cardType: 0
       subCategory: 0
-    - type: 0
-      description: 
-      description_th: 
-      intValue: 0
+    - type: 15
+      description: Use 5 Monster cards A03.
+      description_th: "\u0E43\u0E0A\u0E49\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17\u0E21\u0E2D\u0E19\u0E40\u0E15\u0E2D\u0E23\u0E4C
+        A03 5 \u0E43\u0E1A"
+      intValue: 5
       floatValue: 0
-      category: 0
+      category: 2
       cardType: 0
       subCategory: 0
     requiredChapters: 010000000200000003000000
     requiredPrevStages:
     - ' L1_A02'
-    botDecks: 000000000000000000000000
+    botDecks: 02000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   - stageName: Sector mix1
     stageName_th: "\u0E14\u0E48\u0E32\u0E19\u0E23\u0E27\u0E21\u0E40\u0E14\u0E47\u0E04
       1"
     stageID: ' L2_MIX1'
     stageButton: {fileID: 2075203257}
     lockIcon: {fileID: 2069034767}
-    starSprite: {fileID: 0}
-    starSize: 0.6
+    starSprite: {fileID: 21300000, guid: 43975bb2f811f0d47bdb29ad2067409e, type: 3}
+    starSize: 0.15
     botSprite: {fileID: 21300000, guid: 3528db8cb3e6f4c4f8b00051645dabdc, type: 3}
     botLevel: 2
     deckDescription: 'conclude A01 and A02 card '
@@ -2060,25 +2077,27 @@ MonoBehaviour:
       A01 \u0E01\u0E31\u0E1A A02"
     starConditions:
     - type: 0
-      description: 
-      description_th: 
+      description: Win battle
+      description_th: "\u0E0A\u0E19\u0E30\u0E01\u0E32\u0E23\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49"
       intValue: 0
       floatValue: 0
       category: 0
       cardType: 0
       subCategory: 0
-    - type: 0
-      description: 
-      description_th: 
-      intValue: 0
+    - type: 13
+      description: Use a maximum of 12 cards per game.
+      description_th: "\u0E43\u0E0A\u0E49\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E43\u0E19\u0E01\u0E32\u0E23\u0E40\u0E25\u0E48\u0E19\u0E44\u0E21\u0E48\u0E40\u0E01\u0E34\u0E19
+        12 \u0E43\u0E1A"
+      intValue: 12
       floatValue: 0
       category: 0
       cardType: 0
       subCategory: 0
-    - type: 0
-      description: 
-      description_th: 
-      intValue: 0
+    - type: 5
+      description: Take a maximum of 10 damage.
+      description_th: "\u0E23\u0E31\u0E1A\u0E14\u0E32\u0E21\u0E08\u0E44\u0E14\u0E49\u0E44\u0E21\u0E48\u0E40\u0E01\u0E34\u0E19
+        10 \u0E14\u0E32\u0E40\u0E21\u0E08"
+      intValue: 10
       floatValue: 0
       category: 0
       cardType: 0
@@ -2086,40 +2105,148 @@ MonoBehaviour:
     requiredChapters: 010000000200000003000000
     requiredPrevStages:
     - ' L1_A03'
-    botDecks: 00000000000000000000000000000000
+    botDecks: 0000000001000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   - stageName: Sector mix2
     stageName_th: "\u0E14\u0E48\u0E32\u0E19\u0E23\u0E27\u0E21\u0E40\u0E14\u0E47\u0E04
       2"
-    stageID: ' L2_MIX2'
+    stageID: L2_MIX2
     stageButton: {fileID: 2063271928}
     lockIcon: {fileID: 1386562960}
-    starSprite: {fileID: 0}
-    starSize: 0.6
+    starSprite: {fileID: 21300000, guid: 43975bb2f811f0d47bdb29ad2067409e, type: 3}
+    starSize: 0.15
     botSprite: {fileID: 21300000, guid: ecd41c4a95499ee449f15218bde705a0, type: 3}
     botLevel: 2
     deckDescription: 'conclude A02 and A03 card '
-    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17"
-    starConditions: []
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+      A02 \u0E01\u0E31\u0E1A A03"
+    starConditions:
+    - type: 0
+      description: Win Battle
+      description_th: "\u0E0A\u0E19\u0E30\u0E01\u0E32\u0E23\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49"
+      intValue: 0
+      floatValue: 0
+      category: 0
+      cardType: 0
+      subCategory: 0
+    - type: 28
+      description: Successfully defended against 5 attacks.
+      description_th: "\u0E1B\u0E49\u0E2D\u0E07\u0E01\u0E31\u0E19\u0E01\u0E32\u0E23\u0E42\u0E08\u0E21\u0E15\u0E35\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08
+        5 \u0E04\u0E23\u0E31\u0E49\u0E07"
+      intValue: 5
+      floatValue: 0
+      category: 3
+      cardType: 2
+      subCategory: 0
+    - type: 5
+      description: Take a maximum of 10 damage.
+      description_th: "\u0E23\u0E31\u0E1A\u0E14\u0E32\u0E21\u0E08\u0E44\u0E14\u0E49\u0E44\u0E21\u0E48\u0E40\u0E01\u0E34\u0E19
+        10 \u0E14\u0E32\u0E40\u0E21\u0E08"
+      intValue: 10
+      floatValue: 0
+      category: 0
+      cardType: 0
+      subCategory: 0
     requiredChapters: 010000000200000003000000
     requiredPrevStages:
     - ' L2_MIX1'
-    botDecks: 0000000000000000000000000000000000000000
+    botDecks: 0100000002000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   - stageName: Boss
-    stageName_th: 
+    stageName_th: "\u0E1A\u0E2D\u0E2A"
     stageID: L3_boss
     stageButton: {fileID: 999770081}
     lockIcon: {fileID: 565844136}
-    starSprite: {fileID: 0}
-    starSize: 0.6
+    starSprite: {fileID: 21300000, guid: 43975bb2f811f0d47bdb29ad2067409e, type: 3}
+    starSize: 0.15
     botSprite: {fileID: 21300000, guid: 3b2eb791098859c4c8fccd70835072b9, type: 3}
     botLevel: 3
     deckDescription: 'conclude A01 A02 and A03 card '
-    deckDescription_th: 
-    starConditions: []
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+      A01 A02 \u0E41\u0E25\u0E30 A03"
+    starConditions:
+    - type: 0
+      description: Win Battle
+      description_th: "\u0E0A\u0E19\u0E30\u0E01\u0E32\u0E23\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49"
+      intValue: 0
+      floatValue: 0
+      category: 0
+      cardType: 0
+      subCategory: 0
+    - type: 2
+      description: Won without losing any HP
+      description_th: "\u0E0A\u0E19\u0E30\u0E42\u0E14\u0E22\u0E44\u0E21\u0E48\u0E40\u0E2A\u0E35\u0E22\u0E40\u0E25\u0E37\u0E2D\u0E14\u0E40\u0E25\u0E22"
+      intValue: 0
+      floatValue: 0
+      category: 0
+      cardType: 0
+      subCategory: 0
+    - type: 6
+      description: Destroy at least 5 monsters.
+      description_th: "\u0E17\u0E33\u0E25\u0E32\u0E22\u0E21\u0E2D\u0E19\u0E40\u0E15\u0E2D\u0E23\u0E4C\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22
+        5 \u0E15\u0E31\u0E27"
+      intValue: 5
+      floatValue: 0
+      category: 3
+      cardType: 0
+      subCategory: 0
     requiredChapters: 010000000200000003000000
     requiredPrevStages:
     - ' L2_MIX2'
-    botDecks: 000000000000000000000000000000000000000000000000
+    botDecks: 000000000100000002000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
+  - stageName: Secret Boss
+    stageName_th: "\u0E1A\u0E2D\u0E2A\u0E25\u0E31\u0E1A"
+    stageID: L3_boss
+    stageButton: {fileID: 999770081}
+    lockIcon: {fileID: 565844136}
+    starSprite: {fileID: 21300000, guid: 43975bb2f811f0d47bdb29ad2067409e, type: 3}
+    starSize: 0.15
+    botSprite: {fileID: 21300000, guid: 3b2eb791098859c4c8fccd70835072b9, type: 3}
+    botLevel: 3
+    deckDescription: 'conclude A01 A02 and A03 card '
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+      A01 A02 \u0E41\u0E25\u0E30 A03"
+    starConditions:
+    - type: 0
+      description: Win Battle
+      description_th: "\u0E0A\u0E19\u0E30\u0E01\u0E32\u0E23\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49"
+      intValue: 0
+      floatValue: 0
+      category: 0
+      cardType: 0
+      subCategory: 0
+    - type: 19
+      description: Use a maximum of 30 PP for playing.
+      description_th: "\u0E43\u0E0A\u0E49PP\u0E43\u0E19\u0E01\u0E32\u0E23\u0E40\u0E25\u0E48\u0E19\u0E44\u0E21\u0E48\u0E40\u0E01\u0E34\u0E19
+        30"
+      intValue: 30
+      floatValue: 0
+      category: 3
+      cardType: 3
+      subCategory: 0
+    - type: 28
+      description: Prevent at least 5 successful attacks.
+      description_th: "\u0E1B\u0E49\u0E2D\u0E07\u0E01\u0E31\u0E19\u0E01\u0E32\u0E23\u0E42\u0E08\u0E21\u0E15\u0E35\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22
+        5 \u0E04\u0E23\u0E31\u0E49\u0E07"
+      intValue: 5
+      floatValue: 0
+      category: 3
+      cardType: 2
+      subCategory: 0
+    requiredChapters: 010000000200000003000000
+    requiredPrevStages:
+    - ' L2_MIX2'
+    botDecks: 000000000100000002000000
+    isSecretBoss: 1
+    durationMinutes: 30
+    countdownText: {fileID: 1806599168}
   detailPopup: {fileID: 667100746}
 --- !u!4 &808785846
 Transform:
@@ -2540,6 +2667,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5734825736610418952, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_text
+      value: 04
+      objectReference: {fileID: 0}
     - target: {fileID: 5998003994673233261, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
       propertyPath: m_Color.b
       value: 1
@@ -2654,6 +2785,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5734825736610418952, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_text
+      value: 03
+      objectReference: {fileID: 0}
     - target: {fileID: 5998003994673233261, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
       propertyPath: m_Color.b
       value: 1
@@ -2758,7 +2893,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 347.3173, y: 243.00002}
+  m_AnchoredPosition: {x: 380.99997, y: 243.00002}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1585192024
@@ -3315,6 +3450,135 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1806599166
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 748627452}
+    m_Modifications:
+    - target: {fileID: 1313595539503034652, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_Name
+      value: Secret Boss
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 250
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 724.46
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -318.17
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5734825736610418952, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_text
+      value: Secret Boss
+      objectReference: {fileID: 0}
+    - target: {fileID: 5998003994673233261, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_Color.a
+      value: 0.7764706
+      objectReference: {fileID: 0}
+    - target: {fileID: 5998003994673233261, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5998003994673233261, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+--- !u!224 &1806599167 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+  m_PrefabInstance: {fileID: 1806599166}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1806599168 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2807391561506108938, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+  m_PrefabInstance: {fileID: 1806599166}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1943583816
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3422,6 +3686,10 @@ PrefabInstance:
     - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5734825736610418952, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_text
+      value: 05
       objectReference: {fileID: 0}
     - target: {fileID: 5998003994673233261, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
       propertyPath: m_Color.b
@@ -3547,6 +3815,10 @@ PrefabInstance:
     - target: {fileID: 3555239273761431321, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5734825736610418952, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
+      propertyPath: m_text
+      value: Boss
       objectReference: {fileID: 0}
     - target: {fileID: 5998003994673233261, guid: 027babbe463298f4ab7a0debf31289bd, type: 3}
       propertyPath: m_Color.b

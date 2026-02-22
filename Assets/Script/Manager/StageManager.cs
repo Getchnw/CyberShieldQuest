@@ -1,10 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.Localization.Settings;
 
 public class StageManager : MonoBehaviour
 {
     public static StageManager Instance { get; private set; }
+    private float checkTimer = 0f;
 
     void Awake()
     {
@@ -53,6 +55,79 @@ public class StageManager : MonoBehaviour
         public List<MainCategory> botDecks; // บอทจะใช้การ์ดหมวดไหนบ้าง
 
         private Transform starsContainer; // Container สำหรับเก็บดาว
+
+        [Header("Secret Boss Settings")]
+        public bool isSecretBoss;
+        public int durationMinutes = 30; // ระยะเวลาที่บอสอยู่
+        public TMPro.TextMeshProUGUI countdownText;
+
+        public bool IsTimeActive()
+        {
+            if (!isSecretBoss) return true;
+
+            // ดึงเวลาปัจจุบัน
+            System.DateTime now = System.DateTime.Now;
+            bool isStartHour = (now.Hour % 3 == 0);
+
+            // เช็คว่าอยู่ในช่วงนาทีที่กำหนดไหม (เช่น 00:00 - 00:30)
+            bool isWithinDuration = now.Minute < durationMinutes;
+
+            return isStartHour && isWithinDuration;
+        }
+
+        public string GetStatusMessage()
+        {
+            if (!isSecretBoss) return "";
+
+            System.DateTime now = System.DateTime.Now;
+
+            // 1. ตรวจสอบว่า "ตอนนี้" บอสกำลังปรากฏอยู่หรือไม่
+            bool isStartHour = (now.Hour % 3 == 0);
+            bool isWithinDuration = now.Minute < durationMinutes;
+
+            if (isStartHour && isWithinDuration)
+            {
+                // บอสอยู่: คำนวณเวลาที่เหลือก่อนหายไป
+                System.DateTime endTime = new System.DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0).AddMinutes(durationMinutes);
+                System.TimeSpan remaining = endTime - now;
+                // แสดงเวลาที่เหลือ (รูปแบบ 00:00)
+                if (LocalizationSettings.SelectedLocale.Identifier.Code == "th")
+                {
+                    return string.Format("เหลือเวลา: {0:D2}:{1:D2}", remaining.Minutes, remaining.Seconds);
+                }
+                else
+                {
+                    return string.Format("Time left: {0:D2}:{1:D2}", remaining.Minutes, remaining.Seconds);
+                }
+            }
+            else
+            {
+                // บอสไม่อยู่: คำนวณเวลาที่จะเกิดในรอบถัดไป (ทุก 3 ชม.)
+                int nextSpawnHour = ((now.Hour / 3) + 1) * 3;
+                System.DateTime nextSpawnTime;
+
+                if (nextSpawnHour >= 24)
+                {
+                    nextSpawnTime = now.Date.AddDays(1); // ไปที่ 00:00 ของวันพรุ่งนี้
+                }
+                else
+                {
+                    nextSpawnTime = now.Date.AddHours(nextSpawnHour);
+                }
+
+                System.TimeSpan timeUntil = nextSpawnTime - now;
+                // แสดงเวลาที่จะเกิดในรอบถัดไป (รูปแบบ 00:00:00)
+                if (LocalizationSettings.SelectedLocale.Identifier.Code == "th")
+                {
+                    return string.Format("บอสจะมาใน: {0:D2}:{1:D2}:{2:D2}", (int)timeUntil.TotalHours, timeUntil.Minutes, timeUntil.Seconds);
+                }
+                else
+                {
+                    return string.Format("Next in: {0:D2}:{1:D2}:{2:D2}", (int)timeUntil.TotalHours, timeUntil.Minutes, timeUntil.Seconds);
+                }
+
+            }
+        }
 
         /// <summary>
         /// ตรวจสอบเงื่อนไขดาวจาก BattleStatistics
@@ -144,6 +219,26 @@ public class StageManager : MonoBehaviour
         Debug.Log($"🟢 มีด่านทั้งหมด: {allStages.Count} ด่าน");
     }
 
+    void Update()
+    {
+        // อัปเดต Text Countdown ทุกเฟรม
+        foreach (var stage in allStages)
+        {
+            if (stage.isSecretBoss && stage.countdownText != null)
+            {
+                stage.countdownText.text = stage.GetStatusMessage();
+            }
+        }
+
+        // เช็ค Logic การปลดล็อคทุกๆ 1 วินาที (เพื่อเปลี่ยนปุ่มจาก Gray เป็น Red เมื่อถึงเวลา)
+        checkTimer += Time.deltaTime;
+        if (checkTimer >= 1.0f)
+        {
+            UpdateStageStatus();
+            checkTimer = 0f;
+        }
+    }
+
     // ฟังก์ชันหลักสำหรับเช็คและอัปเดตปุ่ม
     public void UpdateStageStatus()
     {
@@ -169,15 +264,35 @@ public class StageManager : MonoBehaviour
             // ต้องผ่านทั้ง 2 เงื่อนไขถึงจะเล่นได้
             bool isUnlocked = passChapters && passPrevStages;
 
-            // --- อัปเดตหน้าตาปุ่ม ---
-            stage.stageButton.interactable = isUnlocked;
+            if (stage.isSecretBoss)
+            {
+                // บอสลับจะเปิดให้กดได้ก็ต่อเมื่อ (เงื่อนไขด่านครบ + อยู่ในเวลาเกิด)
+                bool isBossTime = stage.IsTimeActive();
+                stage.stageButton.interactable = isUnlocked && isBossTime;
 
-            // เปิด/ปิด ไอคอนกุญแจ
-            if (stage.lockIcon != null)
-                stage.lockIcon.SetActive(!isUnlocked);
+                // แสดงหน้าตาปุ่ม (ถ้ายังไม่ถึงเวลาหรือเงื่อนไขไม่ครบ ให้แสดง lockIcon)
+                if (stage.lockIcon != null)
+                    stage.lockIcon.SetActive(!isUnlocked || !isBossTime);
 
-            // เปลี่ยนสีปุ่ม (ขาว=เล่นได้, เทา=ล็อค)
-            stage.stageButton.image.color = isUnlocked ? Color.white : Color.gray;
+                // ปุ่มบอสลับให้เปิด Active ไว้ตลอดเพื่อให้คนเห็น Countdown
+                stage.stageButton.gameObject.SetActive(true);
+                stage.countdownText.gameObject.SetActive(true);
+
+                // เปลี่ยนสีปุ่มให้ดูต่างออกไปเมื่อยังไม่ถึงเวลา
+                stage.stageButton.image.color = (isUnlocked && isBossTime) ? Color.red : Color.gray;
+            }
+            else
+            {
+                // ด่านปกติ: ปลดล็อคตามเงื่อนไขปกติ
+                stage.stageButton.interactable = isUnlocked;
+
+                // เปิด/ปิด ไอคอนกุญแจ
+                if (stage.lockIcon != null)
+                    stage.lockIcon.SetActive(!isUnlocked);
+
+                // เปลี่ยนสีปุ่ม (ขาว=เล่นได้, เทา=ล็อค)
+                stage.stageButton.image.color = isUnlocked ? Color.white : Color.gray;
+            }
 
             // ⭐ อัปเดตดาว
             var progress = GameManager.Instance.GetStageProgress(stage.stageID);
