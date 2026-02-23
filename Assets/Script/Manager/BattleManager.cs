@@ -1988,6 +1988,8 @@ public class BattleManager : MonoBehaviour
 
             if (match)
             {
+                TryResolveInterceptHeal(botShield, attacker, blockerIsPlayer: false, isTypeMatched: true);
+
                 // ประเภทตรง → ทำลายทั้งคู่
                 ShowDamagePopupString("Double KO!", attacker.transform);
                 AddBattleLog($"  SubCategory match ({shieldData.subCategory}) - Both destroyed");
@@ -2431,6 +2433,8 @@ public class BattleManager : MonoBehaviour
 
                             if (match)
                             {
+                                TryResolveInterceptHeal(forcedShield, monster, blockerIsPlayer: true, isTypeMatched: true);
+
                                 // ประเภทตรง → ทำลายทั้งคู่
                                 ShowDamagePopupString("Double KO!", monster.transform);
                                 AddBattleLog($"  SubCategory match ({shieldData.subCategory}) - Both destroyed");
@@ -2629,6 +2633,8 @@ public class BattleManager : MonoBehaviour
 
         if (match)
         {
+            TryResolveInterceptHeal(myShield, currentAttackerBot, blockerIsPlayer: true, isTypeMatched: true);
+
             ShowDamagePopupString("Double KO!", currentAttackerBot.transform);
             DestroyCardToGraveyard(currentAttackerBot);
             DestroyCardToGraveyard(myShield);
@@ -2675,6 +2681,145 @@ public class BattleManager : MonoBehaviour
         }
 
         ClearMarkedInterceptPunish(attacker);
+    }
+
+    void TryResolveInterceptHeal(BattleCardUI blocker, BattleCardUI attacker, bool blockerIsPlayer, bool isTypeMatched)
+    {
+        if (!isTypeMatched)
+        {
+            Debug.Log("ℹ️ InterceptHeal skipped: type mismatch");
+            return;
+        }
+        if (blocker == null || attacker == null)
+        {
+            Debug.Log("ℹ️ InterceptHeal skipped: blocker/attacker is null");
+            return;
+        }
+
+        CardData blockerData = blocker.GetData();
+        CardData attackerData = attacker.GetData();
+        if (blockerData == null || attackerData == null || blockerData.effects == null)
+        {
+            Debug.Log("ℹ️ InterceptHeal skipped: blockerData/attackerData/effects missing");
+            return;
+        }
+
+        bool attackerIsPlayer = IsCardOwnedByPlayer(attacker);
+        int interceptedAtk = attacker.GetModifiedATK(isPlayerAttack: attackerIsPlayer);
+        if (interceptedAtk <= 0)
+        {
+            interceptedAtk = Mathf.Max(0, attackerData.atk);
+        }
+
+        bool healApplied = false;
+        bool foundHealEffect = false;
+
+        foreach (var effect in blockerData.effects)
+        {
+            bool isInterceptHeal =
+                effect.action == ActionType.HealHP
+                && (effect.trigger == EffectTrigger.OnIntercept || effect.trigger == EffectTrigger.Continuous);
+
+            if (!isInterceptHeal) continue;
+            foundHealEffect = true;
+
+            if (IsEffectSuppressedByOpponentContinuousAura(blocker, effect, EffectTrigger.OnIntercept, blockerIsPlayer))
+            {
+                Debug.Log($"ℹ️ InterceptHeal suppressed: {blockerData.cardName}");
+                continue;
+            }
+
+            if (effect.targetCardTypeFilter != EffectCardTypeFilter.Any)
+            {
+                if (effect.targetCardTypeFilter == EffectCardTypeFilter.Monster && attackerData.type != CardType.Monster) continue;
+                if (effect.targetCardTypeFilter == EffectCardTypeFilter.Token && attackerData.type != CardType.Token) continue;
+                if (effect.targetCardTypeFilter == EffectCardTypeFilter.EquipSpell && attackerData.type != CardType.EquipSpell) continue;
+                if (effect.targetCardTypeFilter == EffectCardTypeFilter.Spell && attackerData.type != CardType.Spell) continue;
+            }
+
+            if (effect.targetMainCat != MainCategory.General && attackerData.mainCategory != effect.targetMainCat)
+            {
+                continue;
+            }
+
+            SubCategory attackerSubCategory = attacker.GetModifiedSubCategory();
+            if (effect.targetSubCat != SubCategory.General && attackerSubCategory != effect.targetSubCat)
+            {
+                continue;
+            }
+
+            if (effect.useExcludeFilter)
+            {
+                bool excludedByMain = effect.excludeMainCat != MainCategory.General && attackerData.mainCategory == effect.excludeMainCat;
+                bool excludedBySub = effect.excludeSubCat != SubCategory.General && attackerSubCategory == effect.excludeSubCat;
+                if (excludedByMain || excludedBySub)
+                {
+                    continue;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(effect.targetCardNameFilter))
+            {
+                if (string.IsNullOrWhiteSpace(attackerData.cardName)) continue;
+
+                bool nameMatch = string.Equals(
+                    attackerData.cardName.Trim(),
+                    effect.targetCardNameFilter.Trim(),
+                    System.StringComparison.OrdinalIgnoreCase
+                );
+
+                if (!nameMatch) continue;
+            }
+
+            int healAmount = interceptedAtk;
+            if (healAmount <= 0)
+            {
+                Debug.Log($"ℹ️ InterceptHeal skipped: intercepted ATK <= 0 ({interceptedAtk})");
+                continue;
+            }
+
+            bool healSelf = effect.targetType == TargetType.Self || effect.targetType == TargetType.AllGlobal;
+            bool healEnemy = effect.targetType == TargetType.EnemyPlayer;
+            bool targetSupported = healSelf || healEnemy;
+            if (!targetSupported) continue;
+
+            bool healPlayerSide = healSelf ? blockerIsPlayer : !blockerIsPlayer;
+
+            if (healPlayerSide)
+            {
+                int before = currentHP;
+                currentHP = Mathf.Min(maxHP, currentHP + healAmount);
+                AddBattleLog($"{blockerData.cardName} intercept-heals Player {healAmount} HP ({before} -> {currentHP})");
+                if (before == currentHP)
+                {
+                    Debug.Log($"ℹ️ InterceptHeal capped: Player HP already full ({currentHP}/{maxHP})");
+                }
+            }
+            else
+            {
+                int before = enemyCurrentHP;
+                enemyCurrentHP = Mathf.Min(enemyMaxHP, enemyCurrentHP + healAmount);
+                AddBattleLog($"{blockerData.cardName} intercept-heals Bot {healAmount} HP ({before} -> {enemyCurrentHP})");
+                if (before == enemyCurrentHP)
+                {
+                    Debug.Log($"ℹ️ InterceptHeal capped: Bot HP already full ({enemyCurrentHP}/{enemyMaxHP})");
+                }
+            }
+
+            ShowDamagePopupString($"+{healAmount} HP", blocker.transform);
+            Debug.Log($"💚 Intercept Heal: {blockerData.cardName} healed {healAmount} (from intercepted {attackerData.cardName})");
+            UpdateUI();
+            healApplied = true;
+        }
+
+        if (!foundHealEffect)
+        {
+            Debug.Log($"ℹ️ InterceptHeal skipped: no HealHP(OnIntercept/Continuous) effect on {blockerData.cardName}");
+        }
+        else if (!healApplied)
+        {
+            Debug.Log($"ℹ️ InterceptHeal had heal effect but no branch applied for {blockerData.cardName}");
+        }
     }
 
     void ClearMarkedInterceptPunish(BattleCardUI attacker)
@@ -6182,6 +6327,22 @@ public class BattleManager : MonoBehaviour
             return false;
         }
 
+        if (!string.IsNullOrWhiteSpace(aura.targetCardNameFilter))
+        {
+            if (string.IsNullOrWhiteSpace(sourceData.cardName)) return false;
+
+            bool nameMatch = string.Equals(
+                sourceData.cardName.Trim(),
+                aura.targetCardNameFilter.Trim(),
+                System.StringComparison.OrdinalIgnoreCase
+            );
+
+            if (!nameMatch)
+            {
+                return false;
+            }
+        }
+
         SubCategory sourceSubCategory = sourceCard.GetModifiedSubCategory();
         if (aura.targetSubCat != SubCategory.General && sourceSubCategory != aura.targetSubCat)
         {
@@ -6306,6 +6467,19 @@ public class BattleManager : MonoBehaviour
                 }
 
                 if (!categoryMatch) continue;
+
+                if (!string.IsNullOrWhiteSpace(effect.targetCardNameFilter))
+                {
+                    if (string.IsNullOrWhiteSpace(attackerData.cardName)) continue;
+
+                    bool nameMatch = string.Equals(
+                        attackerData.cardName.Trim(),
+                        effect.targetCardNameFilter.Trim(),
+                        System.StringComparison.OrdinalIgnoreCase
+                    );
+
+                    if (!nameMatch) continue;
+                }
 
                 // value <= 0 หมายถึงไม่จำกัด cost, value > 0 หมายถึง cost ต้อง <= value
                 bool costMatch = effect.value <= 0 || attackerData.cost <= effect.value;

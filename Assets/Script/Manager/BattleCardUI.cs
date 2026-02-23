@@ -288,7 +288,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     /// <summary>
     /// Returns the effective SubCategory of this card.
-    /// If hasLostCategory is true or ATK/HP are both 0, returns General instead.
+    /// If hasLostCategory is true, returns General instead.
+    /// For Monster/Token only: if ATK/HP are both 0, returns General.
     /// </summary>
     public SubCategory GetModifiedSubCategory()
     {
@@ -297,8 +298,13 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         // Category lost from effect
         if (hasLostCategory) return SubCategory.General;
         
-        // Category lost when ATK and HP are both 0
-        if (_cardData.atk == 0 && _cardData.hp == 0) return SubCategory.General;
+        // Category lost when ATK and HP are both 0 (เฉพาะ Monster/Token เท่านั้น)
+        // หมายเหตุ: Equip/Spell ปกติมี ATK/HP = 0 จึงไม่ควรถูกลดเป็น General อัตโนมัติ
+        if ((_cardData.type == CardType.Monster || _cardData.type == CardType.Token)
+            && _cardData.atk == 0 && _cardData.hp == 0)
+        {
+            return SubCategory.General;
+        }
         
         return _cardData.subCategory;
     }

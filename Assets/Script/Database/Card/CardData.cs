@@ -19,6 +19,7 @@ public struct CardEffect {
     public TargetType targetType;
     public ActionType action;
     public EffectCardTypeFilter targetCardTypeFilter;
+    public string targetCardNameFilter; // 🔥 ชื่อการ์ดเป้าหมายแบบเจาะจง (เว้นว่าง = ไม่กรองชื่อ)
     public MainCategory targetMainCat;
     public SubCategory targetSubCat;
     public bool useExcludeFilter; // 🔥 เปิดใช้เงื่อนไขยกเว้นเป้าหมาย
