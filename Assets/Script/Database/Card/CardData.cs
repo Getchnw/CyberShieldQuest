@@ -9,7 +9,7 @@ public enum Rarity { Common, Rare, Epic, Legendary } // 🔥 ความหา�
 
 public enum EffectTrigger { None, OnDeploy, OnStrike, OnStrikeHit, Continuous, OnIntercept, OnDestroyed, OnTurnEnd }
 public enum TargetType { Self, EnemyPlayer, EnemyMonster, EnemyEquip, EnemyHand, EnemyDeck, AllGlobal }
-public enum ActionType { None, Destroy, DisableAttack, DisableAbility, RevealHand, RevealHandMultiple, DiscardDeck, SummonToken, ModifyStat, ControlEquip, HealHP, ForceIntercept, BypassIntercept, DisableIntercept, DrawCard, Rush, DoubleStrike, GraveyardATK, ZeroStats, RemoveCategory, ForceChooseDiscard, ReturnEquipFromGraveyard, PeekDiscardTopDeck, MarkInterceptMillDeck, InterceptAlwaysTypeMatch, ProtectDrawnCards, ProtectRevealHandMultiple, ProtectForceInterceptEquip }
+public enum ActionType { None, Destroy, DisableAttack, DisableAbility, RevealHand, RevealHandMultiple, DiscardDeck, SummonToken, ModifyStat, ControlEquip, HealHP, ForceIntercept, BypassIntercept, DisableIntercept, DrawCard, Rush, DoubleStrike, GraveyardATK, ZeroStats, RemoveCategory, ForceChooseDiscard, ReturnEquipFromGraveyard, PeekDiscardTopDeck, MarkInterceptMillDeck, InterceptAlwaysTypeMatch, ProtectDrawnCards, ProtectRevealHandMultiple, ProtectForceInterceptEquip, ProtectOtherOwnEquipFromAbilityDestroy }
 public enum EffectCardTypeFilter { Any, Monster, Spell, EquipSpell, Token }
 public enum DestroyMode { SelectTarget, DestroyAll } // 🔥 โหมดการทำลาย: เลือกเป้าหมาย vs ทำลายทั้งหมด
 
@@ -26,6 +26,7 @@ public struct CardEffect {
     public MainCategory excludeMainCat; // 🔥 MainCategory ที่ไม่ให้โดนเป้า (ใช้เมื่อ useExcludeFilter = true)
     public SubCategory excludeSubCat; // 🔥 SubCategory ที่ไม่ให้โดนเป้า (ใช้เมื่อ useExcludeFilter = true)
     public int value;
+    public int targetMaxCost; // 🔥 ค่าคอสสูงสุดของเป้าหมาย (0 = ไม่จำกัด)
     public int duration; // 🔥 ระยะเวลา (เทิร์น): 0 = ตลอด, >= 1 = จำนวนเทิร์นที่กำหนด (ใช้กับ RemoveCategory, ForceIntercept, DisableIntercept)
     public DestroyMode destroyMode; // 🔥 โหมดการทำลาย (ใช้เมื่อ action = Destroy)
     public string tokenCardId; // 🔥 card_id ของ Token ที่จะ summon (ใช้เมื่อ action = SummonToken)

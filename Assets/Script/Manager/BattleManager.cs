@@ -4131,6 +4131,11 @@ public class BattleManager : MonoBehaviour
             {
                 if (target != null && target.GetData() != null)
                 {
+                    if (IsAbilityDestroyBlockedOnProtectedEquip(sourceCard, target))
+                    {
+                        continue;
+                    }
+
                     Debug.Log($"💥 Destroy (DestroyAll): {target.GetData().cardName}");
                     var targetData = ResolveCardData(target);
                     if (targetData != null) destroyedAtkSum += targetData.atk;
@@ -4158,6 +4163,11 @@ public class BattleManager : MonoBehaviour
                     if (destroyCount >= maxDestroy) break;
                     if (target != null && target.GetData() != null)
                     {
+                        if (IsAbilityDestroyBlockedOnProtectedEquip(sourceCard, target))
+                        {
+                            continue;
+                        }
+
                         Debug.Log($"💥 Destroy ({destroyCount + 1}/{maxDestroy}): {target.GetData().cardName}");
                         var targetData = ResolveCardData(target);
                         if (targetData != null) destroyedAtkSum += targetData.atk;
@@ -4176,6 +4186,11 @@ public class BattleManager : MonoBehaviour
                     if (destroyCount >= maxDestroy) break;
                     if (target != null && target.GetData() != null)
                     {
+                        if (IsAbilityDestroyBlockedOnProtectedEquip(sourceCard, target))
+                        {
+                            continue;
+                        }
+
                         Debug.Log($"💥 Destroy ({destroyCount + 1}/{maxDestroy}): {target.GetData().cardName}");
                         var targetData = ResolveCardData(target);
                         if (targetData != null) destroyedAtkSum += targetData.atk;
@@ -6377,6 +6392,67 @@ public class BattleManager : MonoBehaviour
         return false;
     }
 
+    bool IsAbilityDestroyBlockedOnProtectedEquip(BattleCardUI sourceCard, BattleCardUI target)
+    {
+        if (sourceCard == null || sourceCard.GetData() == null) return false;
+        if (target == null || target.GetData() == null) return false;
+
+        CardData sourceData = sourceCard.GetData();
+        CardData targetData = target.GetData();
+
+        if (targetData.type != CardType.EquipSpell) return false;
+        if (sourceData.type != CardType.Monster && sourceData.type != CardType.Spell) return false;
+
+        bool targetOwnerIsPlayer = IsCardOwnedByPlayer(target);
+        Transform[] ownMonsterSlots = targetOwnerIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
+        Transform[] ownEquipSlots = targetOwnerIsPlayer ? playerEquipSlots : enemyEquipSlots;
+
+        bool blocked = HasProtectOtherEquipFromAbilityDestroyAura(ownMonsterSlots, target, targetOwnerIsPlayer)
+            || HasProtectOtherEquipFromAbilityDestroyAura(ownEquipSlots, target, targetOwnerIsPlayer);
+
+        if (blocked)
+        {
+            AddBattleLog($"{targetData.cardName} is protected from ability destroy");
+            Debug.Log($"🛡️ Ability destroy blocked: {sourceData.cardName} -> {targetData.cardName}");
+        }
+
+        return blocked;
+    }
+
+    bool HasProtectOtherEquipFromAbilityDestroyAura(Transform[] sourceSlots, BattleCardUI protectedTarget, bool sourceIsPlayer)
+    {
+        if (sourceSlots == null || protectedTarget == null) return false;
+
+        foreach (Transform slot in sourceSlots)
+        {
+            if (slot == null || slot.childCount == 0) continue;
+
+            BattleCardUI auraCard = slot.GetChild(0).GetComponent<BattleCardUI>();
+            if (auraCard == null || auraCard.GetData() == null) continue;
+
+            // "ใบอื่นของคุณ" → ใบที่มีออร่าไม่ป้องกันตัวเอง
+            if (auraCard == protectedTarget) continue;
+
+            CardData auraData = auraCard.GetData();
+            if (auraData.effects == null || auraData.effects.Count == 0) continue;
+
+            foreach (CardEffect aura in auraData.effects)
+            {
+                if (aura.trigger != EffectTrigger.Continuous) continue;
+                if (aura.action != ActionType.ProtectOtherOwnEquipFromAbilityDestroy) continue;
+
+                if (IsEffectSuppressedByOpponentContinuousAura(auraCard, aura, EffectTrigger.Continuous, sourceIsPlayer))
+                {
+                    continue;
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     bool IsEffectSuppressedByOpponentContinuousAura(BattleCardUI sourceCard, CardEffect pendingEffect, EffectTrigger triggerType, bool sourceIsPlayer)
     {
         if (sourceCard == null || sourceCard.GetData() == null) return false;
@@ -6772,6 +6848,12 @@ public class BattleManager : MonoBehaviour
 
     bool MatchesCategory(CardData cardData, CardEffect effect)
     {
+        if (effect.targetMaxCost > 0 && cardData.cost > effect.targetMaxCost)
+        {
+            Debug.Log($"❌ Cost เกินกำหนด: card={cardData.cardName}, cost={cardData.cost}, max={effect.targetMaxCost}");
+            return false;
+        }
+
         if (effect.useExcludeFilter)
         {
             bool excludedByMain = effect.excludeMainCat != MainCategory.General && cardData.mainCategory == effect.excludeMainCat;
