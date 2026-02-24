@@ -1502,7 +1502,8 @@ public class BattleManager : MonoBehaviour
         // Spell ไม่ควรถูกลากลงสนาม ใช้ได้เฉพาะกดเล่นจากมือ
         if (data.type == CardType.Spell) return;
 
-        if (data.type != targetSlot.allowedType) return;
+        CardType summonType = data.type == CardType.Token ? CardType.Monster : data.type;
+        if (summonType != targetSlot.allowedType) return;
         if (targetSlot.transform.childCount > 0) return;
         if (currentPP < data.cost) return;
 
@@ -1955,7 +1956,7 @@ public class BattleManager : MonoBehaviour
                 if (attackerData != null)
                 {
                     // เลือกโล่ที่ประเภทตรงก่อนเพื่อทำลายมอนสเตอร์ผู้เล่น
-                    botShield = selectableShields.FirstOrDefault(s => s != null && s.GetModifiedSubCategory() == attacker.GetModifiedSubCategory());
+                    botShield = selectableShields.FirstOrDefault(s => s != null && IsInterceptTypeMatched(attacker, s, blockerIsPlayer: false));
                 }
 
                 // ถ้าไม่มีประเภทตรง ให้เลือกโล่ตัวแรกที่ใช้ได้
@@ -1984,7 +1985,7 @@ public class BattleManager : MonoBehaviour
 
             CardData attackerData = attacker.GetData();
             CardData shieldData = botShield.GetData();
-            bool match = (attacker.GetModifiedSubCategory() == botShield.GetModifiedSubCategory());
+            bool match = IsInterceptTypeMatched(attacker, botShield, blockerIsPlayer: false);
 
             if (match)
             {
@@ -2429,7 +2430,7 @@ public class BattleManager : MonoBehaviour
                             // ประมวลผลการกัน
                             CardData attackerData = monster.GetData();
                             CardData shieldData = forcedShield.GetData();
-                            bool match = (monster.GetModifiedSubCategory() == forcedShield.GetModifiedSubCategory());
+                            bool match = IsInterceptTypeMatched(monster, forcedShield, blockerIsPlayer: true);
 
                             if (match)
                             {
@@ -2629,7 +2630,7 @@ public class BattleManager : MonoBehaviour
         // 📊 บันทึกสถิติ: การกันสำเร็จ
         currentBattleStats.interceptionsSuccessful++;
 
-        bool match = (currentAttackerBot.GetModifiedSubCategory() == myShield.GetModifiedSubCategory());
+        bool match = IsInterceptTypeMatched(currentAttackerBot, myShield, blockerIsPlayer: true);
 
         if (match)
         {
@@ -2928,9 +2929,11 @@ public class BattleManager : MonoBehaviour
 
     public Transform GetFreeSlot(CardType type, bool isPlayer)
     {
+        CardType resolvedType = type == CardType.Token ? CardType.Monster : type;
+
         Transform[] slots = isPlayer
-            ? (type == CardType.Monster ? playerMonsterSlots : playerEquipSlots)
-            : (type == CardType.Monster ? enemyMonsterSlots : enemyEquipSlots);
+            ? (resolvedType == CardType.Monster ? playerMonsterSlots : playerEquipSlots)
+            : (resolvedType == CardType.Monster ? enemyMonsterSlots : enemyEquipSlots);
 
         foreach (Transform t in slots) if (t.childCount == 0) return t;
         return null;
@@ -2978,7 +2981,8 @@ public class BattleManager : MonoBehaviour
             if (slot.childCount > 0)
             {
                 var s = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (s != null && s.GetData() != null && !s.cannotIntercept && !s.canBypassIntercept && s.GetModifiedSubCategory() == cat)
+                if (s != null && s.GetData() != null && !s.cannotIntercept && !s.canBypassIntercept
+                    && (s.GetModifiedSubCategory() == cat || DoesBlockerAlwaysMatchTypeOnIntercept(s, blockerIsPlayer: false)))
                 {
                     Debug.Log($"🛡️ บอทเลือกกันด้วย {s.GetData().cardName} (ประเภทตรง)");
                     return s;
@@ -3033,7 +3037,8 @@ public class BattleManager : MonoBehaviour
             if (slot.childCount > 0)
             {
                 var s = slot.GetChild(0).GetComponent<BattleCardUI>();
-                if (s != null && s.GetData() != null && s.GetModifiedSubCategory() == attackerCategory)
+                if (s != null && s.GetData() != null
+                    && (s.GetModifiedSubCategory() == attackerCategory || DoesBlockerAlwaysMatchTypeOnIntercept(s, blockerIsPlayer: false)))
                 {
                     hasMatchingShield = true;
                     break;
@@ -7944,6 +7949,48 @@ public class BattleManager : MonoBehaviour
         bool canBypass = shieldCost < costThreshold;
         Debug.Log($"→ Cost check: {shieldCost} < {costThreshold} = {canBypass}, Result: {(canBypass ? "CAN bypass" : "CANNOT bypass")}");
         return canBypass;
+    }
+
+    bool IsInterceptTypeMatched(BattleCardUI attacker, BattleCardUI blocker, bool blockerIsPlayer)
+    {
+        if (attacker == null || blocker == null) return false;
+        if (attacker.GetData() == null || blocker.GetData() == null) return false;
+
+        if (attacker.GetModifiedSubCategory() == blocker.GetModifiedSubCategory())
+        {
+            return true;
+        }
+
+        if (DoesBlockerAlwaysMatchTypeOnIntercept(blocker, blockerIsPlayer))
+        {
+            Debug.Log($"✅ Intercept type override: {blocker.GetData().cardName} counts as matching type");
+            return true;
+        }
+
+        return false;
+    }
+
+    bool DoesBlockerAlwaysMatchTypeOnIntercept(BattleCardUI blocker, bool blockerIsPlayer)
+    {
+        if (blocker == null || blocker.GetData() == null) return false;
+
+        CardData blockerData = blocker.GetData();
+        if (blockerData.effects == null || blockerData.effects.Count == 0) return false;
+
+        foreach (CardEffect effect in blockerData.effects)
+        {
+            if (effect.trigger != EffectTrigger.Continuous) continue;
+            if (effect.action != ActionType.InterceptAlwaysTypeMatch) continue;
+
+            if (IsEffectSuppressedByOpponentContinuousAura(blocker, effect, EffectTrigger.Continuous, blockerIsPlayer))
+            {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>ไฮไลท์โล่ที่สามารถกันได้ (สีเหลือง)</summary>
