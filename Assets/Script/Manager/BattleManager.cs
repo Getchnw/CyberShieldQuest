@@ -5722,6 +5722,12 @@ public class BattleManager : MonoBehaviour
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
         if (targets == null || targets.Count == 0) yield break;
 
+        if (IsForceInterceptBlockedByProtectionAura(sourceCard, targets))
+        {
+            AddBattleLog($"{sourceCard.GetData().cardName} tried to force intercept but it was blocked");
+            yield break;
+        }
+
         int selectCount = effect.value;
 
         // ถ้าไม่กำหนดจำนวน ให้บังคับทั้งหมดทันที (ไม่ต้องเลือก)
@@ -5773,6 +5779,66 @@ public class BattleManager : MonoBehaviour
                 if (applied >= selectCount) break;
             }
         }
+    }
+
+    bool IsForceInterceptBlockedByProtectionAura(BattleCardUI sourceCard, List<BattleCardUI> targets)
+    {
+        if (sourceCard == null || sourceCard.GetData() == null) return false;
+        if (targets == null || targets.Count == 0) return false;
+
+        BattleCardUI firstTarget = targets.FirstOrDefault(t => t != null && t.GetData() != null);
+        if (firstTarget == null) return false;
+
+        bool sourceIsPlayer = IsCardOwnedByPlayer(sourceCard);
+        bool targetIsPlayer = IsCardOwnedByPlayer(firstTarget);
+
+        // ป้องกันเฉพาะกรณีฝ่ายตรงข้ามพยายามบังคับ Equip ของเรา
+        if (sourceIsPlayer == targetIsPlayer) return false;
+
+        Transform[] protectedMonsterSlots = targetIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
+        Transform[] protectedEquipSlots = targetIsPlayer ? playerEquipSlots : enemyEquipSlots;
+
+        bool hasProtection = HasProtectForceInterceptEquipAura(protectedMonsterSlots, targetIsPlayer)
+            || HasProtectForceInterceptEquipAura(protectedEquipSlots, targetIsPlayer);
+
+        if (hasProtection)
+        {
+            Debug.Log($"🔒 ForceIntercept blocked: protected equip side={(targetIsPlayer ? "Player" : "Bot")}");
+        }
+
+        return hasProtection;
+    }
+
+    bool HasProtectForceInterceptEquipAura(Transform[] sourceSlots, bool sourceIsPlayer)
+    {
+        if (sourceSlots == null) return false;
+
+        foreach (Transform slot in sourceSlots)
+        {
+            if (slot == null || slot.childCount == 0) continue;
+
+            BattleCardUI auraCard = slot.GetChild(0).GetComponent<BattleCardUI>();
+            if (auraCard == null || auraCard.GetData() == null) continue;
+
+            CardData auraData = auraCard.GetData();
+            if (auraData.effects == null || auraData.effects.Count == 0) continue;
+
+            foreach (CardEffect aura in auraData.effects)
+            {
+                if (aura.trigger != EffectTrigger.Continuous) continue;
+                if (aura.action != ActionType.ProtectForceInterceptEquip) continue;
+
+                if (IsEffectSuppressedByOpponentContinuousAura(auraCard, aura, EffectTrigger.Continuous, sourceIsPlayer))
+                {
+                    continue;
+                }
+
+                Debug.Log($"🛡️ ForceIntercept protection active from {auraData.cardName}");
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>ปิดการกัน (Disable Intercept) ของการ์ด Equip ฝ่ายตรงข้ามในเทิร์นนี้</summary>

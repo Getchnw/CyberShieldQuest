@@ -29,9 +29,21 @@ MonoBehaviour:
     Key) \u0E17\u0E35\u0E48\u0E08\u0E30\u0E16\u0E39\u0E01\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E02\u0E49\u0E32\u0E44\u0E1B\u0E01\u0E48\u0E2D\u0E19\u0E01\u0E32\u0E23
     Hashing \u0E41\u0E25\u0E30\u0E40\u0E01\u0E47\u0E1A\u0E44\u0E27\u0E49\u0E43\u0E19\u0E17\u0E35\u0E48\u0E1B\u0E25\u0E2D\u0E14\u0E20\u0E31\u0E22\u0E41\u0E22\u0E01\u0E15\u0E48\u0E32\u0E07\u0E2B\u0E32\u0E01"
   effects:
-  - trigger: 5
+  - trigger: 4
     targetType: 0
-    action: 9
+    action: 10
+    targetCardTypeFilter: 0
+    targetCardNameFilter: 
     targetMainCat: 0
     targetSubCat: 7
+    useExcludeFilter: 0
+    excludeMainCat: 0
+    excludeSubCat: 0
     value: 0
+    duration: 0
+    destroyMode: 0
+    tokenCardId: 
+    bypassAllowedMainCat: 0
+    bypassAllowedSubCat: 0
+    disableAbilityTriggerFilter: 0
+    disableAbilityActionFilter: 0
