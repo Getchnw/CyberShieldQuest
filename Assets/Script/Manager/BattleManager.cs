@@ -2038,6 +2038,9 @@ public class BattleManager : MonoBehaviour
             CardData shieldData = botShield.GetData();
             bool match = IsInterceptTypeMatched(attacker, botShield, blockerIsPlayer: false);
 
+            // 🔥 ทริกเกอร์ OnIntercept effects (ยกเว้น HealHP ที่ใช้ระบบเฉพาะอยู่แล้ว)
+            yield return StartCoroutine(ResolveNonHealOnInterceptEffects(botShield, blockerIsPlayer: false));
+
             if (match)
             {
                 TryResolveInterceptHeal(botShield, attacker, blockerIsPlayer: false, isTypeMatched: true);
@@ -2490,6 +2493,9 @@ public class BattleManager : MonoBehaviour
                             CardData shieldData = forcedShield.GetData();
                             bool match = IsInterceptTypeMatched(monster, forcedShield, blockerIsPlayer: true);
 
+                            // 🔥 ทริกเกอร์ OnIntercept effects (ยกเว้น HealHP)
+                            yield return StartCoroutine(ResolveNonHealOnInterceptEffects(forcedShield, blockerIsPlayer: true));
+
                             if (match)
                             {
                                 TryResolveInterceptHeal(forcedShield, monster, blockerIsPlayer: true, isTypeMatched: true);
@@ -2638,7 +2644,12 @@ public class BattleManager : MonoBehaviour
 
     public void OnPlayerSelectBlocker(BattleCardUI myShield)
     {
-        if (state != BattleState.DEFENDER_CHOICE) return;
+        StartCoroutine(OnPlayerSelectBlockerCoroutine(myShield));
+    }
+
+    IEnumerator OnPlayerSelectBlockerCoroutine(BattleCardUI myShield)
+    {
+        if (state != BattleState.DEFENDER_CHOICE) yield break;
 
         // 🔥 ตรวจสอบ null ก่อนเช็คประเภท
         if (currentAttackerBot == null || currentAttackerBot.GetData() == null ||
@@ -2647,7 +2658,7 @@ public class BattleManager : MonoBehaviour
             Debug.LogWarning("OnPlayerSelectBlocker: null card data detected!");
             playerHasMadeChoice = true;
             if (takeDamageButton) takeDamageButton.SetActive(false);
-            return;
+            yield break;
         }
 
         // 🚫 เช็คว่าโล่ถูกปิดการกันหรือไม่
@@ -2655,7 +2666,7 @@ public class BattleManager : MonoBehaviour
         {
             Debug.LogWarning($"🚫 {myShield.GetData().cardName} ถูกปิดการกัน! ไม่สามารถใช้กันได้");
             ShowDamagePopupString("Cannot Block!", myShield.transform);
-            return; // ไม่อนุญาตให้กัน
+            yield break; // ไม่อนุญาตให้กัน
         }
 
         // 🚫 ตรวจสอบว่าโล่นี้ถูก bypass หรือไม่ (ใช้ฟังก์ชันเดียวกับที่เช็คตอน highlight)
@@ -2666,7 +2677,7 @@ public class BattleManager : MonoBehaviour
             {
                 Debug.LogWarning($"🚫 {myShield.GetData().cardName} ถูกข้าม (Bypassed) - ไม่สามารถกันได้!");
                 ShowDamagePopupString("Bypassed!", myShield.transform);
-                return;
+                yield break;
             }
         }
 
@@ -2675,7 +2686,7 @@ public class BattleManager : MonoBehaviour
         {
             Debug.LogWarning("🛡️ มีการ์ดที่ต้องกันบังคับอยู่ ต้องเลือกการ์ดที่มี mustIntercept เท่านั้น!");
             ShowDamagePopupString("Must Block!", myShield.transform);
-            return; // ไม่อนุญาตให้กันด้วยใบอื่น
+            yield break; // ไม่อนุญาตให้กันด้วยใบอื่น
         }
 
         CardData attackerData = currentAttackerBot.GetData();
@@ -2689,6 +2700,9 @@ public class BattleManager : MonoBehaviour
         currentBattleStats.interceptionsSuccessful++;
 
         bool match = IsInterceptTypeMatched(currentAttackerBot, myShield, blockerIsPlayer: true);
+
+        // 🔥 ทริกเกอร์ OnIntercept effects (ยกเว้น HealHP)
+        yield return StartCoroutine(ResolveNonHealOnInterceptEffects(myShield, blockerIsPlayer: true));
 
         if (match)
         {
@@ -2718,6 +2732,29 @@ public class BattleManager : MonoBehaviour
         // 🔥 เซ็ตแล้วหลัง logic กันค้าง
         playerHasMadeChoice = true;
         if (takeDamageButton) takeDamageButton.SetActive(false);
+    }
+
+    IEnumerator ResolveNonHealOnInterceptEffects(BattleCardUI blocker, bool blockerIsPlayer)
+    {
+        if (blocker == null || blocker.GetData() == null) yield break;
+
+        CardData blockerData = blocker.GetData();
+        if (blockerData.effects == null || blockerData.effects.Count == 0) yield break;
+
+        foreach (CardEffect effect in blockerData.effects)
+        {
+            if (effect.trigger != EffectTrigger.OnIntercept) continue;
+            if (effect.action == ActionType.HealHP) continue;
+
+            if (IsEffectSuppressedByOpponentContinuousAura(blocker, effect, EffectTrigger.OnIntercept, blockerIsPlayer))
+            {
+                Debug.Log($"🚫 Effect suppressed: {blockerData.cardName} | Trigger=OnIntercept | Action={effect.action}");
+                AddBattleLog($"{blockerData.cardName} OnIntercept ability was suppressed");
+                continue;
+            }
+
+            yield return StartCoroutine(ApplyEffect(blocker, effect, blockerIsPlayer));
+        }
     }
 
     void TryResolveMarkedInterceptPunish(BattleCardUI attacker, BattleCardUI blocker, bool attackerIsPlayer)
