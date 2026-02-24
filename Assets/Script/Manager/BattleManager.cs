@@ -4400,7 +4400,8 @@ public class BattleManager : MonoBehaviour
         if (effect.targetType == TargetType.EnemyHand)
         {
             bool targetIsPlayer = !isPlayer;
-            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer))
+            int sourceCardCost = sourceCard != null && sourceCard.GetData() != null ? sourceCard.GetData().cost : -1;
+            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer, sourceCardCost))
             {
                 AddBattleLog($"{(isPlayer ? "Player" : "Bot")} tried to reveal hand but it was blocked");
                 return;
@@ -4443,7 +4444,8 @@ public class BattleManager : MonoBehaviour
         if (effect.targetType == TargetType.EnemyHand)
         {
             bool targetIsPlayer = !isPlayer;
-            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer))
+            int sourceCardCost = sourceCard != null && sourceCard.GetData() != null ? sourceCard.GetData().cost : -1;
+            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer, sourceCardCost))
             {
                 AddBattleLog($"{(isPlayer ? "Player" : "Bot")} tried to reveal multiple hand cards but it was blocked");
                 return;
@@ -6372,16 +6374,16 @@ public class BattleManager : MonoBehaviour
         return true;
     }
 
-    bool IsHandRevealBlockedByContinuousEffect(bool protectedSideIsPlayer)
+    bool IsHandRevealBlockedByContinuousEffect(bool protectedSideIsPlayer, int sourceCardCost = -1)
     {
         Transform[] ownMonsterSlots = protectedSideIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
         Transform[] ownEquipSlots = protectedSideIsPlayer ? playerEquipSlots : enemyEquipSlots;
 
-        return HasHandRevealSuppressionAura(ownMonsterSlots)
-            || HasHandRevealSuppressionAura(ownEquipSlots);
+        return HasHandRevealSuppressionAura(ownMonsterSlots, sourceCardCost)
+            || HasHandRevealSuppressionAura(ownEquipSlots, sourceCardCost);
     }
 
-    bool HasHandRevealSuppressionAura(Transform[] sourceSlots)
+    bool HasHandRevealSuppressionAura(Transform[] sourceSlots, int sourceCardCost = -1)
     {
         if (sourceSlots == null) return false;
 
@@ -6410,6 +6412,9 @@ public class BattleManager : MonoBehaviour
                 bool allowsContinuousTrigger = aura.disableAbilityTriggerFilter == EffectTrigger.None
                     || aura.disableAbilityTriggerFilter == EffectTrigger.Continuous
                     || aura.disableAbilityTriggerFilter == EffectTrigger.OnDeploy;
+
+                bool costMatch = aura.value <= 0 || (sourceCardCost >= 0 && sourceCardCost <= aura.value);
+                if (!costMatch) continue;
 
                 if (allowsContinuousTrigger)
                 {
