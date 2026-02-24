@@ -1464,9 +1464,58 @@ public class BattleManager : MonoBehaviour
         if (state != BattleState.PLAYERTURN) return;
 
         if (endTurnButton) endTurnButton.SetActive(false);
+        StartCoroutine(ProcessPlayerEndTurn());
+    }
+
+    IEnumerator ProcessPlayerEndTurn()
+    {
+        // 🎯 ทริกเกอร์เอฟเฟกต์ตอนจบเทิร์นของการ์ดฝั่งผู้เล่น
+        yield return StartCoroutine(ResolveTurnEndEffectsForSide(isPlayerSide: true));
+
+        if (isEnding || state == BattleState.WON || state == BattleState.LOST) yield break;
+
         // 🎮 นับ Control duration ตอนจบเทิร์นผู้เล่น
         ProcessControlDurationsForAllEquips();
         StartCoroutine(EnemyTurn());
+    }
+
+    IEnumerator ResolveTurnEndEffectsForSide(bool isPlayerSide)
+    {
+        Transform[] monsterSlots = isPlayerSide ? playerMonsterSlots : enemyMonsterSlots;
+        Transform[] equipSlots = isPlayerSide ? playerEquipSlots : enemyEquipSlots;
+
+        List<BattleCardUI> cardsOnField = new List<BattleCardUI>();
+        CollectFieldCards(monsterSlots, cardsOnField);
+        CollectFieldCards(equipSlots, cardsOnField);
+
+        foreach (BattleCardUI card in cardsOnField)
+        {
+            if (card == null || card.gameObject == null) continue;
+            if (card.GetData() == null) continue;
+
+            yield return StartCoroutine(ResolveEffects(card, EffectTrigger.OnTurnEnd, isPlayer: isPlayerSide));
+
+            if (isEnding || state == BattleState.WON || state == BattleState.LOST)
+            {
+                yield break;
+            }
+        }
+    }
+
+    void CollectFieldCards(Transform[] slots, List<BattleCardUI> output)
+    {
+        if (slots == null || output == null) return;
+
+        foreach (Transform slot in slots)
+        {
+            if (slot == null || slot.childCount == 0) continue;
+
+            BattleCardUI card = slot.GetChild(0).GetComponent<BattleCardUI>();
+            if (card != null)
+            {
+                output.Add(card);
+            }
+        }
     }
 
     // --------------------------------------------------------
@@ -1527,7 +1576,7 @@ public class BattleManager : MonoBehaviour
         {
             cardUI.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
             // 🔥 เช็คว่ามีสกิล Rush หรือไม่ (โจมตีได้ทันที)
-            bool hasRush = cardUI.GetData().effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.Rush);
+            bool hasRush = HasActiveRush(cardUI);
             if (hasRush)
             {
                 cardUI.hasAttacked = false; // สามารถโจมตีได้ทันทีในเทิร์นนี้
@@ -2076,6 +2125,11 @@ public class BattleManager : MonoBehaviour
 
         if (isEnding || state == BattleState.WON || state == BattleState.LOST) yield break;
 
+        // 🎯 ทริกเกอร์เอฟเฟกต์ตอนจบเทิร์นของการ์ดฝั่งบอท
+        yield return StartCoroutine(ResolveTurnEndEffectsForSide(isPlayerSide: false));
+
+        if (isEnding || state == BattleState.WON || state == BattleState.LOST) yield break;
+
         // 🎮 นับ Control duration ตอนจบเทิร์นบอท
         ProcessControlDurationsForAllEquips();
 
@@ -2257,7 +2311,7 @@ public class BattleManager : MonoBehaviour
             ui.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
 
             // 🔥 เช็คว่ามีสกิล Rush หรือไม่ (Bot)
-            bool hasRush = ui.GetData().effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.Rush);
+            bool hasRush = HasActiveRush(ui);
             if (hasRush)
             {
                 ui.hasAttacked = false;
@@ -2314,7 +2368,7 @@ public class BattleManager : MonoBehaviour
             {
                 var monster = slot.GetChild(0).GetComponent<BattleCardUI>();
                 // 🔥 แก้: เช็คว่าตัวมอนสเตอร์ยังไม่ได้โจมตีในเทิร์นนี้ (Summoning Sickness)
-                if (monster != null && monster.CanAttackNow())
+                while (monster != null && monster.CanAttackNow())
                 {
                     currentAttackerBot = monster;
 
@@ -2408,7 +2462,7 @@ public class BattleManager : MonoBehaviour
                             }
                         }
 
-                        if (state == BattleState.LOST) break;
+                        if (state == BattleState.LOST) yield break;
                         continue; // ไปยังมอนสเตอร์ตัวถัดไป
                     }
 
@@ -2513,7 +2567,7 @@ public class BattleManager : MonoBehaviour
                         ClearMarkedInterceptPunish(monster);
                     }
 
-                    if (state == BattleState.LOST) break;
+                    if (state == BattleState.LOST) yield break;
                 }
             }
         }
@@ -3764,7 +3818,7 @@ public class BattleManager : MonoBehaviour
             newCard.hasAttacked = true; // Monster ต้องรอเทิร์นถัดไป
 
             // 🔥 เช็คว่ามีสกิล Rush หรือไม่ (Sacrifice)
-            bool hasRush = newData.effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.Rush);
+            bool hasRush = HasActiveRush(newCard);
             if (hasRush)
             {
                 newCard.hasAttacked = false;
@@ -6224,6 +6278,37 @@ public class BattleManager : MonoBehaviour
 
         // ค่า default ให้เป็นผู้เล่นเพื่อไม่พลาดการคำนวณเอฟเฟ็กต์ฝั่งเรา
         return true;
+    }
+
+    bool HasActiveRush(BattleCardUI card)
+    {
+        return HasActiveContinuousAction(card, ActionType.Rush);
+    }
+
+    public bool HasActiveContinuousAction(BattleCardUI sourceCard, ActionType action)
+    {
+        if (sourceCard == null || sourceCard.GetData() == null) return false;
+
+        CardData sourceData = sourceCard.GetData();
+        if (sourceData.effects == null || sourceData.effects.Count == 0) return false;
+
+        bool sourceIsPlayer = IsCardOwnedByPlayer(sourceCard);
+
+        foreach (CardEffect effect in sourceData.effects)
+        {
+            if (effect.trigger != EffectTrigger.Continuous) continue;
+            if (effect.action != action) continue;
+
+            if (IsEffectSuppressedByOpponentContinuousAura(sourceCard, effect, EffectTrigger.Continuous, sourceIsPlayer))
+            {
+                Debug.Log($"🚫 {action} suppressed: {sourceData.cardName}");
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     bool IsEffectSuppressedByOpponentContinuousAura(BattleCardUI sourceCard, CardEffect pendingEffect, EffectTrigger triggerType, bool sourceIsPlayer)

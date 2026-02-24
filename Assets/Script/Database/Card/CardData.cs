@@ -7,7 +7,7 @@ public enum MainCategory {  A01, A02, A03, General }
 public enum SubCategory { General, IDOR, PathTraversal, MFLAC, InsecureTransit, InsecureRest, WeakHash, NoSalt, BadKey, SQLi, XSS, OSCommand, XXE }
 public enum Rarity { Common, Rare, Epic, Legendary } // 🔥 ความหายากสำหรับกาชา
 
-public enum EffectTrigger { None, OnDeploy, OnStrike, OnStrikeHit, Continuous, OnIntercept, OnDestroyed }
+public enum EffectTrigger { None, OnDeploy, OnStrike, OnStrikeHit, Continuous, OnIntercept, OnDestroyed, OnTurnEnd }
 public enum TargetType { Self, EnemyPlayer, EnemyMonster, EnemyEquip, EnemyHand, EnemyDeck, AllGlobal }
 public enum ActionType { None, Destroy, DisableAttack, DisableAbility, RevealHand, RevealHandMultiple, DiscardDeck, SummonToken, ModifyStat, ControlEquip, HealHP, ForceIntercept, BypassIntercept, DisableIntercept, DrawCard, Rush, DoubleStrike, GraveyardATK, ZeroStats, RemoveCategory, ForceChooseDiscard, ReturnEquipFromGraveyard, PeekDiscardTopDeck, MarkInterceptMillDeck, InterceptAlwaysTypeMatch, ProtectDrawnCards, ProtectRevealHandMultiple }
 public enum EffectCardTypeFilter { Any, Monster, Spell, EquipSpell, Token }

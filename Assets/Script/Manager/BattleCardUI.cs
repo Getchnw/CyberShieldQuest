@@ -239,7 +239,17 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public int GetMaxAttacksPerTurn()
     {
         if (_cardData == null) return 1;
-        bool hasDoubleStrike = _cardData.effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.DoubleStrike);
+        bool hasDoubleStrike;
+
+        if (BattleManager.Instance != null)
+        {
+            hasDoubleStrike = BattleManager.Instance.HasActiveContinuousAction(this, ActionType.DoubleStrike);
+        }
+        else
+        {
+            hasDoubleStrike = _cardData.effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.DoubleStrike);
+        }
+
         return hasDoubleStrike ? 2 : 1;
     }
 

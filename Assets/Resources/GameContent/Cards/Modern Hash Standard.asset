@@ -33,6 +33,36 @@ MonoBehaviour:
   - trigger: 4
     targetType: 2
     action: 3
-    targetMainCat: 2
+    targetCardTypeFilter: 0
+    targetCardNameFilter: 
+    targetMainCat: 1
     targetSubCat: 0
+    useExcludeFilter: 0
+    excludeMainCat: 0
+    excludeSubCat: 0
     value: 0
+    duration: 0
+    destroyMode: 0
+    tokenCardId: 
+    bypassAllowedMainCat: 0
+    bypassAllowedSubCat: 0
+    disableAbilityTriggerFilter: 0
+    disableAbilityActionFilter: 0
+  - trigger: 7
+    targetType: 0
+    action: 10
+    targetCardTypeFilter: 0
+    targetCardNameFilter: 
+    targetMainCat: 1
+    targetSubCat: 0
+    useExcludeFilter: 0
+    excludeMainCat: 0
+    excludeSubCat: 0
+    value: 1
+    duration: 0
+    destroyMode: 0
+    tokenCardId: 
+    bypassAllowedMainCat: 0
+    bypassAllowedSubCat: 0
+    disableAbilityTriggerFilter: 0
+    disableAbilityActionFilter: 0
