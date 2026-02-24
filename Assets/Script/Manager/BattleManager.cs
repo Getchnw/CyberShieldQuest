@@ -1603,6 +1603,8 @@ public class BattleManager : MonoBehaviour
         AddBattleLog($"Player plays {playedCard.cardName} ({playedCard.type}) ATK:{playedCard.atk} HP:{playedCard.hp} cost {cost}");
         Debug.Log($"🔥 PlayCard Debug: cardName={playedCard.cardName}, atk={playedCard.atk}, hp={playedCard.hp}");
 
+        TryResolveHealOnMonsterSummoned(cardUI);
+
         // 🔥 ทริกเกอร์ OnDeploy Effects (รอให้เสร็จก่อนไป)
         yield return StartCoroutine(ResolveEffects(cardUI, EffectTrigger.OnDeploy, isPlayer: true));
 
@@ -2343,6 +2345,8 @@ public class BattleManager : MonoBehaviour
         }
 
         Debug.Log($"🤖 บอทลงการ์ด: {ui.GetData()?.cardName} (ห้ามตีเทิร์นนี้)");
+
+        TryResolveHealOnMonsterSummoned(ui);
 
         // 🔥 ทริกเกอร์ OnDeploy Effects สำหรับบอท (เหมือนผู้เล่น)
         if (ui != null && ui.GetData() != null)
@@ -3839,6 +3843,8 @@ public class BattleManager : MonoBehaviour
 
         // เล่นเสียง
         if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
+
+        TryResolveHealOnMonsterSummoned(newCard);
 
         // 🔥 ทริกเกอร์ OnDeploy สำหรับการ์ดที่สังเวย (เหมือนการลงปกติ)
         StartCoroutine(ResolveEffects(newCard, EffectTrigger.OnDeploy, isPlayer: true));
@@ -6451,6 +6457,107 @@ public class BattleManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    void TryResolveHealOnMonsterSummoned(BattleCardUI summonedCard)
+    {
+        if (summonedCard == null || summonedCard.GetData() == null) return;
+
+        CardData summonedData = summonedCard.GetData();
+        if (summonedData.type != CardType.Monster) return;
+
+        // Global trigger: เมื่อมีมอนสเตอร์ลงสนาม ไม่ว่าฝั่งไหน ให้ตรวจ aura ทั้งสองฝั่ง
+        TryApplyHealOnMonsterSummonedFromLine(playerMonsterSlots, summonedCard, auraOwnerIsPlayer: true);
+        TryApplyHealOnMonsterSummonedFromLine(playerEquipSlots, summonedCard, auraOwnerIsPlayer: true);
+        TryApplyHealOnMonsterSummonedFromLine(enemyMonsterSlots, summonedCard, auraOwnerIsPlayer: false);
+        TryApplyHealOnMonsterSummonedFromLine(enemyEquipSlots, summonedCard, auraOwnerIsPlayer: false);
+    }
+
+    void TryApplyHealOnMonsterSummonedFromLine(Transform[] sourceSlots, BattleCardUI summonedCard, bool auraOwnerIsPlayer)
+    {
+        if (sourceSlots == null || summonedCard == null || summonedCard.GetData() == null) return;
+
+        CardData summonedData = summonedCard.GetData();
+
+        foreach (Transform slot in sourceSlots)
+        {
+            if (slot == null || slot.childCount == 0) continue;
+
+            BattleCardUI auraCard = slot.GetChild(0).GetComponent<BattleCardUI>();
+            if (auraCard == null || auraCard.GetData() == null) continue;
+
+            CardData auraData = auraCard.GetData();
+            if (auraData.effects == null || auraData.effects.Count == 0) continue;
+
+            foreach (CardEffect aura in auraData.effects)
+            {
+                if (aura.trigger != EffectTrigger.Continuous) continue;
+                if (aura.action != ActionType.HealOnMonsterSummoned) continue;
+
+                if (IsEffectSuppressedByOpponentContinuousAura(auraCard, aura, EffectTrigger.Continuous, auraOwnerIsPlayer))
+                {
+                    continue;
+                }
+
+                if (aura.targetCardTypeFilter != EffectCardTypeFilter.Any)
+                {
+                    bool typeMatch = aura.targetCardTypeFilter == EffectCardTypeFilter.Monster;
+                    if (!typeMatch) continue;
+                }
+
+                if (aura.targetMainCat != MainCategory.General && summonedData.mainCategory != aura.targetMainCat)
+                {
+                    continue;
+                }
+
+                if (aura.targetSubCat != SubCategory.General && summonedData.subCategory != aura.targetSubCat)
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(aura.targetCardNameFilter))
+                {
+                    if (string.IsNullOrWhiteSpace(summonedData.cardName)) continue;
+
+                    bool nameMatch = string.Equals(
+                        summonedData.cardName.Trim(),
+                        aura.targetCardNameFilter.Trim(),
+                        System.StringComparison.OrdinalIgnoreCase
+                    );
+
+                    if (!nameMatch) continue;
+                }
+
+                if (aura.useExcludeFilter)
+                {
+                    bool excludedByMain = aura.excludeMainCat != MainCategory.General && summonedData.mainCategory == aura.excludeMainCat;
+                    bool excludedBySub = aura.excludeSubCat != SubCategory.General && summonedData.subCategory == aura.excludeSubCat;
+                    if (excludedByMain || excludedBySub)
+                    {
+                        continue;
+                    }
+                }
+
+                int healAmount = aura.value > 0 ? aura.value : 1;
+                if (auraOwnerIsPlayer)
+                {
+                    int hpBefore = currentHP;
+                    currentHP = Mathf.Min(currentHP + healAmount, maxHP);
+                    AddBattleLog($"{auraData.cardName} healed Player {healAmount} HP on summon");
+                    Debug.Log($"💚 [Cont.HealOnMonsterSummoned] Player: {hpBefore} -> {currentHP} by {auraData.cardName}");
+                }
+                else
+                {
+                    int hpBefore = enemyCurrentHP;
+                    enemyCurrentHP = Mathf.Min(enemyCurrentHP + healAmount, enemyMaxHP);
+                    AddBattleLog($"{auraData.cardName} healed Bot {healAmount} HP on summon");
+                    Debug.Log($"💚 [Cont.HealOnMonsterSummoned] Bot: {hpBefore} -> {enemyCurrentHP} by {auraData.cardName}");
+                }
+
+                ShowDamagePopupString($"+{healAmount} HP", auraCard.transform);
+                UpdateUI();
+            }
+        }
     }
 
     bool IsEffectSuppressedByOpponentContinuousAura(BattleCardUI sourceCard, CardEffect pendingEffect, EffectTrigger triggerType, bool sourceIsPlayer)
