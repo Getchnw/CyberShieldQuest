@@ -6386,6 +6386,13 @@ public class BattleManager : MonoBehaviour
             return true;
         }
 
+        if (incomingRevealAction == ActionType.RevealHandMultiple
+            && (HasProtectRevealHandMultipleAura(ownMonsterSlots, protectedSideIsPlayer)
+                || HasProtectRevealHandMultipleAura(ownEquipSlots, protectedSideIsPlayer)))
+        {
+            return true;
+        }
+
         return HasHandRevealSuppressionAura(ownMonsterSlots, sourceCardCost)
             || HasHandRevealSuppressionAura(ownEquipSlots, sourceCardCost);
     }
@@ -6415,6 +6422,38 @@ public class BattleManager : MonoBehaviour
                 }
 
                 Debug.Log($"🔒 Drawn cards are protected by {auraData.cardName}");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool HasProtectRevealHandMultipleAura(Transform[] sourceSlots, bool sourceIsPlayer)
+    {
+        if (sourceSlots == null) return false;
+
+        foreach (Transform slot in sourceSlots)
+        {
+            if (slot == null || slot.childCount == 0) continue;
+
+            BattleCardUI auraCard = slot.GetChild(0).GetComponent<BattleCardUI>();
+            if (auraCard == null || auraCard.GetData() == null) continue;
+
+            CardData auraData = auraCard.GetData();
+            if (auraData.effects == null || auraData.effects.Count == 0) continue;
+
+            foreach (CardEffect aura in auraData.effects)
+            {
+                if (aura.trigger != EffectTrigger.Continuous) continue;
+                if (aura.action != ActionType.ProtectRevealHandMultiple) continue;
+
+                if (IsEffectSuppressedByOpponentContinuousAura(auraCard, aura, EffectTrigger.Continuous, sourceIsPlayer))
+                {
+                    continue;
+                }
+
+                Debug.Log($"🔒 RevealHandMultiple is protected by {auraData.cardName}");
                 return true;
             }
         }
