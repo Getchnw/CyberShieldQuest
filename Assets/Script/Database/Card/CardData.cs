@@ -9,7 +9,7 @@ public enum Rarity { Common, Rare, Epic, Legendary } // 🔥 ความหา�
 
 public enum EffectTrigger { None, OnDeploy, OnStrike, OnStrikeHit, Continuous, OnIntercept, OnDestroyed }
 public enum TargetType { Self, EnemyPlayer, EnemyMonster, EnemyEquip, EnemyHand, EnemyDeck, AllGlobal }
-public enum ActionType { None, Destroy, DisableAttack, DisableAbility, RevealHand, RevealHandMultiple, DiscardDeck, SummonToken, ModifyStat, ControlEquip, HealHP, ForceIntercept, BypassIntercept, DisableIntercept, DrawCard, Rush, DoubleStrike, GraveyardATK, ZeroStats, RemoveCategory, ForceChooseDiscard, ReturnEquipFromGraveyard, PeekDiscardTopDeck, MarkInterceptMillDeck, InterceptAlwaysTypeMatch }
+public enum ActionType { None, Destroy, DisableAttack, DisableAbility, RevealHand, RevealHandMultiple, DiscardDeck, SummonToken, ModifyStat, ControlEquip, HealHP, ForceIntercept, BypassIntercept, DisableIntercept, DrawCard, Rush, DoubleStrike, GraveyardATK, ZeroStats, RemoveCategory, ForceChooseDiscard, ReturnEquipFromGraveyard, PeekDiscardTopDeck, MarkInterceptMillDeck, InterceptAlwaysTypeMatch, ProtectDrawnCards }
 public enum EffectCardTypeFilter { Any, Monster, Spell, EquipSpell, Token }
 public enum DestroyMode { SelectTarget, DestroyAll } // 🔥 โหมดการทำลาย: เลือกเป้าหมาย vs ทำลายทั้งหมด
 

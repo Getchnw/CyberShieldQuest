@@ -4401,7 +4401,7 @@ public class BattleManager : MonoBehaviour
         {
             bool targetIsPlayer = !isPlayer;
             int sourceCardCost = sourceCard != null && sourceCard.GetData() != null ? sourceCard.GetData().cost : -1;
-            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer, sourceCardCost))
+            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer, sourceCardCost, ActionType.RevealHand))
             {
                 AddBattleLog($"{(isPlayer ? "Player" : "Bot")} tried to reveal hand but it was blocked");
                 return;
@@ -4445,7 +4445,7 @@ public class BattleManager : MonoBehaviour
         {
             bool targetIsPlayer = !isPlayer;
             int sourceCardCost = sourceCard != null && sourceCard.GetData() != null ? sourceCard.GetData().cost : -1;
-            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer, sourceCardCost))
+            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer, sourceCardCost, ActionType.RevealHandMultiple))
             {
                 AddBattleLog($"{(isPlayer ? "Player" : "Bot")} tried to reveal multiple hand cards but it was blocked");
                 return;
@@ -6374,13 +6374,52 @@ public class BattleManager : MonoBehaviour
         return true;
     }
 
-    bool IsHandRevealBlockedByContinuousEffect(bool protectedSideIsPlayer, int sourceCardCost = -1)
+    bool IsHandRevealBlockedByContinuousEffect(bool protectedSideIsPlayer, int sourceCardCost = -1, ActionType incomingRevealAction = ActionType.RevealHand)
     {
         Transform[] ownMonsterSlots = protectedSideIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
         Transform[] ownEquipSlots = protectedSideIsPlayer ? playerEquipSlots : enemyEquipSlots;
 
+        if (incomingRevealAction == ActionType.RevealHand
+            && (HasProtectDrawnCardsAura(ownMonsterSlots, protectedSideIsPlayer)
+                || HasProtectDrawnCardsAura(ownEquipSlots, protectedSideIsPlayer)))
+        {
+            return true;
+        }
+
         return HasHandRevealSuppressionAura(ownMonsterSlots, sourceCardCost)
             || HasHandRevealSuppressionAura(ownEquipSlots, sourceCardCost);
+    }
+
+    bool HasProtectDrawnCardsAura(Transform[] sourceSlots, bool sourceIsPlayer)
+    {
+        if (sourceSlots == null) return false;
+
+        foreach (Transform slot in sourceSlots)
+        {
+            if (slot == null || slot.childCount == 0) continue;
+
+            BattleCardUI auraCard = slot.GetChild(0).GetComponent<BattleCardUI>();
+            if (auraCard == null || auraCard.GetData() == null) continue;
+
+            CardData auraData = auraCard.GetData();
+            if (auraData.effects == null || auraData.effects.Count == 0) continue;
+
+            foreach (CardEffect aura in auraData.effects)
+            {
+                if (aura.trigger != EffectTrigger.Continuous) continue;
+                if (aura.action != ActionType.ProtectDrawnCards) continue;
+
+                if (IsEffectSuppressedByOpponentContinuousAura(auraCard, aura, EffectTrigger.Continuous, sourceIsPlayer))
+                {
+                    continue;
+                }
+
+                Debug.Log($"🔒 Drawn cards are protected by {auraData.cardName}");
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool HasHandRevealSuppressionAura(Transform[] sourceSlots, int sourceCardCost = -1)
