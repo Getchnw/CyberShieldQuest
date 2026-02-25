@@ -86,6 +86,17 @@ public class BattleManager : MonoBehaviour
     [Range(0f, 1f)] public float logPanelOpacity = 0.35f; // ความโปร่งใสของพื้นหลัง
     public Vector2 logPanelMargin = new Vector2(48f, 48f); // ระยะขอบรอบ ๆ ให้พอดีจอ
 
+    [Header("--- Skill Corner Notification ---")]
+    public bool enableSkillCornerNotification = true;
+    public bool autoCreateSkillToastUI = true;
+    public RectTransform skillToastRoot;
+    public TextMeshProUGUI skillToastText;
+    [Range(0.2f, 3f)] public float skillToastDuration = 1.35f;
+    [Range(0f, 1f)] public float skillToastBackgroundOpacity = 0.82f;
+    [Range(280f, 900f)] public float skillToastWidth = 620f;
+    [Range(56f, 260f)] public float skillToastMinHeight = 72f;
+    [Range(80f, 520f)] public float skillToastMaxHeight = 260f;
+
     [Header("--- Card Detail View ---")]
     public CardDetailView cardDetailView;
 
@@ -188,6 +199,11 @@ public class BattleManager : MonoBehaviour
     // 🔥 Return Equip From Graveyard System
     private bool cardAdditionInProgress = false;
     private bool cardAdditionComplete = false;
+
+    private Coroutine skillToastCoroutine;
+    private CanvasGroup skillToastCanvasGroup;
+    private readonly Queue<string> skillToastPriorityQueue = new Queue<string>();
+    private readonly Queue<string> skillToastQueue = new Queue<string>();
     private bool isChoosingGraveyardEquip = false;
     private CardData selectedGraveyardEquip = null;
     private bool graveyardEquipConfirmed = false;
@@ -292,6 +308,7 @@ public class BattleManager : MonoBehaviour
         if (logPanel) logPanel.SetActive(false);
         if (handRevealPanel) handRevealPanel.SetActive(false);
         SetupLogPanelAppearance();
+        SetupSkillToastUI();
         UpdateLogText();
         
         // 👁️ เปิด raycasts บน enemyHandArea เพื่อให้การ์ดที่ reveal คลิกได้
@@ -2746,10 +2763,15 @@ public class BattleManager : MonoBehaviour
             if (effect.trigger != EffectTrigger.OnIntercept) continue;
             if (effect.action == ActionType.HealHP) continue;
 
-            if (IsEffectSuppressedByOpponentContinuousAura(blocker, effect, EffectTrigger.OnIntercept, blockerIsPlayer))
+            AddBattleLog($"✨ {blockerData.cardName} activated [OnIntercept] {effect.action}");
+            ShowDamagePopupString($"{effect.action}", blocker.transform);
+
+            if (TryGetSuppressingAuraCardName(blocker, effect, EffectTrigger.OnIntercept, blockerIsPlayer, out string suppressorName))
             {
                 Debug.Log($"🚫 Effect suppressed: {blockerData.cardName} | Trigger=OnIntercept | Action={effect.action}");
-                AddBattleLog($"{blockerData.cardName} OnIntercept ability was suppressed");
+                string blockedBy = string.IsNullOrWhiteSpace(suppressorName) ? "unknown aura" : suppressorName;
+                AddBattleLog($"🚫 {blockerData.cardName} [OnIntercept:{effect.action}] was blocked by {blockedBy}");
+                ShowDamagePopupString($"Blocked by {blockedBy}", blocker.transform);
                 continue;
             }
 
@@ -4049,10 +4071,15 @@ public class BattleManager : MonoBehaviour
         {
             if (effect.trigger == triggerType)
             {
-                if (IsEffectSuppressedByOpponentContinuousAura(sourceCard, effect, triggerType, isPlayer))
+                AddBattleLog($"✨ {cardData.cardName} activated [{triggerType}] {effect.action}");
+                ShowDamagePopupString($"{effect.action}", sourceCard.transform);
+
+                if (TryGetSuppressingAuraCardName(sourceCard, effect, triggerType, isPlayer, out string suppressorName))
                 {
                     Debug.Log($"🚫 Effect suppressed: {cardData.cardName} | Trigger={triggerType} | Action={effect.action}");
-                    AddBattleLog($"{cardData.cardName} ability was suppressed");
+                    string blockedBy = string.IsNullOrWhiteSpace(suppressorName) ? "unknown aura" : suppressorName;
+                    AddBattleLog($"🚫 {cardData.cardName} [{effect.action}] was blocked by {blockedBy}");
+                    ShowDamagePopupString($"Blocked by {blockedBy}", sourceCard.transform);
                     continue;
                 }
 
@@ -4513,9 +4540,15 @@ public class BattleManager : MonoBehaviour
         {
             bool targetIsPlayer = !isPlayer;
             int sourceCardCost = sourceCard != null && sourceCard.GetData() != null ? sourceCard.GetData().cost : -1;
-            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer, sourceCardCost, ActionType.RevealHand))
+            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer, sourceCardCost, ActionType.RevealHand, out string blockerName))
             {
-                AddBattleLog($"{(isPlayer ? "Player" : "Bot")} tried to reveal hand but it was blocked");
+                string sourceName = sourceCard != null && sourceCard.GetData() != null ? sourceCard.GetData().cardName : (isPlayer ? "Player" : "Bot");
+                string blockedBy = string.IsNullOrWhiteSpace(blockerName) ? "protection aura" : blockerName;
+                AddBattleLog($"🚫 {sourceName} tried RevealHand but was blocked by {blockedBy}");
+                if (sourceCard != null)
+                {
+                    ShowDamagePopupString("Reveal Blocked", sourceCard.transform);
+                }
                 return;
             }
         }
@@ -4557,9 +4590,15 @@ public class BattleManager : MonoBehaviour
         {
             bool targetIsPlayer = !isPlayer;
             int sourceCardCost = sourceCard != null && sourceCard.GetData() != null ? sourceCard.GetData().cost : -1;
-            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer, sourceCardCost, ActionType.RevealHandMultiple))
+            if (IsHandRevealBlockedByContinuousEffect(targetIsPlayer, sourceCardCost, ActionType.RevealHandMultiple, out string blockerName))
             {
-                AddBattleLog($"{(isPlayer ? "Player" : "Bot")} tried to reveal multiple hand cards but it was blocked");
+                string sourceName = sourceCard != null && sourceCard.GetData() != null ? sourceCard.GetData().cardName : (isPlayer ? "Player" : "Bot");
+                string blockedBy = string.IsNullOrWhiteSpace(blockerName) ? "protection aura" : blockerName;
+                AddBattleLog($"🚫 {sourceName} tried RevealHandMultiple but was blocked by {blockedBy}");
+                if (sourceCard != null)
+                {
+                    ShowDamagePopupString("Reveal Blocked", sourceCard.transform);
+                }
                 return;
             }
         }
@@ -5780,9 +5819,11 @@ public class BattleManager : MonoBehaviour
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
         if (targets == null || targets.Count == 0) yield break;
 
-        if (IsForceInterceptBlockedByProtectionAura(sourceCard, targets))
+        if (IsForceInterceptBlockedByProtectionAura(sourceCard, targets, out string blockerName))
         {
-            AddBattleLog($"{sourceCard.GetData().cardName} tried to force intercept but it was blocked");
+            string blockedBy = string.IsNullOrWhiteSpace(blockerName) ? "protection aura" : blockerName;
+            AddBattleLog($"🚫 {sourceCard.GetData().cardName} tried ForceIntercept but was blocked by {blockedBy}");
+            ShowDamagePopupString($"ForceIntercept Blocked", sourceCard.transform);
             yield break;
         }
 
@@ -5839,8 +5880,9 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    bool IsForceInterceptBlockedByProtectionAura(BattleCardUI sourceCard, List<BattleCardUI> targets)
+    bool IsForceInterceptBlockedByProtectionAura(BattleCardUI sourceCard, List<BattleCardUI> targets, out string blockerName)
     {
+        blockerName = string.Empty;
         if (sourceCard == null || sourceCard.GetData() == null) return false;
         if (targets == null || targets.Count == 0) return false;
 
@@ -5856,8 +5898,8 @@ public class BattleManager : MonoBehaviour
         Transform[] protectedMonsterSlots = targetIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
         Transform[] protectedEquipSlots = targetIsPlayer ? playerEquipSlots : enemyEquipSlots;
 
-        bool hasProtection = HasProtectForceInterceptEquipAura(protectedMonsterSlots, targetIsPlayer)
-            || HasProtectForceInterceptEquipAura(protectedEquipSlots, targetIsPlayer);
+        bool hasProtection = HasProtectForceInterceptEquipAura(protectedMonsterSlots, targetIsPlayer, out blockerName)
+            || HasProtectForceInterceptEquipAura(protectedEquipSlots, targetIsPlayer, out blockerName);
 
         if (hasProtection)
         {
@@ -5867,8 +5909,9 @@ public class BattleManager : MonoBehaviour
         return hasProtection;
     }
 
-    bool HasProtectForceInterceptEquipAura(Transform[] sourceSlots, bool sourceIsPlayer)
+    bool HasProtectForceInterceptEquipAura(Transform[] sourceSlots, bool sourceIsPlayer, out string auraCardName)
     {
+        auraCardName = string.Empty;
         if (sourceSlots == null) return false;
 
         foreach (Transform slot in sourceSlots)
@@ -5892,6 +5935,7 @@ public class BattleManager : MonoBehaviour
                 }
 
                 Debug.Log($"🛡️ ForceIntercept protection active from {auraData.cardName}");
+                auraCardName = auraData.cardName;
                 return true;
             }
         }
@@ -6599,17 +6643,24 @@ public class BattleManager : MonoBehaviour
 
     bool IsEffectSuppressedByOpponentContinuousAura(BattleCardUI sourceCard, CardEffect pendingEffect, EffectTrigger triggerType, bool sourceIsPlayer)
     {
+        return TryGetSuppressingAuraCardName(sourceCard, pendingEffect, triggerType, sourceIsPlayer, out _);
+    }
+
+    bool TryGetSuppressingAuraCardName(BattleCardUI sourceCard, CardEffect pendingEffect, EffectTrigger triggerType, bool sourceIsPlayer, out string auraCardName)
+    {
+        auraCardName = string.Empty;
         if (sourceCard == null || sourceCard.GetData() == null) return false;
 
         Transform[] opponentMonsterLine = sourceIsPlayer ? enemyMonsterSlots : playerMonsterSlots;
         Transform[] opponentEquipLine = sourceIsPlayer ? enemyEquipSlots : playerEquipSlots;
 
-        return HasContinuousDisableAbilitySuppression(opponentMonsterLine, sourceCard, pendingEffect, triggerType)
-            || HasContinuousDisableAbilitySuppression(opponentEquipLine, sourceCard, pendingEffect, triggerType);
+        return HasContinuousDisableAbilitySuppression(opponentMonsterLine, sourceCard, pendingEffect, triggerType, out auraCardName)
+            || HasContinuousDisableAbilitySuppression(opponentEquipLine, sourceCard, pendingEffect, triggerType, out auraCardName);
     }
 
-    bool HasContinuousDisableAbilitySuppression(Transform[] sourceSlots, BattleCardUI sourceCard, CardEffect pendingEffect, EffectTrigger triggerType)
+    bool HasContinuousDisableAbilitySuppression(Transform[] sourceSlots, BattleCardUI sourceCard, CardEffect pendingEffect, EffectTrigger triggerType, out string auraCardName)
     {
+        auraCardName = string.Empty;
         if (sourceSlots == null || sourceCard == null || sourceCard.GetData() == null) return false;
 
         foreach (Transform slot in sourceSlots)
@@ -6630,6 +6681,7 @@ public class BattleManager : MonoBehaviour
                 if (!DoesDisableAbilityAuraMatch(aura, sourceCard, pendingEffect, triggerType)) continue;
 
                 Debug.Log($"🚫 [Cont.DisableAbility] {sourceCard.GetData().cardName} blocked by {auraData.cardName} | Trigger={triggerType} Action={pendingEffect.action}");
+                auraCardName = auraData.cardName;
                 return true;
             }
         }
@@ -6747,29 +6799,36 @@ public class BattleManager : MonoBehaviour
 
     bool IsHandRevealBlockedByContinuousEffect(bool protectedSideIsPlayer, int sourceCardCost = -1, ActionType incomingRevealAction = ActionType.RevealHand)
     {
+        return IsHandRevealBlockedByContinuousEffect(protectedSideIsPlayer, sourceCardCost, incomingRevealAction, out _);
+    }
+
+    bool IsHandRevealBlockedByContinuousEffect(bool protectedSideIsPlayer, int sourceCardCost, ActionType incomingRevealAction, out string blockerName)
+    {
+        blockerName = string.Empty;
         Transform[] ownMonsterSlots = protectedSideIsPlayer ? playerMonsterSlots : enemyMonsterSlots;
         Transform[] ownEquipSlots = protectedSideIsPlayer ? playerEquipSlots : enemyEquipSlots;
 
         if (incomingRevealAction == ActionType.RevealHand
-            && (HasProtectDrawnCardsAura(ownMonsterSlots, protectedSideIsPlayer)
-                || HasProtectDrawnCardsAura(ownEquipSlots, protectedSideIsPlayer)))
+            && (HasProtectDrawnCardsAura(ownMonsterSlots, protectedSideIsPlayer, out blockerName)
+                || HasProtectDrawnCardsAura(ownEquipSlots, protectedSideIsPlayer, out blockerName)))
         {
             return true;
         }
 
         if (incomingRevealAction == ActionType.RevealHandMultiple
-            && (HasProtectRevealHandMultipleAura(ownMonsterSlots, protectedSideIsPlayer)
-                || HasProtectRevealHandMultipleAura(ownEquipSlots, protectedSideIsPlayer)))
+            && (HasProtectRevealHandMultipleAura(ownMonsterSlots, protectedSideIsPlayer, out blockerName)
+                || HasProtectRevealHandMultipleAura(ownEquipSlots, protectedSideIsPlayer, out blockerName)))
         {
             return true;
         }
 
-        return HasHandRevealSuppressionAura(ownMonsterSlots, sourceCardCost)
-            || HasHandRevealSuppressionAura(ownEquipSlots, sourceCardCost);
+        return HasHandRevealSuppressionAura(ownMonsterSlots, sourceCardCost, out blockerName)
+            || HasHandRevealSuppressionAura(ownEquipSlots, sourceCardCost, out blockerName);
     }
 
-    bool HasProtectDrawnCardsAura(Transform[] sourceSlots, bool sourceIsPlayer)
+    bool HasProtectDrawnCardsAura(Transform[] sourceSlots, bool sourceIsPlayer, out string auraCardName)
     {
+        auraCardName = string.Empty;
         if (sourceSlots == null) return false;
 
         foreach (Transform slot in sourceSlots)
@@ -6793,6 +6852,7 @@ public class BattleManager : MonoBehaviour
                 }
 
                 Debug.Log($"🔒 Drawn cards are protected by {auraData.cardName}");
+                auraCardName = auraData.cardName;
                 return true;
             }
         }
@@ -6800,8 +6860,9 @@ public class BattleManager : MonoBehaviour
         return false;
     }
 
-    bool HasProtectRevealHandMultipleAura(Transform[] sourceSlots, bool sourceIsPlayer)
+    bool HasProtectRevealHandMultipleAura(Transform[] sourceSlots, bool sourceIsPlayer, out string auraCardName)
     {
+        auraCardName = string.Empty;
         if (sourceSlots == null) return false;
 
         foreach (Transform slot in sourceSlots)
@@ -6825,6 +6886,7 @@ public class BattleManager : MonoBehaviour
                 }
 
                 Debug.Log($"🔒 RevealHandMultiple is protected by {auraData.cardName}");
+                auraCardName = auraData.cardName;
                 return true;
             }
         }
@@ -6832,8 +6894,9 @@ public class BattleManager : MonoBehaviour
         return false;
     }
 
-    bool HasHandRevealSuppressionAura(Transform[] sourceSlots, int sourceCardCost = -1)
+    bool HasHandRevealSuppressionAura(Transform[] sourceSlots, int sourceCardCost, out string auraCardName)
     {
+        auraCardName = string.Empty;
         if (sourceSlots == null) return false;
 
         foreach (Transform slot in sourceSlots)
@@ -6868,6 +6931,7 @@ public class BattleManager : MonoBehaviour
                 if (allowsContinuousTrigger)
                 {
                     Debug.Log($"🔒 Hand reveal blocked by {auraData.cardName}");
+                    auraCardName = auraData.cardName;
                     return true;
                 }
             }
@@ -7538,6 +7602,16 @@ public class BattleManager : MonoBehaviour
         if (battleLog.Count >= battleLogLimit)
             battleLog.RemoveAt(0);
         battleLog.Add($"T{turnCount}: {entry}");
+
+        if (enableSkillCornerNotification)
+        {
+            bool isSkillEvent = entry.Contains("✨") || entry.Contains("🚫");
+            if (isSkillEvent)
+            {
+                ShowSkillCornerNotification(entry);
+            }
+        }
+
         UpdateLogText();
     }
 
@@ -7545,6 +7619,158 @@ public class BattleManager : MonoBehaviour
     {
         if (logText == null) return;
         logText.text = string.Join("\n", battleLog);
+    }
+
+    void SetupSkillToastUI()
+    {
+        if (!enableSkillCornerNotification) return;
+
+        if (skillToastRoot != null && skillToastText != null)
+        {
+            skillToastCanvasGroup = skillToastRoot.GetComponent<CanvasGroup>();
+            if (skillToastCanvasGroup == null) skillToastCanvasGroup = skillToastRoot.gameObject.AddComponent<CanvasGroup>();
+            skillToastCanvasGroup.alpha = 0f;
+            skillToastRoot.gameObject.SetActive(false);
+            return;
+        }
+
+        if (!autoCreateSkillToastUI) return;
+
+        Canvas targetCanvas = FindObjectOfType<Canvas>();
+        if (targetCanvas == null)
+        {
+            Debug.LogWarning("⚠️ Skill toast UI: no Canvas found");
+            return;
+        }
+
+        GameObject rootObj = new GameObject("SkillToastCorner", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+        rootObj.transform.SetParent(targetCanvas.transform, false);
+        skillToastRoot = rootObj.GetComponent<RectTransform>();
+
+        skillToastRoot.anchorMin = new Vector2(1f, 1f);
+        skillToastRoot.anchorMax = new Vector2(1f, 1f);
+        skillToastRoot.pivot = new Vector2(1f, 1f);
+        skillToastRoot.anchoredPosition = new Vector2(-24f, -24f);
+        skillToastRoot.sizeDelta = new Vector2(skillToastWidth, skillToastMinHeight);
+
+        Image bg = rootObj.GetComponent<Image>();
+        bg.color = new Color(0f, 0f, 0f, skillToastBackgroundOpacity);
+
+        GameObject textObj = new GameObject("SkillToastText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObj.transform.SetParent(rootObj.transform, false);
+        RectTransform textRt = textObj.GetComponent<RectTransform>();
+        textRt.anchorMin = new Vector2(0f, 0f);
+        textRt.anchorMax = new Vector2(1f, 1f);
+        textRt.offsetMin = new Vector2(14f, 8f);
+        textRt.offsetMax = new Vector2(-14f, -8f);
+
+        skillToastText = textObj.GetComponent<TextMeshProUGUI>();
+        skillToastText.text = string.Empty;
+        skillToastText.fontSize = 26f;
+        skillToastText.alignment = TextAlignmentOptions.MidlineLeft;
+        skillToastText.color = Color.white;
+        skillToastText.enableWordWrapping = true;
+        skillToastText.overflowMode = TextOverflowModes.Overflow;
+
+        skillToastCanvasGroup = rootObj.GetComponent<CanvasGroup>();
+        skillToastCanvasGroup.alpha = 0f;
+        rootObj.SetActive(false);
+    }
+
+    void ShowSkillCornerNotification(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message)) return;
+        if (skillToastRoot == null || skillToastText == null)
+        {
+            SetupSkillToastUI();
+        }
+
+        if (skillToastRoot == null || skillToastText == null) return;
+
+        bool isPriorityMessage = message.Contains("🚫");
+        if (isPriorityMessage)
+        {
+            skillToastPriorityQueue.Enqueue(message);
+        }
+        else
+        {
+            skillToastQueue.Enqueue(message);
+        }
+
+        if (skillToastCoroutine == null)
+        {
+            skillToastCoroutine = StartCoroutine(ProcessSkillCornerNotificationQueue());
+        }
+    }
+
+    IEnumerator ProcessSkillCornerNotificationQueue()
+    {
+        while (skillToastPriorityQueue.Count > 0 || skillToastQueue.Count > 0)
+        {
+            string nextMessage = skillToastPriorityQueue.Count > 0
+                ? skillToastPriorityQueue.Dequeue()
+                : skillToastQueue.Dequeue();
+
+            yield return StartCoroutine(ShowSkillCornerNotificationCoroutine(nextMessage));
+        }
+
+        skillToastCoroutine = null;
+    }
+
+    IEnumerator ShowSkillCornerNotificationCoroutine(string message)
+    {
+        if (skillToastRoot == null || skillToastText == null) yield break;
+
+        if (skillToastCanvasGroup == null)
+        {
+            skillToastCanvasGroup = skillToastRoot.GetComponent<CanvasGroup>();
+            if (skillToastCanvasGroup == null) skillToastCanvasGroup = skillToastRoot.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        skillToastText.text = message;
+        ResizeSkillToastToFitMessage(message);
+        skillToastRoot.gameObject.SetActive(true);
+        skillToastCanvasGroup.alpha = 1f;
+
+        float hold = Mathf.Max(0.2f, skillToastDuration);
+        yield return new WaitForSeconds(hold);
+
+        const float fadeDuration = 0.22f;
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / fadeDuration);
+            skillToastCanvasGroup.alpha = 1f - t;
+            yield return null;
+        }
+
+        skillToastCanvasGroup.alpha = 0f;
+        skillToastRoot.gameObject.SetActive(false);
+    }
+
+    void ResizeSkillToastToFitMessage(string message)
+    {
+        if (skillToastRoot == null || skillToastText == null) return;
+
+        float width = Mathf.Max(280f, skillToastWidth);
+        skillToastRoot.sizeDelta = new Vector2(width, skillToastRoot.sizeDelta.y);
+
+        RectTransform textRt = skillToastText.rectTransform;
+        float horizontalPadding = 28f;
+        float verticalPadding = 16f;
+        float availableTextWidth = Mathf.Max(120f, width - horizontalPadding);
+
+        float preferredHeight = skillToastText.GetPreferredValues(message, availableTextWidth, 10000f).y;
+        float targetHeight = preferredHeight + verticalPadding;
+        targetHeight = Mathf.Clamp(targetHeight, skillToastMinHeight, skillToastMaxHeight);
+
+        skillToastRoot.sizeDelta = new Vector2(width, targetHeight);
+
+        textRt.anchorMin = new Vector2(0f, 0f);
+        textRt.anchorMax = new Vector2(1f, 1f);
+        textRt.offsetMin = new Vector2(14f, 8f);
+        textRt.offsetMax = new Vector2(-14f, -8f);
     }
 
     public void RefreshPlayerGraveyardUI()

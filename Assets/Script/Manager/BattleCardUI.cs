@@ -150,8 +150,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             {
                 shouldHighlight = true;
             }
-            // Monster สว่างเมื่อยังโจมตีไม่ได้ (และเป็นเทิร์นผู้เล่น)
-            else if (_cardData.type == CardType.Monster && BattleManager.Instance != null)
+            // Monster/Token: สว่างเมื่อโจมตีได้, มืดเมื่อยังโจมตีไม่ได้ (และเป็นเทิร์นผู้เล่น)
+            else if ((_cardData.type == CardType.Monster || _cardData.type == CardType.Token) && BattleManager.Instance != null)
             {
                 bool isPlayerTurn = BattleManager.Instance.state == BattleState.PLAYERTURN;
                 if (isPlayerTurn && CanAttackNow())
