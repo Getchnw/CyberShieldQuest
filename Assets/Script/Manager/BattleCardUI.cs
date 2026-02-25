@@ -696,10 +696,14 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
         if (BattleManager.Instance != null && transform.parent == BattleManager.Instance.enemyHandArea)
             return;
+
+        // เปิดให้ raycast อีกครั้งเสมอ
+        // (กรณีลากลงช่องแล้วถูก summon ทันที isOnField จะเป็น true ในเฟรมนี้)
+        canvasGroup.blocksRaycasts = true;
+
         if (isOnField) return;
 
-        // เปิดให้ raycast อีกครั้ง แล้วรอ 1 เฟรมให้ OnDrop ทำงานก่อนค่อยตัดสินใจ
-        canvasGroup.blocksRaycasts = true;
+        // รอ 1 เฟรมให้ OnDrop ทำงานก่อนค่อยตัดสินใจตำแหน่งสุดท้าย
         StartCoroutine(HandleEndDragAfterDrop());
     }
 
