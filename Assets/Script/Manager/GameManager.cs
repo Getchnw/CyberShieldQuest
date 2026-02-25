@@ -464,12 +464,21 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// บันทึกว่าผ่านด่าน Stage แล้ว และเก็บสถิติ
     /// </summary>
-    public void CompleteStage(string stageID, int starsEarned, BattleStatistics stats = null)
+    public void CompleteStage(string stageID, int starsEarned, BattleStatistics stats = null, List<bool> missionResults = null)
     {
         if (CurrentGameData == null) return;
 
         var progressList = CurrentGameData.stageProgress;
         PlayerStageProgress stageProgress = progressList.FirstOrDefault(s => s.stageID == stageID);
+
+        int CalculateStarCountFromMissions(List<bool> completedMissions, int fallbackStars)
+        {
+            if (completedMissions == null || completedMissions.Count == 0)
+                return Mathf.Clamp(fallbackStars, 0, 3);
+
+            int trueCount = completedMissions.Count(done => done);
+            return Mathf.Clamp(trueCount, 0, 3);
+        }
 
         if (stageProgress != null)
         {
@@ -477,11 +486,10 @@ public class GameManager : MonoBehaviour
             stageProgress.isCompleted = true;
             stageProgress.playCount++;
             stageProgress.lastPlayedDate = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            
-            if (starsEarned > stageProgress.starsEarned)
-            {
-                stageProgress.starsEarned = starsEarned;
-            }
+
+            // เก็บผล mission ของ "รอบล่าสุด" โดยตรง
+            stageProgress.completedStarMissions = missionResults != null ? new List<bool>(missionResults) : new List<bool>();
+            stageProgress.starsEarned = CalculateStarCountFromMissions(stageProgress.completedStarMissions, starsEarned);
 
             // อัปเดต Records
             if (stats != null)
@@ -500,12 +508,16 @@ public class GameManager : MonoBehaviour
             {
                 stageID = stageID,
                 isCompleted = true,
-                starsEarned = starsEarned,
+                starsEarned = 0,
+                completedStarMissions = missionResults != null ? new List<bool>(missionResults) : new List<bool>(),
                 playCount = 1,
                 lastPlayedDate = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 bestTurns = stats != null ? stats.turnsPlayed : 0,
                 highestDamage = stats != null ? stats.totalDamageDealt : 0
             });
+
+            PlayerStageProgress created = progressList[progressList.Count - 1];
+            created.starsEarned = CalculateStarCountFromMissions(created.completedStarMissions, starsEarned);
         }
 
         SaveCurrentGame(); // บันทึกทันที

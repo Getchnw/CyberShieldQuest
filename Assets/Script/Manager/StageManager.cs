@@ -298,8 +298,14 @@ public class StageManager : MonoBehaviour
             var progress = GameManager.Instance.GetStageProgress(stage.stageID);
             if (progress != null)
             {
-                Debug.Log($"Stage {stage.stageID}: {progress.starsEarned}/3 Stars");
-                stage.UpdateStarDisplay(progress.starsEarned);
+                int earnedStars = progress.starsEarned;
+                if (progress.completedStarMissions != null && progress.completedStarMissions.Count > 0)
+                {
+                    earnedStars = Mathf.Clamp(progress.completedStarMissions.FindAll(done => done).Count, 0, 3);
+                }
+
+                Debug.Log($"Stage {stage.stageID}: {earnedStars}/3 Stars");
+                stage.UpdateStarDisplay(earnedStars);
             }
             else
             {

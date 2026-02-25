@@ -7,6 +7,24 @@ using UnityEngine.Localization.Settings;
 
 public class StageDetailPopup : MonoBehaviour
 {
+    [System.Serializable]
+    private class RuntimeStageConditionPayload
+    {
+        public string stageID;
+        public List<RuntimeStarConditionData> conditions = new List<RuntimeStarConditionData>();
+    }
+
+    [System.Serializable]
+    private class RuntimeStarConditionData
+    {
+        public StarCondition.ConditionType type;
+        public int intValue;
+        public float floatValue;
+        public MainCategory category;
+        public CardType cardType;
+        public SubCategory subCategory;
+    }
+
     [Header("UI Elements")]
     public TextMeshProUGUI titleText;
     public Image botImage;
@@ -82,6 +100,7 @@ public class StageDetailPopup : MonoBehaviour
         // ดึงข้อมูล progress เพื่อเช็คว่าดาวไหนได้แล้ว
         var progress = GameManager.Instance != null ? GameManager.Instance.GetStageProgress(data.stageID) : null;
         int starsEarned = (progress != null && progress.isCompleted) ? progress.starsEarned : 0;
+        List<bool> completedMissions = progress != null ? progress.completedStarMissions : null;
 
         for (int i = 0; i < starCriteriaTexts.Length; i++)
         {
@@ -90,8 +109,8 @@ public class StageDetailPopup : MonoBehaviour
                 // Thai
                 if (i < data.starConditions.Count)
                 {
-                    // เช็คว่าดาวนี้ได้แล้วหรือยัง (star index 0, 1, 2 = ดาว 1, 2, 3)
-                    bool starCompleted = (i < starsEarned);
+                    bool hasMissionState = completedMissions != null && i < completedMissions.Count;
+                    bool starCompleted = hasMissionState ? completedMissions[i] : (i < starsEarned);
 
                     if (starCompleted)
                     {
@@ -117,8 +136,8 @@ public class StageDetailPopup : MonoBehaviour
                 // Englih
                 if (i < data.starConditions.Count)
                 {
-                    // เช็คว่าดาวนี้ได้แล้วหรือยัง (star index 0, 1, 2 = ดาว 1, 2, 3)
-                    bool starCompleted = (i < starsEarned);
+                    bool hasMissionState = completedMissions != null && i < completedMissions.Count;
+                    bool starCompleted = hasMissionState ? completedMissions[i] : (i < starsEarned);
 
                     if (starCompleted)
                     {
@@ -211,6 +230,34 @@ public class StageDetailPopup : MonoBehaviour
         // บันทึก Stage ID ลงหน่วยความจำ (เผื่อระบบ Battle ต้องอ่าน ID นี้)
         Debug.Log($"✅ กำลังเริ่มด่าน: {currentStageData.stageID}");
         PlayerPrefs.SetString("CurrentStageID", currentStageData.stageID);
+
+        // บันทึก mission condition ของด่านนี้ เพื่อให้ Battle scene คำนวณผลรายข้อได้ถูกต้อง
+        RuntimeStageConditionPayload payload = new RuntimeStageConditionPayload
+        {
+            stageID = currentStageData.stageID,
+            conditions = new List<RuntimeStarConditionData>()
+        };
+
+        if (currentStageData.starConditions != null)
+        {
+            foreach (var condition in currentStageData.starConditions)
+            {
+                if (condition == null) continue;
+
+                payload.conditions.Add(new RuntimeStarConditionData
+                {
+                    type = condition.type,
+                    intValue = condition.intValue,
+                    floatValue = condition.floatValue,
+                    category = condition.category,
+                    cardType = condition.cardType,
+                    subCategory = condition.subCategory
+                });
+            }
+        }
+
+        PlayerPrefs.SetString("CurrentStageConditionsJson", JsonUtility.ToJson(payload));
+        PlayerPrefs.Save();
 
         // ตรวจว่า Scene 'Battle' อยู่ใน Build Settings หรือไม่
         bool canLoad = Application.CanStreamedLevelBeLoaded("Battle");

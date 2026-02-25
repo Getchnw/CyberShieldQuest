@@ -3672,14 +3672,15 @@ public class BattleManager : MonoBehaviour
             string currentStageID = PlayerPrefs.GetString("CurrentStageID", "");
             if (!string.IsNullOrEmpty(currentStageID))
             {
-                int starsEarned = CalculateStarsForCurrentStage(currentBattleStats, currentStageID);
+                List<bool> missionResults = CalculateStarMissionResultsForCurrentStage(currentBattleStats, currentStageID);
+                int starsEarned = Mathf.Clamp(missionResults.Count(done => done), 0, 3);
                 Debug.Log($"Earned {starsEarned}/3 stars for stage {currentStageID}");
                 Debug.Log($"[DEBUG] Stats - Victory: {currentBattleStats.victory}, Turns: {currentBattleStats.turnsPlayed}, Spells: {currentBattleStats.spellsCast}");
 
                 // บันทึกลง GameManager
                 if (GameManager.Instance != null)
                 {
-                    GameManager.Instance.CompleteStage(currentStageID, starsEarned, currentBattleStats);
+                    GameManager.Instance.CompleteStage(currentStageID, starsEarned, currentBattleStats, missionResults);
                 }
             }
         }
@@ -7613,13 +7614,21 @@ public class BattleManager : MonoBehaviour
             battleLog.RemoveAt(0);
         battleLog.Add($"T{turnCount}: {entry}");
 
-        if (enableSkillCornerNotification)
+        bool isSkillEvent =
+            entry.Contains("✨") ||
+            entry.Contains("🚫") ||
+            entry.Contains("activated [") ||
+            entry.Contains("casts ") ||
+            entry.Contains("gained Bypass") ||
+            entry.Contains("must intercept") ||
+            entry.Contains("cannot intercept") ||
+            entry.Contains("lost its category") ||
+            entry.Contains("is controlled") ||
+            entry.Contains("no longer controlled") ||
+            entry.Contains("returned ") && entry.Contains(" from graveyard");
+        if (isSkillEvent)
         {
-            bool isSkillEvent = entry.Contains("✨") || entry.Contains("🚫");
-            if (isSkillEvent)
-            {
-                ShowSkillCornerNotification(entry);
-            }
+            ShowSkillCornerNotification(entry);
         }
 
         UpdateLogText();
@@ -7633,20 +7642,30 @@ public class BattleManager : MonoBehaviour
 
     void SetupSkillToastUI()
     {
-        if (!enableSkillCornerNotification) return;
-
         if (skillToastRoot != null && skillToastText != null)
         {
             skillToastCanvasGroup = skillToastRoot.GetComponent<CanvasGroup>();
             if (skillToastCanvasGroup == null) skillToastCanvasGroup = skillToastRoot.gameObject.AddComponent<CanvasGroup>();
             skillToastCanvasGroup.alpha = 0f;
             skillToastRoot.gameObject.SetActive(false);
+            skillToastRoot.SetAsLastSibling();
             return;
         }
 
-        if (!autoCreateSkillToastUI) return;
+        Canvas targetCanvas = null;
 
-        Canvas targetCanvas = FindObjectOfType<Canvas>();
+        if (logText != null)
+            targetCanvas = logText.GetComponentInParent<Canvas>();
+
+        if (targetCanvas == null && logPanel != null)
+            targetCanvas = logPanel.GetComponentInParent<Canvas>();
+
+        if (targetCanvas == null && pausePanel != null)
+            targetCanvas = pausePanel.GetComponentInParent<Canvas>();
+
+        if (targetCanvas == null)
+            targetCanvas = FindObjectOfType<Canvas>();
+
         if (targetCanvas == null)
         {
             Debug.LogWarning("⚠️ Skill toast UI: no Canvas found");
@@ -7662,6 +7681,7 @@ public class BattleManager : MonoBehaviour
         skillToastRoot.pivot = new Vector2(1f, 1f);
         skillToastRoot.anchoredPosition = new Vector2(-24f, -24f);
         skillToastRoot.sizeDelta = new Vector2(skillToastWidth, skillToastMinHeight);
+        skillToastRoot.SetAsLastSibling();
 
         Image bg = rootObj.GetComponent<Image>();
         bg.color = new Color(0f, 0f, 0f, skillToastBackgroundOpacity);
@@ -7690,6 +7710,11 @@ public class BattleManager : MonoBehaviour
     void ShowSkillCornerNotification(string message)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
+
+        // ถ้าเคยปิดไว้ใน Inspector ให้เปิดกลับอัตโนมัติเมื่อมี skill event จริง
+        enableSkillCornerNotification = true;
+        autoCreateSkillToastUI = true;
+
         if (skillToastRoot == null || skillToastText == null)
         {
             SetupSkillToastUI();
@@ -7739,17 +7764,18 @@ public class BattleManager : MonoBehaviour
 
         skillToastText.text = message;
         ResizeSkillToastToFitMessage(message);
+        skillToastRoot.SetAsLastSibling();
         skillToastRoot.gameObject.SetActive(true);
         skillToastCanvasGroup.alpha = 1f;
 
         float hold = Mathf.Max(0.2f, skillToastDuration);
-        yield return new WaitForSeconds(hold);
+        yield return new WaitForSecondsRealtime(hold);
 
         const float fadeDuration = 0.22f;
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(elapsed / fadeDuration);
             skillToastCanvasGroup.alpha = 1f - t;
             yield return null;
@@ -7896,6 +7922,7 @@ public class BattleManager : MonoBehaviour
                 if (ui != null)
                 {
                     ui.Setup(card);
+                    ui.enabled = false; // โหมด preview: ห้ามลาก/เล่นการ์ดจาก panel
 
                     // ตั้ง CanvasGroup ให้คลิกได้แน่นอน
                     var cg = ui.GetComponent<CanvasGroup>();
@@ -8023,6 +8050,7 @@ public class BattleManager : MonoBehaviour
             if (ui != null)
             {
                 ui.Setup(card);
+                ui.enabled = false; // โหมดเลือกจากสุสาน: ใช้ EventTrigger เท่านั้น
 
                 var cg = ui.GetComponent<CanvasGroup>();
                 if (cg == null) cg = ui.gameObject.AddComponent<CanvasGroup>();
@@ -8566,38 +8594,79 @@ public class BattleManager : MonoBehaviour
         availableTargets.Clear();
     }
 
-    /// <summary>
-    /// คำนวณดาวจาก BattleStatistics สำหรับ Stage ปัจจุบัน
-    /// </summary>
-    private int CalculateStarsForCurrentStage(BattleStatistics stats, string stageID)
+    [System.Serializable]
+    private class RuntimeStageConditionPayload
     {
-        // ค้นหา StageData จาก StageManager ที่อยู่ใน Scene Stage Selection
-        // เนื่องจากอยู่คนละ Scene ต้องใช้ข้อมูลที่เก็บไว้หรือ Load จาก Resources
+        public string stageID;
+        public List<RuntimeStarConditionData> conditions = new List<RuntimeStarConditionData>();
+    }
 
-        // วิธีที่ 1: ใช้ข้อมูลจาก GameManager (ถ้ามี)
-        // วิธีที่ 2: ใช้ค่าเริ่มต้น เช่น ชนะ = 1 ดาว, เงื่อนไขเพิ่มเติม = +1, +1
+    [System.Serializable]
+    private class RuntimeStarConditionData
+    {
+        public StarCondition.ConditionType type;
+        public int intValue;
+        public float floatValue;
+        public MainCategory category;
+        public CardType cardType;
+        public SubCategory subCategory;
+    }
 
-        // ตอนนี้ใช้วิธีง่ายๆ ก่อน: ให้ตรวจสอบ Achievement flags
-        int stars = 0;
+    /// <summary>
+    /// คำนวณผล mission รายข้อของ Stage ปัจจุบัน
+    /// </summary>
+    private List<bool> CalculateStarMissionResultsForCurrentStage(BattleStatistics stats, string stageID)
+    {
+        List<bool> missionResults = new List<bool>();
 
-        // ดาวที่ 1: ชนะ
-        if (stats.victory)
-            stars++;
+        if (stats == null)
+            return missionResults;
 
-        // ดาวที่ 2: เทิร์นน้อย (ต้องชนะภายใน 12 เทิร์น)
-        if (stats.victory && stats.turnsPlayed <= 12)
-            stars++;
+        string payloadJson = PlayerPrefs.GetString("CurrentStageConditionsJson", "");
+        RuntimeStageConditionPayload payload = null;
 
-        // ดาวที่ 3: ใช้ Spell อย่างน้อย 3 ครั้ง
-        if (stats.victory && stats.spellsCast >= 3)
-            stars++;
+        if (!string.IsNullOrEmpty(payloadJson))
+        {
+            payload = JsonUtility.FromJson<RuntimeStageConditionPayload>(payloadJson);
+        }
 
-        Debug.Log($"[STARS] Condition 1 (Victory): {stats.victory}");
-        Debug.Log($"[STARS] Condition 2 (Turns <= 12): {(stats.victory && stats.turnsPlayed <= 12)} (Turns: {stats.turnsPlayed})");
-        Debug.Log($"[STARS] Condition 3 (Spells >= 3): {(stats.victory && stats.spellsCast >= 3)} (Spells: {stats.spellsCast})");
-        Debug.Log($"[STARS] Total: {stars}/3 Stars");
+        bool hasValidPayload = payload != null
+            && payload.conditions != null
+            && payload.conditions.Count > 0
+            && payload.stageID == stageID;
 
-        return Mathf.Clamp(stars, 0, 3);
+        if (hasValidPayload)
+        {
+            for (int i = 0; i < payload.conditions.Count; i++)
+            {
+                RuntimeStarConditionData runtimeCondition = payload.conditions[i];
+                StarCondition condition = new StarCondition
+                {
+                    type = runtimeCondition.type,
+                    intValue = runtimeCondition.intValue,
+                    floatValue = runtimeCondition.floatValue,
+                    category = runtimeCondition.category,
+                    cardType = runtimeCondition.cardType,
+                    subCategory = runtimeCondition.subCategory
+                };
+
+                bool passed = condition.CheckCondition(stats);
+                missionResults.Add(passed);
+                Debug.Log($"[STARS] Mission {i + 1}: {passed} ({runtimeCondition.type})");
+            }
+        }
+        else
+        {
+            // Fallback สำหรับข้อมูลเก่าหรือกรณี payload ไม่พร้อม
+            missionResults.Add(stats.victory);
+            missionResults.Add(stats.victory && stats.turnsPlayed <= 12);
+            missionResults.Add(stats.victory && stats.spellsCast >= 3);
+
+            Debug.LogWarning("[STARS] Stage mission payload not found or mismatched, using legacy fallback conditions.");
+        }
+
+        Debug.Log($"[STARS] Total by mission completion: {missionResults.Count(done => done)}/{Mathf.Min(missionResults.Count, 3)}");
+        return missionResults;
     }
 
     /// <summary>ตรวจสอบว่าผู้โจมตีสามารถข้ามการกันของโล่ได้หรือไม่</summary>

@@ -152,6 +152,7 @@ public class PlayerStageProgress
     public string stageID;        // เปลี่ยนเป็น string เพื่อให้ตรงกับ StageManager (L1_A01, L2_Mix1, ฯลฯ)
     public bool isCompleted;      // ชนะหรือยัง
     public int starsEarned;       // ได้กี่ดาว (0-3)
+    public List<bool> completedStarMissions; // ผลผ่านเงื่อนไขดาวรายข้อ (index ตาม mission)
     public int bestTurns;         // Record เทิร์นที่น้อยที่สุด
     public int highestDamage;     // Record ดาเมจสูงสุด
     public int playCount;         // เล่นกี่รอบแล้ว
