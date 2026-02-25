@@ -7266,6 +7266,10 @@ public class BattleManager : MonoBehaviour
     {
         var graveyard = isPlayer ? playerGraveyard : enemyGraveyard;
         if (!HasEquipInGraveyard(isPlayer)) yield break;
+        List<CardData> equipCards = graveyard
+            .Where(card => card != null && card.type == CardType.EquipSpell)
+            .ToList();
+        if (equipCards.Count == 0) yield break;
 
         GameObject panel = isPlayer ? playerGraveyardPanel : enemyGraveyardPanel;
         Transform root = isPlayer ? playerGraveyardListRoot : enemyGraveyardListRoot;
@@ -7276,7 +7280,7 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        Debug.Log($"🪦 Opening graveyard selection for {(isPlayer ? "Player" : "Enemy")} - has {graveyard.Count} cards");
+        Debug.Log($"🪦 Opening graveyard selection for {(isPlayer ? "Player" : "Enemy")} - equips={equipCards.Count}, total={graveyard.Count}");
 
         isChoosingGraveyardEquip = true;
         graveyardEquipConfirmed = false;
@@ -7285,7 +7289,7 @@ public class BattleManager : MonoBehaviour
         panel.SetActive(true);
         ClearListRoot(root);
         SetupGraveyardScroll(panel, root);
-        PopulateGraveyardListForSelection(root, graveyard);
+        PopulateGraveyardListForSelection(root, equipCards);
 
         Debug.Log($"⏳ Waiting for player to right-click a card...");
         while (!graveyardEquipConfirmed)
@@ -7298,6 +7302,12 @@ public class BattleManager : MonoBehaviour
 
         if (selectedGraveyardEquip != null)
         {
+            if (selectedGraveyardEquip.type != CardType.EquipSpell || !graveyard.Contains(selectedGraveyardEquip))
+            {
+                Debug.LogWarning($"⚠️ ReturnEquipFromGraveyard: invalid selected card ({selectedGraveyardEquip.cardName})");
+                yield break;
+            }
+
             Debug.Log($"✅ Player confirmed: {selectedGraveyardEquip.cardName}");
             Debug.Log($"📊 Graveyard before removal: {graveyard.Count} cards");
             
