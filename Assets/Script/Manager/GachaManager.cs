@@ -41,7 +41,7 @@ public class GachaManager : MonoBehaviour
 
     [Header("Reveal Experience")]
     public Sprite cardBackSprite;
-    [Range(0.1f, 0.6f)] public float revealFlipDuration = 0.24f;
+    [Range(0.1f, 0.6f)] public float revealFlipDuration = 0.4f;
     [Range(0.05f, 0.3f)] public float spawnInterval = 0.1f;
     [Range(0.2f, 1.2f)] public float revealPulseDuration = 0.45f;
     [Range(1.05f, 1.8f)] public float rareRevealScale = 1.12f;
@@ -56,8 +56,8 @@ public class GachaManager : MonoBehaviour
     [Range(8f, 38f)] public float legendaryShakeDistance = 14f;
 
     [Header("Reveal All Speed")]
-    [Range(0.2f, 1.4f)] public float revealAllFlipDurationMultiplier = 1.05f;
-    [Range(0f, 0.35f)] public float revealAllCardInterval = 0.18f;
+    [Range(0.2f, 1.4f)] public float revealAllFlipDurationMultiplier = 0.4f;
+    [Range(0f, 0.35f)] public float revealAllCardInterval = 0.1f;
     public bool revealAllSkipRarityCinematics = false;
 
     [Header("Facedown Aura")]
