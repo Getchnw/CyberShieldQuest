@@ -380,6 +380,8 @@ public class BattleManager : MonoBehaviour
         playerFirstTurn = Random.value > 0.5f;
         Debug.Log(playerFirstTurn ? "👤 ผู้เล่นเริ่มต้น" : "🤖 บอทเริ่มต้น");
 
+        if (turnText) turnText.text = GetStartOrderMessage();
+
         UpdateUI();
 
         // 3. เตรียมการจั่วเปิดเกม
@@ -455,7 +457,7 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        if (turnText) turnText.text = "MULLIGAN? Click cards to swap";
+        if (turnText) turnText.text = $"{GetStartOrderMessage()}\nMULLIGAN? Click cards to swap";
         ShowPlayerMulliganButton();
         ShowPlayerMulliganConfirm();
 
@@ -595,10 +597,15 @@ public class BattleManager : MonoBehaviour
             playerMulliganButton.onClick.AddListener(OnPlayerMulliganOne); // เปลี่ยนเฉพาะใบที่เลือก
             if (mulliganText) mulliganText.text = "Mulligan Left: " + playerMulliganLeft;
         }
-        if (mulliganHintText) mulliganHintText.text = "ลากการ์ดที่ต้องการเปลี่ยนไปช่องด้านล่าง แล้วกดปุ่ม Mulligan";
+        if (mulliganHintText) mulliganHintText.text = $"{GetStartOrderMessage()}\nลากการ์ดที่ต้องการเปลี่ยนไปช่องด้านล่าง แล้วกดปุ่ม Mulligan";
 
         // 🔥 เปิด mulligan slots และ swap slots
         ShowMulliganSlots();
+    }
+
+    string GetStartOrderMessage()
+    {
+        return playerFirstTurn ? "คุณเริ่มเป็นคนแรก" : "คุณเริ่มเป็นคนที่ 2";
     }
 
     // 🔥 เปิด mulligan UI slots
@@ -1884,7 +1891,7 @@ public class BattleManager : MonoBehaviour
         }
 
         int attackDamage = attacker.GetModifiedATK(isPlayerAttack: true); // 🔥 ใช้ ModifiedATK แทน
-        AddBattleLog($"Player attacks with {attacker.GetData().cardName} (ATK:{attackDamage}) [{attacker.attacksThisTurn}/{attacker.GetMaxAttacksPerTurn()}]");
+        AddBattleLog($"⚔️ ผู้เล่นโจมตี: {attacker.GetData().cardName} (ATK:{attackDamage}) [{attacker.attacksThisTurn}/{attacker.GetMaxAttacksPerTurn()}]");
 
         StartCoroutine(ProcessPlayerAttack(attacker));
     }
@@ -2040,7 +2047,7 @@ public class BattleManager : MonoBehaviour
             TryResolveMarkedInterceptPunish(attacker, botShield, attackerIsPlayer: true);
 
             Debug.Log($"🛡️ บอทกันด้วย {botShield.GetData().cardName} ({botShield.GetData().subCategory})");
-            AddBattleLog($"Bot blocks with {botShield.GetData().cardName} ({botShield.GetData().subCategory})");
+            AddBattleLog($"🛡️ บอทใช้ {botShield.GetData().cardName} กันการโจมตีจาก {attacker.GetData().cardName}");
             if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Block");
 
             // 🔥 ตรวจสอบ null ก่อนเช็คประเภท
@@ -2064,7 +2071,7 @@ public class BattleManager : MonoBehaviour
 
                 // ประเภทตรง → ทำลายทั้งคู่
                 ShowDamagePopupString("Double KO!", attacker.transform);
-                AddBattleLog($"  SubCategory match ({shieldData.subCategory}) - Both destroyed");
+                AddBattleLog($"✅ กันได้: ประเภทตรงกัน ({attackerData.subCategory} = {shieldData.subCategory}) → ทั้งคู่ถูกทำลาย");
                 DestroyCardToGraveyard(attacker);
                 DestroyCardToGraveyard(botShield);
                 Debug.Log($"✅ บอทกันได้! ประเภทตรงกัน ({shieldData.subCategory}) - ทั้งคู่ทำลาย ไม่เสีย HP");
@@ -2072,7 +2079,7 @@ public class BattleManager : MonoBehaviour
             else
             {
                 // ประเภทต่างกัน → ทำลายเฉพาะโล่
-                AddBattleLog($"  SubCategory mismatch ({attackerData.subCategory} vs {shieldData.subCategory}) - Shield broken, {damage} damage passes");
+                AddBattleLog($"✅ กันได้: ประเภทไม่ตรง ({attackerData.subCategory} ≠ {shieldData.subCategory}) → โล่แตก แต่ป้องกันดาเมจได้");
                 ShowDamagePopupString("Shield Break!", botShield.transform);
                 DestroyCardToGraveyard(botShield);
                 Debug.Log($"✅ บอทกันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก ไม่เสีย HP");
@@ -2084,6 +2091,7 @@ public class BattleManager : MonoBehaviour
         else
         {
             Debug.Log($"💥 ไม่มีโล่ -> บอทรับดาเมจ {damage}");
+            AddBattleLog($"❌ กันไม่ได้: บอทไม่มีโล่ที่ใช้กันได้ → โดนตรง {damage} ดาเมจ");
             EnemyTakeDamage(damage);
 
             // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ) (รอให้เสร็จก่อน)
@@ -2503,7 +2511,7 @@ public class BattleManager : MonoBehaviour
                             TryResolveMarkedInterceptPunish(monster, forcedShield, attackerIsPlayer: false);
 
                             Debug.Log($"🛡️ {forcedShield.GetData().cardName} is forced to intercept bot's attack!");
-                            AddBattleLog($"{forcedShield.GetData().cardName} forced to block {monster.GetData().cardName}");
+                            AddBattleLog($"🛡️ ผู้เล่นใช้ {forcedShield.GetData().cardName} กันการโจมตีจาก {monster.GetData().cardName} (บังคับกัน)");
 
                             // ประมวลผลการกัน
                             CardData attackerData = monster.GetData();
@@ -2519,7 +2527,7 @@ public class BattleManager : MonoBehaviour
 
                                 // ประเภทตรง → ทำลายทั้งคู่
                                 ShowDamagePopupString("Double KO!", monster.transform);
-                                AddBattleLog($"  SubCategory match ({shieldData.subCategory}) - Both destroyed");
+                                AddBattleLog($"✅ กันได้: ประเภทตรงกัน ({attackerData.subCategory} = {shieldData.subCategory}) → ทั้งคู่ถูกทำลาย");
                                 DestroyCardToGraveyard(monster);
                                 DestroyCardToGraveyard(forcedShield);
                                 Debug.Log($"✅ กันได้! ประเภทตรงกัน ({shieldData.subCategory}) - ทั้งคู่ทำลาย");
@@ -2528,7 +2536,7 @@ public class BattleManager : MonoBehaviour
                             {
                                 // ประเภทต่าง → โล่แตก แต่ผู้เล่นไม่เสีย HP
                                 ShowDamagePopupString("Shield Break!", forcedShield.transform);
-                                AddBattleLog($"  SubCategory mismatch ({attackerData.subCategory} vs {shieldData.subCategory}) - Shield broken");
+                                AddBattleLog($"✅ กันได้: ประเภทไม่ตรง ({attackerData.subCategory} ≠ {shieldData.subCategory}) → โล่แตก แต่ป้องกันดาเมจได้");
                                 DestroyCardToGraveyard(forcedShield);
                                 Debug.Log($"✅ กันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก ไม่เสีย HP");
                             }
@@ -2568,6 +2576,7 @@ public class BattleManager : MonoBehaviour
                         if (monster != null)
                         {
                             int botDamage = monster.GetModifiedATK(isPlayerAttack: false); // 🔥 ใช้ ModifiedATK
+                            AddBattleLog($"❌ กันไม่ได้: ผู้เล่นไม่มีโล่/ไม่ได้กัน → โดนตรง {botDamage} ดาเมจจาก {monster.GetData().cardName}");
                             PlayerTakeDamage(botDamage);
 
                             // 🔥 ทริกเกอร์ OnStrikeHit Effects (หลังโจมตีสำเร็จ - ไม่ถูกกัน)
@@ -2650,7 +2659,9 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        PlayerTakeDamage(currentAttackerBot.GetData().atk);
+        int incomingDamage = currentAttackerBot.GetModifiedATK(isPlayerAttack: false);
+        AddBattleLog($"❌ ผู้เล่นเลือกไม่กัน: โดนโจมตีจาก {currentAttackerBot.GetData().cardName} โดยตรง {incomingDamage} ดาเมจ");
+        PlayerTakeDamage(incomingDamage);
 
         // 🔥 ทริกเกอร์ OnStrikeHit Effects สำหรับบอท (หลังโจมตีสำเร็จ - ผู้เล่นไม่กัน)
         StartCoroutine(ResolveEffects(currentAttackerBot, EffectTrigger.OnStrikeHit, isPlayer: false));
@@ -2712,6 +2723,7 @@ public class BattleManager : MonoBehaviour
         TryResolveMarkedInterceptPunish(currentAttackerBot, myShield, attackerIsPlayer: false);
 
         Debug.Log($"🛡️ ตรวจสอบการกัน: โจมตี={attackerData.cardName} ({attackerData.subCategory}), โล่={shieldData.cardName} ({shieldData.subCategory})");
+        AddBattleLog($"🛡️ ผู้เล่นใช้ {shieldData.cardName} กันการโจมตีจาก {attackerData.cardName}");
 
         // 📊 บันทึกสถิติ: การกันสำเร็จ
         currentBattleStats.interceptionsSuccessful++;
@@ -2726,6 +2738,7 @@ public class BattleManager : MonoBehaviour
             TryResolveInterceptHeal(myShield, currentAttackerBot, blockerIsPlayer: true, isTypeMatched: true);
 
             ShowDamagePopupString("Double KO!", currentAttackerBot.transform);
+            AddBattleLog($"✅ กันได้: ประเภทตรงกัน ({attackerData.subCategory} = {shieldData.subCategory}) → ทั้งคู่ถูกทำลาย");
             DestroyCardToGraveyard(currentAttackerBot);
             DestroyCardToGraveyard(myShield);
             Debug.Log($"✅ กันได้! ประเภทตรงกัน ({attackerData.subCategory}) - ทั้งคู่ทำลาย ไม่เสีย HP");
@@ -2734,6 +2747,7 @@ public class BattleManager : MonoBehaviour
         {
             ShowDamagePopupString("Shield Break!", myShield.transform);
             DestroyCardToGraveyard(myShield);
+            AddBattleLog($"✅ กันได้: ประเภทไม่ตรง ({attackerData.subCategory} ≠ {shieldData.subCategory}) → โล่แตก แต่ป้องกันดาเมจได้");
 
             // 🔥 ประเภทไม่ตรง → โล่แตก แต่ไม่เสีย HP (ปกป้องสำเร็จ)
             Debug.Log($"✅ กันได้! ประเภทต่างกัน ({attackerData.subCategory} ≠ {shieldData.subCategory}) - โล่แตก แต่ไม่เสีย HP");
@@ -7617,11 +7631,18 @@ public class BattleManager : MonoBehaviour
         bool isSkillEvent =
             entry.Contains("✨") ||
             entry.Contains("🚫") ||
+            entry.Contains("⚔️") ||
+            entry.Contains("🛡️") ||
+            entry.Contains("✅") ||
+            entry.Contains("❌") ||
             entry.Contains("activated [") ||
             entry.Contains("casts ") ||
             entry.Contains("gained Bypass") ||
             entry.Contains("must intercept") ||
             entry.Contains("cannot intercept") ||
+            entry.Contains("กันได้") ||
+            entry.Contains("กันไม่ได้") ||
+            entry.Contains("เลือกไม่กัน") ||
             entry.Contains("lost its category") ||
             entry.Contains("is controlled") ||
             entry.Contains("no longer controlled") ||
