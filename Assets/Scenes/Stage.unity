@@ -1961,7 +1961,7 @@ MonoBehaviour:
       description: use spell 3 time
       description_th: "\u0E43\u0E0A\u0E49\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
         spell 3 \u0E43\u0E1A"
-      intValue: 15
+      intValue: 3
       floatValue: 0
       category: 3
       cardType: 1

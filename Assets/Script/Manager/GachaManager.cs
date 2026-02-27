@@ -28,8 +28,8 @@ public class GachaManager : MonoBehaviour
     [Header("Drop Rates")]
     public int commonRate = 60;
     public int rareRate = 30;
-    public int epicRate = 8;
-    public int legendaryRate = 2;
+    public int epicRate = 7;
+    public int legendaryRate = 3;
 
     [Header("UI References")]
     public TextMeshProUGUI goldText;

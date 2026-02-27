@@ -55,6 +55,12 @@ public class BattleManager : MonoBehaviour
     // 🔥 ปุ่มรับดาเมจ (ถ้าลืมลากใส่ เกมจะข้ามขั้นตอนถามไปเลย กันค้าง)
     public GameObject takeDamageButton;
 
+    [Header("--- Defense Choice Popup ---")]
+    public GameObject defenseChoicePanel;        // Popup ตัวเลือก: รับดาเมจ / กัน
+    public TextMeshProUGUI defenseChoiceAttackerInfoText; // ข้อความแสดงข้อมูลมอนสเตอร์ที่ตี
+    public Button defenseChoiceTakeDamageButton; // ปุ่ม "รับดาเมจ"
+    public Button defenseChoiceBlockButton;      // ปุ่ม "เลือกกัน"
+
     [Header("--- Effects ---")]
     public Transform playerSpot;
     public Transform enemySpot;
@@ -293,6 +299,25 @@ public class BattleManager : MonoBehaviour
         {
             handRevealCloseButton.onClick.RemoveAllListeners();
             handRevealCloseButton.onClick.AddListener(CloseHandRevealPanel);
+        }
+
+        // 🛡️ ผูกปุ่ม Defense Choice Popup
+        if (defenseChoiceTakeDamageButton)
+        {
+            defenseChoiceTakeDamageButton.onClick.RemoveAllListeners();
+            defenseChoiceTakeDamageButton.onClick.AddListener(OnPlayerChooseDamage);
+        }
+
+        if (defenseChoiceBlockButton)
+        {
+            defenseChoiceBlockButton.onClick.RemoveAllListeners();
+            defenseChoiceBlockButton.onClick.AddListener(OnPlayerChooseBlock);
+        }
+
+        // ปิด defenseChoicePanel ตอนเริ่มต้น
+        if (defenseChoicePanel)
+        {
+            defenseChoicePanel.SetActive(false);
         }
     }
 
@@ -2548,21 +2573,30 @@ public class BattleManager : MonoBehaviour
                         }
                     }
                     // ต้องมีโล่ และ มีปุ่ม ถึงจะหยุดถาม (ถ้าลืมลากปุ่ม จะตีเลยกันค้าง)
-                    else if (playerHasShield && takeDamageButton != null)
+                    else if (playerHasShield && (defenseChoicePanel != null || takeDamageButton != null))
                     {
                         state = BattleState.DEFENDER_CHOICE;
                         playerHasMadeChoice = false;
                         currentAttackerBot = monster; // เก็บผู้โจมตีปัจจุบัน
 
-                        // 🔥 Highlight โล่ที่สามารถกันได้
-                        HighlightInterceptableShields(monster);
-
-                        takeDamageButton.SetActive(true);
-                        if (turnText) turnText.text = "DEFEND!";
+                        // 🛡️ แสดง popup ตัวเลือก: รับดาเมจ / กัน (ใช้ defenseChoicePanel ถ้ามี)
+                        if (defenseChoicePanel != null)
+                        {
+                            ShowDefenseChoicePopup();
+                        }
+                        else if (takeDamageButton != null)
+                        {
+                            // Fallback: ใช้ takeDamageButton เก่า
+                            Debug.LogWarning("⚠️ ใช้ takeDamageButton แทน defenseChoicePanel");
+                            HighlightInterceptableShields(monster);
+                            takeDamageButton.SetActive(true);
+                            if (turnText) turnText.text = "DEFEND!";
+                        }
 
                         yield return new WaitUntil(() => playerHasMadeChoice);
 
-                        // 🔥 ปิด Highlight ทั้งหมด
+                        // 🔥 ปิด Popup และ Highlight ทั้งหมด
+                        if (defenseChoicePanel) defenseChoicePanel.SetActive(false);
                         ClearAllShieldHighlights();
 
                         if (takeDamageButton) takeDamageButton.SetActive(false);
@@ -8933,5 +8967,98 @@ public class BattleManager : MonoBehaviour
             }
             revealedEnemyCards.Clear();
         }
+    }
+
+    // ========================================
+    // 🛡️ DEFENSE CHOICE POPUP SYSTEM
+    // ========================================
+
+    /// <summary>แสดง Popup ตัวเลือก: รับดาเมจ / เลือกกัน</summary>
+    void ShowDefenseChoicePopup()
+    {
+        if (defenseChoicePanel == null)
+        {
+            Debug.LogError("❌ defenseChoicePanel is null!");
+            playerHasMadeChoice = true;
+            return;
+        }
+
+        // 🛡️ สร้างข้อมูลมอนสเตอร์ที่ตี
+        if (currentAttackerBot != null && currentAttackerBot.GetData() != null)
+        {
+            CardData attackerData = currentAttackerBot.GetData();
+            int attackerATK = currentAttackerBot.GetModifiedATK(isPlayerAttack: false);
+            
+            string infoText = $"<b>{attackerData.cardName}</b>\n";
+            infoText += $"ATK: {attackerATK} | Type: {attackerData.type}\n";
+            
+            // เพิ่มหมวดหมู่ด้วย
+            if (attackerData.mainCategory != MainCategory.General)
+            {
+                infoText += $"{attackerData.mainCategory}";
+                if (attackerData.subCategory != SubCategory.General)
+                {
+                    infoText += $" - {attackerData.subCategory}";
+                }
+                infoText += "\n";
+            }
+            
+            infoText += "\n<i>โปรดเลือก:</i>";
+
+            if (defenseChoiceAttackerInfoText)
+            {
+                defenseChoiceAttackerInfoText.text = infoText;
+                Debug.Log($"📋 Attacker Info: {attackerData.cardName} | ATK: {attackerATK} | Type: {attackerData.type}");
+            }
+
+            AddBattleLog($"🛡️ ผู้เล่นต้องเลือก: รับดาเมจ หรือเลือกกัน? ({attackerData.cardName} ATK: {attackerATK})");
+        }
+        else
+        {
+            if (defenseChoiceAttackerInfoText)
+            {
+                defenseChoiceAttackerInfoText.text = "ข้อมูลการโจมตีไม่สำเร็จ";
+            }
+        }
+
+        defenseChoicePanel.SetActive(true);
+        if (turnText) turnText.text = "DEFEND!";
+    }
+
+    /// <summary>ผู้เล่นเลือกรับดาเมจ (ไม่กัน)</summary>
+    public void OnPlayerChooseDamage()
+    {
+        if (state != BattleState.DEFENDER_CHOICE) return;
+
+        Debug.Log("❌ ผู้เล่นเลือกรับดาเมจ (ไม่กัน)");
+        AddBattleLog("❌ ผู้เล่นเลือกรับดาเมจจากการโจมตี");
+
+        // ปิด popup
+        if (defenseChoicePanel) defenseChoicePanel.SetActive(false);
+
+        // เรียก OnPlayerSkipBlock() เพื่อรับดาเมจ
+        OnPlayerSkipBlock();
+    }
+
+    /// <summary>ผู้เล่นเลือกกัน - เปิด shield selection</summary>
+    public void OnPlayerChooseBlock()
+    {
+        if (state != BattleState.DEFENDER_CHOICE) return;
+
+        Debug.Log("🛡️ ผู้เล่นเลือกกัน - เปิด shield selection");
+        AddBattleLog("🛡️ ผู้เล่นเลือกกัน - เลือก Equip Spell ที่จะใช้");
+
+        // ปิด popup เลือก
+        if (defenseChoicePanel) defenseChoicePanel.SetActive(false);
+
+        // Highlight โล่ที่สามารถกันได้
+        if (currentAttackerBot != null)
+        {
+            HighlightInterceptableShields(currentAttackerBot);
+            Debug.Log("💛 Highlight shield ที่สามารถกันได้");
+        }
+
+        // ตอนนี้รอให้ผู้เล่นเลือก shield โดยคลิกบน shield
+        // (เรียกผ่าน OnPlayerSelectBlocker เมื่อผู้เล่นคลิก)
     }
 }
