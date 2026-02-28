@@ -112,6 +112,12 @@ public class BattleManager : MonoBehaviour
     public Button sacrificeConfirmButton; // ปุ่มยืนยัน
     public Button sacrificeCancelButton; // ปุ่มยกเลิก
 
+    [Header("--- PP Warning Popup ---")]
+    public GameObject ppWarningPanel; // Panel เตือนเมื่อ PP ยังไม่หมด
+    public TextMeshProUGUI ppWarningText; // ข้อความเตือน
+    public Button ppWarningContinueButton; // ปุ่มดำเนินการต่อ
+    public Button ppWarningCancelButton; // ปุ่มยกเลิกการจบเทิร์น
+
     [Header("--- Deck Position ---")]
     public Transform deckPileTransform; // ตำแหน่งเด็คที่การ์ดจะบินออกมา
     public Transform enemyDeckPileTransform; // ตำแหน่งเด็คบอทที่การ์ดจะบินออกมา
@@ -318,6 +324,25 @@ public class BattleManager : MonoBehaviour
         if (defenseChoicePanel)
         {
             defenseChoicePanel.SetActive(false);
+        }
+
+        // ผูกปุ่ม PP Warning Popup
+        if (ppWarningContinueButton)
+        {
+            ppWarningContinueButton.onClick.RemoveAllListeners();
+            ppWarningContinueButton.onClick.AddListener(OnPPWarningContinue);
+        }
+
+        if (ppWarningCancelButton)
+        {
+            ppWarningCancelButton.onClick.RemoveAllListeners();
+            ppWarningCancelButton.onClick.AddListener(OnPPWarningCancel);
+        }
+
+        // ปิด ppWarningPanel ตอนเริ่มต้น
+        if (ppWarningPanel)
+        {
+            ppWarningPanel.SetActive(false);
         }
     }
 
@@ -1354,6 +1379,7 @@ public class BattleManager : MonoBehaviour
         AddBattleLog($"\n=== PLAYER TURN {turnCount} START === HP:{currentHP}/{maxHP} | PP:{currentPP}/{maxPP} | Draw:{drawAmount}");
         DrawCard(drawAmount);
         UpdateUI();
+        UpdatePlayableCardsAnimation();
     }
 
     /// <summary>
@@ -1512,6 +1538,13 @@ public class BattleManager : MonoBehaviour
     {
         if (state != BattleState.PLAYERTURN) return;
 
+        // ตรวจสอบ PP ยังไม่หมด
+        if (currentPP > 0)
+        {
+            ShowPPWarningPopup();
+            return;
+        }
+
         if (endTurnButton) endTurnButton.SetActive(false);
         StartCoroutine(ProcessPlayerEndTurn());
     }
@@ -1567,6 +1600,71 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    void ShowPPWarningPopup()
+    {
+        if (ppWarningPanel == null) return;
+
+        // ตั้งค่าข้อความเตือน
+        if (ppWarningText)
+        {
+            ppWarningText.text = $"You still have {currentPP} PP remaining.\n\nDo you want to end your turn anyway?";
+        }
+
+        ppWarningPanel.SetActive(true);
+    }
+
+    void OnPPWarningContinue()
+    {
+        if (ppWarningPanel)
+        {
+            ppWarningPanel.SetActive(false);
+        }
+
+        if (endTurnButton) endTurnButton.SetActive(false);
+        StartCoroutine(ProcessPlayerEndTurn());
+    }
+
+    void OnPPWarningCancel()
+    {
+        if (ppWarningPanel)
+        {
+            ppWarningPanel.SetActive(false);
+        }
+
+        if (endTurnButton) endTurnButton.SetActive(true);
+    }
+
+    void UpdatePlayableCardsAnimation()
+    {
+        if (handArea == null) return;
+
+        var cardsInHand = handArea.GetComponentsInChildren<BattleCardUI>(includeInactive: false);
+
+        foreach (var card in cardsInHand)
+        {
+            if (card == null) continue;
+
+            // ห้ามให้การ์ดบนสนามเด้ง
+            if (card.isOnField)
+            {
+                card.StopBounceAnimation();
+                continue;
+            }
+
+            // ตรวจสอบว่าการ์ดในมือสามารถเล่นได้หรือไม่
+            if (card.CanPlayCard())
+            {
+                // เล่น bounce animation สำหรับการ์ดที่ถูกเล่นได้
+                card.PlayBounceAnimation(duration: 1.2f, bounceHeight: 15f);
+            }
+            else
+            {
+                // หยุด bounce animation สำหรับการ์ดที่ไม่สามารถเล่นได้
+                card.StopBounceAnimation();
+            }
+        }
+    }
+
     // --------------------------------------------------------
     // 🃏 PLAYER SUMMON
     // --------------------------------------------------------
@@ -1611,10 +1709,14 @@ public class BattleManager : MonoBehaviour
     IEnumerator PayCostAndSummon(BattleCardUI cardUI, Transform parentSlot, int cost)
     {
         currentPP -= cost;
+        UpdatePlayableCardsAnimation();
 
         // 📊 บันทึกสถิติ: PP ใช้ไป + การ์ดที่เล่น
         currentBattleStats.totalPPSpent += cost;
         currentBattleStats.RecordCardPlayed(cardUI.GetData());
+
+        // 🎮 หยุด bounce animation เมื่อตรวจสอบว่าการ์ดจะถูกเล่นออก
+        cardUI.StopBounceAnimation();
 
         cardUI.transform.SetParent(parentSlot);
         cardUI.transform.localPosition = Vector3.zero;
@@ -1674,6 +1776,7 @@ public class BattleManager : MonoBehaviour
         }
 
         currentPP -= cardUI.GetCost();
+        UpdatePlayableCardsAnimation();
 
         // 📊 บันทึกสถิติ: PP ใช้ไป + การ์ดที่เล่น + Spell Cast
         currentBattleStats.totalPPSpent += cardUI.GetCost();
@@ -1757,7 +1860,10 @@ public class BattleManager : MonoBehaviour
     {
         CardData spellData = cardUI.GetData();
 
-        // 🎇 แสดงแจ้งเตือนเวทย์
+        // � หยุด bounce animation เมื่อการ์ดถูกเล่น
+        cardUI.StopBounceAnimation();
+
+        // �🎇 แสดงแจ้งเตือนเวทย์
         StartCoroutine(ShowSpellUsageNotification(spellData, isPlayer));
 
         // โชว์การ์ดบนสนามสักครู่ (เหมือนลงสนาม)
@@ -3453,6 +3559,12 @@ public class BattleManager : MonoBehaviour
 
         // 🎴 อัพเดทการแสดงผลเด็ค
         UpdateDeckVisualization();
+
+        // 🎮 อัพเดตอนิเมชั่นสำหรับการ์ดที่สามารถเล่นได้
+        if (targetParent == handArea && !isMulliganPhase)
+        {
+            UpdatePlayableCardsAnimation();
+        }
     }
 
     IEnumerator DrawEnemyCard(int n)
@@ -3917,7 +4029,11 @@ public class BattleManager : MonoBehaviour
 
         // จ่าย PP เฉพาะส่วนที่ต้องจ่าย (ไม่คืนกรณีถูกกว่า)
         currentPP -= costToPay;
+        UpdatePlayableCardsAnimation();
         Debug.Log($"🔄 Sacrifice: {oldData.cardName} → {newData.cardName}, Cost To Pay: {costToPay}, PP: {currentPP}");
+
+        // 🎮 หยุด bounce animation เมื่อการ์ดจะถูกเล่นออก
+        newCard.StopBounceAnimation();
 
         // ย้ายการ์ดใหม่ไปยังช่องของการ์ดเก่า
         Transform oldCardSlot = oldCard.transform.parent;

@@ -55,6 +55,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     private float floatTime = 0f;
     private Vector3 originalPosition = Vector3.zero;
     private bool isFloating = false;
+    private Coroutine bounceAnimationCoroutine = null;
 
     // 🗑️ ตัวแปรสำหรับ Force Choose Discard
     private BattleCardUI referenceCard = null; // เก็บ reference ของการ์ดจริง (สำหรับ UI ที่ copy มา)
@@ -1070,6 +1071,64 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             {
                 BattleManager.Instance.ReturnControlledEquip(this);
             }
+        }
+    }
+
+    /// <summary>
+    /// ตรวจสอบว่าการ์ดสามารถเล่นได้หรือไม่ (มี PP พอ)
+    /// </summary>
+    public bool CanPlayCard()
+    {
+        if (_cardData == null || BattleManager.Instance == null) return false;
+        
+        // ตรวจสอบ PP พอหรือไม่
+        return BattleManager.Instance.currentPP >= _cardData.cost;
+    }
+
+    /// <summary>
+    /// เล่น bounce animation ให้การ์ดขยับๆเด้งๆบน
+    /// </summary>
+    public void PlayBounceAnimation(float duration = 1.2f, float bounceHeight = 20f)
+    {
+        // หยุด animation ที่ทำงานอยู่ก่อน
+        StopBounceAnimation();
+        bounceAnimationCoroutine = StartCoroutine(BounceAnimationRoutine(duration, bounceHeight));
+    }
+
+    public void StopBounceAnimation()
+    {
+        if (bounceAnimationCoroutine != null)
+        {
+            StopCoroutine(bounceAnimationCoroutine);
+            bounceAnimationCoroutine = null;
+        }
+    }
+
+    IEnumerator BounceAnimationRoutine(float duration = 1.2f, float bounceHeight = 20f)
+    {
+        Vector3 originalScale = transform.localScale;
+        float minScale = 0.95f; // ขนาดเล็กสุด
+        float maxScale = 1.08f; // ขนาดใหญ่สุด
+        float elapsedTime = 0f;
+        
+        while (true)
+        {
+            elapsedTime += Time.deltaTime;
+            
+            // เล่น bounce animation แบบ loop
+            float cycle = elapsedTime % duration;
+            float progress = cycle / duration;
+            
+            // Ease-in-out cubic สำหรับ bounce effect ที่เรียบ
+            // ใช้ sin wave เพื่อให้ลอกขึ้นลง 0 ~ 1 ~ 0
+            float normalizedBounce = Mathf.Sin(progress * Mathf.PI);
+            
+            // Interpolate ระหว่าง minScale และ maxScale
+            float currentScale = Mathf.Lerp(minScale, maxScale, normalizedBounce);
+            
+            transform.localScale = originalScale * currentScale;
+            
+            yield return null;
         }
     }
 
