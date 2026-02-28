@@ -183,13 +183,13 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     void UpdateATKDisplay()
     {
-        // แสดง ATK และ Cost เฉพาะตอนอยู่ใน Battle Scene และบนสนาม
+        // แสดง ATK และ Cost เสมอ (มือ, Panel, สนาม)
         if (atkText == null || costText == null) return;
         
         // 🔥 เช็คว่าอยู่ใน Battle Scene หรือไม่
         bool inBattleScene = BattleManager.Instance != null;
         
-        if (inBattleScene && isOnField && _cardData != null)
+        if (inBattleScene && _cardData != null)
         {
             // 🔥 แสดง ATK (มุมซ้ายล่าง) - เฉพาะ Monster/Token
             if (_cardData.type == CardType.Monster || _cardData.type == CardType.Token)
@@ -216,14 +216,14 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 atkText.gameObject.SetActive(false);
             }
 
-            // 🔥 แสดง Cost (มุมขวาบน)
+            // 🔥 แสดง Cost (มุมขวาบน) - แสดงเสมอในมือ Panel หรือสนาม
             costText.text = _cardData.cost.ToString();
             costText.color = Color.white;
             costText.gameObject.SetActive(true);
         }
         else
         {
-            // ซ่อนตัวเลขถ้าไม่อยู่ใน Battle Scene หรือไม่อยู่บนสนาม
+            // ซ่อนตัวเลขถ้าไม่อยู่ใน Battle Scene
             atkText.gameObject.SetActive(false);
             costText.gameObject.SetActive(false);
         }
