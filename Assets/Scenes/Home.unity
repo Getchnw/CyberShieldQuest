@@ -3411,7 +3411,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 1170305483}
-  m_Horizontal: 1
+  m_Horizontal: 0
   m_Vertical: 1
   m_MovementType: 1
   m_Elasticity: 0.1
@@ -10890,6 +10890,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allStages:
   - stageName: Sector A-01
+    stageName_th: 
     stageID: ' L1_A01'
     stageButton: {fileID: 0}
     lockIcon: {fileID: 0}
@@ -10898,9 +10899,11 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: ea9a5a72b5da3034386b50790be59292, type: 3}
     botLevel: 1
     deckDescription: conclude A01 card
+    deckDescription_th: 
     starConditions:
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -10908,6 +10911,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -10915,6 +10919,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -10923,7 +10928,11 @@ MonoBehaviour:
     requiredChapters: 
     requiredPrevStages: []
     botDecks: 00000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   - stageName: Sector A-02
+    stageName_th: 
     stageID: ' L1_A02'
     stageButton: {fileID: 0}
     lockIcon: {fileID: 0}
@@ -10932,9 +10941,11 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: 3b1926ec88c69b0498cb518150c3dc75, type: 3}
     botLevel: 1
     deckDescription: conclude A02 card
+    deckDescription_th: 
     starConditions:
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -10942,6 +10953,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -10949,6 +10961,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -10958,7 +10971,11 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L1_A01'
     botDecks: 0000000000000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   - stageName: Sector A-03
+    stageName_th: 
     stageID: ' L1_A03'
     stageButton: {fileID: 0}
     lockIcon: {fileID: 0}
@@ -10967,9 +10984,11 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: f24b940388e25314da955ed7dc899fcd, type: 3}
     botLevel: 1
     deckDescription: conclude A03 card
+    deckDescription_th: 
     starConditions:
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -10977,6 +10996,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -10984,6 +11004,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -10993,7 +11014,11 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L1_A02'
     botDecks: 000000000000000000000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   - stageName: Sector mix1
+    stageName_th: 
     stageID: ' L2_MIX1'
     stageButton: {fileID: 0}
     lockIcon: {fileID: 0}
@@ -11002,9 +11027,11 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: 3528db8cb3e6f4c4f8b00051645dabdc, type: 3}
     botLevel: 2
     deckDescription: 'conclude A01 and A02 card '
+    deckDescription_th: 
     starConditions:
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -11012,6 +11039,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -11019,6 +11047,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 0
       description: 
+      description_th: 
       intValue: 0
       floatValue: 0
       category: 0
@@ -11028,7 +11057,11 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L1_A03'
     botDecks: 00000000000000000000000000000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   - stageName: Sector mix2
+    stageName_th: 
     stageID: ' L2_MIX2'
     stageButton: {fileID: 0}
     lockIcon: {fileID: 0}
@@ -11037,12 +11070,17 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: ecd41c4a95499ee449f15218bde705a0, type: 3}
     botLevel: 2
     deckDescription: 'conclude A02 and A03 card '
+    deckDescription_th: 
     starConditions: []
     requiredChapters: 010000000200000003000000
     requiredPrevStages:
     - ' L2_MIX1'
     botDecks: 0000000000000000000000000000000000000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   - stageName: Boss
+    stageName_th: 
     stageID: L3_boss
     stageButton: {fileID: 0}
     lockIcon: {fileID: 0}
@@ -11051,11 +11089,15 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: 3b2eb791098859c4c8fccd70835072b9, type: 3}
     botLevel: 3
     deckDescription: 'conclude A01 A02 and A03 card '
+    deckDescription_th: 
     starConditions: []
     requiredChapters: 010000000200000003000000
     requiredPrevStages:
     - ' L2_MIX2'
     botDecks: 000000000000000000000000000000000000000000000000
+    isSecretBoss: 0
+    durationMinutes: 30
+    countdownText: {fileID: 0}
   detailPopup: {fileID: 0}
 --- !u!4 &1672912567
 Transform:
