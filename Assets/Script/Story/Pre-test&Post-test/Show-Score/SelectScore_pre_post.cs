@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Localization.Settings;
 
 public class SelectScore_pre_post : MonoBehaviour
 {
@@ -64,8 +65,10 @@ public class SelectScore_pre_post : MonoBehaviour
                 var item = matchingList[i];
 
                 // ✅ แก้ไขตรงนี้: เรียกผ่าน List ที่ส่งเข้ามา (และใช้ .Replace เพื่อตัดคำว่า Matching ออก)
-                uiQuestions[i].text = item.QustionText.Replace("Matching: ", string.Empty);
-                uiAnswers[i].text = item.AnswerText;
+                string questionText = item.QustionText.Replace("Matching: ", string.Empty);
+                // uiQuestions[i].text = LanguageBridge.Get(item.QustionText).Replace("Matching: ", string.Empty);
+                uiQuestions[i].text = LanguageBridge.Get(questionText);
+                uiAnswers[i].text = LanguageBridge.Get(item.AnswerText);
 
                 // เปลี่ยนสี
                 bool isCorrect = item.score > 0;
@@ -211,14 +214,16 @@ public class SelectScore_pre_post : MonoBehaviour
                 scoreText_Matching_post.text = $"{matching_post.Sum(qa => qa.score)} / {matching_post.Count}";
 
                 // แสดงรายการคำถามและคำตอบ
-                QustionText_truefalse.text = string.Join("\n\n", trueFalse_post.Select((qa, i) => $"{qa.QustionText}"));
+                QustionText_truefalse.text = string.Join("\n\n", trueFalse_post.Select((qa, i) => $"{LanguageBridge.Get(qa.QustionText)}"));
                 AnswerText_truefalse.text = string.Join("\n\n", trueFalse_post.Select(qa =>
                 $"<color={(qa.score > 0 ? "green" : "red")}>{qa.AnswerText}</color>"
                 ));
 
-                QustionText_fillblank.text = string.Join("\n\n", fillBlank_post.Select((qa, i) => $"{qa.QustionText}"));
+                QustionText_fillblank.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
+                ? string.Join("\n\n", fillBlank_post.Select((qa, i) => $"{qa.QustionText_th}"))
+                : string.Join("\n\n", fillBlank_post.Select((qa, i) => $"{qa.QustionText_en}"));
                 AnswerText_fillblank.text = string.Join("\n\n", fillBlank_post.Select(qa =>
-                $"<color={(qa.score > 0 ? "green" : "red")}>{qa.AnswerText}</color>"
+                $"<color={(qa.score > 0 ? "green" : "red")}>{LanguageBridge.Get(qa.AnswerText)}</color>"
                 ));
 
                 // ถ้ามี Matching
@@ -265,7 +270,7 @@ public class SelectScore_pre_post : MonoBehaviour
                     if (Qustion.QustionText == description.TrueFalse.statement &&
                      Qustion.AnswerText == description.UserAnswertext)
                     {
-                        descriptionText.text = $"{description.DescriptionContext}";
+                        descriptionText.text = $"{LanguageBridge.Get(description.DescriptionContext)}";
                     }
                 }
             }
@@ -283,14 +288,20 @@ public class SelectScore_pre_post : MonoBehaviour
                 .Where(desc => Qustion_Answers.Any(qa =>
                 {
                     // 1. สร้าง String จากฝั่ง Description ขึ้นมาใหม่ ให้ Format เหมือนกับ qa เป๊ะๆ
+                    // เป็นแบบคำไทย เพราะ ในไฟล์เBlueprint เป็นไทย
                     string generatedDescText = string.Join("\n", desc.FillInBlank.sentences.Select(s =>
                         string.IsNullOrEmpty(s.sentencePart2)
                             ? s.sentencePart1 + " _____ "                       // กรณีไม่มีส่วนหลัง
                             : s.sentencePart1 + " _____ " + s.sentencePart2     // กรณีมีส่วนหลัง
                     ));
-
-                    // 2. เอามาเทียบกัน
-                    return qa.QustionText == generatedDescText;
+                    if (qa.QustionText != null)
+                    {// 2. เอามาเทียบกัน
+                        return qa.QustionText == generatedDescText;
+                    }
+                    else
+                    {
+                        return qa.QustionText_th == generatedDescText;
+                    }
                 }))
                 .ToList();
 
@@ -306,10 +317,21 @@ public class SelectScore_pre_post : MonoBehaviour
                 for (int j = 0, len2 = Qustion_Answers.Count; j < len2; j++)
                 {
                     var Qustion = Qustion_Answers[j];
-                    if (Qustion.QustionText == generatedStatement &&
-                     Qustion.AnswerText == description.UserAnswertext)
+                    if (Qustion.QustionText != null)
                     {
-                        descriptionText.text = $"{description.DescriptionContext}";
+                        if (Qustion.QustionText == generatedStatement &&
+                     Qustion.AnswerText == description.UserAnswertext)
+                        {
+                            descriptionText.text = $"{LanguageBridge.Get(description.DescriptionContext)}";
+                        }
+                    }
+                    else
+                    {
+                        if (Qustion.QustionText_th == generatedStatement &&
+                     Qustion.AnswerText == description.UserAnswertext)
+                        {
+                            descriptionText.text = $"{LanguageBridge.Get(description.DescriptionContext)}";
+                        }
                     }
                 }
             }
@@ -348,7 +370,7 @@ public class SelectScore_pre_post : MonoBehaviour
             // 5. ถ้าเจอ ให้แสดงผลในช่องที่ i
             if (targetDesc != null)
             {
-                descriptionTextList[i].text = $"{targetDesc.DescriptionContext}\n\n";
+                descriptionTextList[i].text = $"{LanguageBridge.Get(targetDesc.DescriptionContext)}\n\n";
             }
         }
     }

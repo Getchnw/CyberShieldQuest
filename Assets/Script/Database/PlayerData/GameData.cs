@@ -206,6 +206,8 @@ public enum TypeQustion
 public class Qustion_Answer
 {
     public string QustionText;
+    public string QustionText_th;
+    public string QustionText_en;
     public string AnswerText;
     public int score;
     public TypeQustion TypeQustion;

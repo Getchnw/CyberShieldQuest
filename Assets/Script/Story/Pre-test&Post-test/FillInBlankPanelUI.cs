@@ -3,6 +3,7 @@ using UnityEngine.UI; // ต้องมี
 using TMPro; // ต้องมี
 using System.Collections.Generic; // ต้องมี
 using System.Linq;
+using UnityEngine.Localization.Settings;
 
 public class FillInBlankPanelUI : MonoBehaviour
 {
@@ -50,7 +51,7 @@ public class FillInBlankPanelUI : MonoBehaviour
             GameObject wordObj = Instantiate(draggableWordPrefab, wordBankContainer);
 
             // ใส่ข้อความ
-            wordObj.GetComponentInChildren<TextMeshProUGUI>().text = word;
+            wordObj.GetComponentInChildren<TextMeshProUGUI>().text = LanguageBridge.Get(word);
 
             // (สำคัญ) ตั้งค่า ID คำตอบ ให้ตรงกับข้อความ
             wordObj.GetComponent<DraggableItem>().answerID = word;
@@ -75,7 +76,7 @@ public class FillInBlankPanelUI : MonoBehaviour
             {
                 // ถ้า Text ไม่ว่าง: "แสดง" GameObject นี้ และ "ใส่ข้อความ"
                 beforeTextObj.SetActive(true);
-                beforeTextObj.GetComponent<TextMeshProUGUI>().text = sentence.sentencePart1;
+                beforeTextObj.GetComponent<TextMeshProUGUI>().text = LanguageBridge.Get(sentence.sentencePart1);
             }
 
             // 3. ตรวจสอบ "โจทย์ส่วนที่ 2" (After)
@@ -88,7 +89,7 @@ public class FillInBlankPanelUI : MonoBehaviour
             {
                 // ถ้า Text ไม่ว่าง: "แสดง" GameObject นี้ และ "ใส่ข้อความ"
                 afterTextObj.SetActive(true);
-                afterTextObj.GetComponent<TextMeshProUGUI>().text = sentence.sentencePart2;
+                afterTextObj.GetComponent<TextMeshProUGUI>().text = LanguageBridge.Get(sentence.sentencePart2);
             }
 
             // (สำคัญ) เก็บ DropZone ไว้อ้างอิง
@@ -176,13 +177,22 @@ public class FillInBlankPanelUI : MonoBehaviour
         //     " _____ " +
         //     string.Join(" ", s.sentencePart2)).ToArray();
         // สมมติว่า sentencePart2 เป็น List หรือ Array
-        string result = string.Join("\n", questionData.sentences.Select(s =>
-            string.IsNullOrEmpty(s.sentencePart2)
-            ? s.sentencePart1 + " _____ "                       // ถ้าไม่มีส่วนหลัง
-            : s.sentencePart1 + " _____ " + s.sentencePart2     // ถ้ามีส่วนหลัง
+
+        string result_th = string.Join("\n", questionData.sentences.Select(s =>
+        string.IsNullOrEmpty(s.sentencePart2)
+        ? s.sentencePart1 + " _____ "                       // ถ้าไม่มีส่วนหลัง
+        : s.sentencePart1 + " _____ " + s.sentencePart2     // ถ้ามีส่วนหลัง
         ));
 
-        qa.QustionText = result;
+        string result_en = string.Join("\n", questionData.sentences.Select(s =>
+        string.IsNullOrEmpty(s.sentencePart2)
+        ? LanguageBridge.Get(s.sentencePart1) + " _____ "                       // ถ้าไม่มีส่วนหลัง
+        : LanguageBridge.Get(s.sentencePart1) + " _____ " + LanguageBridge.Get(s.sentencePart2)     // ถ้ามีส่วนหลัง
+        ));
+
+        qa.QustionText = result_th;
+        qa.QustionText_th = result_th;
+        qa.QustionText_en = result_en;
 
         // 2. รวบรวมคำตอบที่ผู้เล่นใส่ในช่องว่าง
         List<string> playerAnswers = new List<string>();

@@ -50,7 +50,7 @@ public class MatchingPanelUI : MonoBehaviour
             GameObject promptObj = Instantiate(promptRowPrefab, promptContainer);
             promptObj.transform.localScale = Vector3.one;
             // ใส่ข้อความโจทย์
-            promptObj.GetComponentInChildren<TextMeshProUGUI>().text = data.prompts[i];
+            promptObj.GetComponentInChildren<TextMeshProUGUI>().text = LanguageBridge.Get(data.prompts[i]);
             // ตั้งค่า "ช่องว่าง"
             DropZone dropZone = promptObj.transform.Find("DropArea").GetComponent<DropZone>();
             dropZone.promptIndex = i; // บอกช่องว่างว่า "เธอคือคำถามข้อ 0, 1, 2..."
@@ -65,7 +65,7 @@ public class MatchingPanelUI : MonoBehaviour
             GameObject optionObj = Instantiate(optionRowPrefab, optionContainer);
             optionObj.transform.localScale = Vector3.one;
             // ใส่ข้อความตัวเลือก
-            optionObj.GetComponentInChildren<TextMeshProUGUI>().text = data.options[i];
+            optionObj.GetComponentInChildren<TextMeshProUGUI>().text = LanguageBridge.Get(data.options[i]);
 
             // ตั้งค่า "ตัวลาก"
             DraggableItem item = optionObj.GetComponent<DraggableItem>();
@@ -136,7 +136,7 @@ public class MatchingPanelUI : MonoBehaviour
             // 1. ระบุโจทย์ข้อย่อยนั้นๆ
             // เช่น "Matching: SQL Injection"
             string promptText = questionData.prompts[zone.promptIndex];
-            qa.QustionText = "Matching: " + promptText;
+            qa.QustionText = promptText;
 
             // 2. ระบุคำตอบที่ผู้เล่นเลือก
             string answerText = "[No Answer]";

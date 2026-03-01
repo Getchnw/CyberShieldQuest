@@ -18,7 +18,7 @@ public class TrueFalsePanelUI : MonoBehaviour
     public void Setup(TrueFalseQuestion data)
     {
         questionData = data;
-        statementText.text = data.statement;
+        statementText.text = LanguageBridge.Get(data.statement);
 
         selectedAnswer = null; // รีเซ็ตคำตอบ
         trueButton.onClick.RemoveAllListeners();

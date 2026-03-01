@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2790613908312800682}
   - component: {fileID: 1928449723222166905}
   - component: {fileID: 4292487700529337063}
+  - component: {fileID: 3592433067903415918}
   m_Layer: 5
   m_Name: QustionText
   m_TagString: Untagged
@@ -135,6 +136,46 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3592433067903415918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 206542960761063702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: GUID:b2ac2e641af3dda44af4050d94168cf5
+    m_TableEntryReference:
+      m_KeyId: 6517403867635712
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4292487700529337063}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &3720284513264419032
 GameObject:
   m_ObjectHideFlags: 0
@@ -428,6 +469,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2152370377181444886}
     m_Modifications:
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2693958293988270130, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
       propertyPath: m_Name
       value: Drag&Drop_AnswerBox_fill_in_blank
@@ -553,6 +618,14 @@ PrefabInstance:
     - target: {fileID: 2049534614720211591, guid: 69280eba8efe13942bf754466e5a4ace, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2149014611204380999, guid: 69280eba8efe13942bf754466e5a4ace, type: 3}
+      propertyPath: m_ChildControlHeight
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169426729462463887, guid: 69280eba8efe13942bf754466e5a4ace, type: 3}
+      propertyPath: m_fontSize
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 4970079219448187865, guid: 69280eba8efe13942bf754466e5a4ace, type: 3}
       propertyPath: m_Name
@@ -686,6 +759,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9039099683676989683, guid: 69280eba8efe13942bf754466e5a4ace, type: 3}
+      propertyPath: m_fontSize
+      value: 24
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -704,6 +781,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2152370377181444886}
     m_Modifications:
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2693958293988270130, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
       propertyPath: m_Name
       value: Drag&Drop_AnswerBox_fill_in_blank (1)
@@ -806,6 +907,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2152370377181444886}
     m_Modifications:
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2693958293988270130, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
       propertyPath: m_Name
       value: Drag&Drop_AnswerBox_fill_in_blank (2)
@@ -908,6 +1033,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2152370377181444886}
     m_Modifications:
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2482148974586755635, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2693958293988270130, guid: 7fba6ab5aa6310f40839cfdf7f8e71bf, type: 3}
       propertyPath: m_Name
       value: Drag&Drop_AnswerBox_fill_in_blank (3)

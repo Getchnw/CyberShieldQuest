@@ -4821,6 +4821,19 @@ MonoBehaviour:
     m_Localized: Confirm / Cancel
     m_Metadata:
       m_Items: []
+  - m_Id: 6489951808217088
+    m_Localized: What is the primary goal of 'OS Command Injection'?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6517193988857856
+    m_Localized: Drag the "Attack Method" file to match the "Target" (drag the box
+      into the empty space).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6517403867635712
+    m_Localized: Drag words from the "Word Bank" to fill in the blanks correctly.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
