@@ -33,6 +33,10 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public bool isManualHighlight = false; // ถ้า true = อย่าให้ auto-highlight แตะสี
     private bool mulliganSelected = false;
     
+    // 🔥 ตัวแปร override stat สำหรับ ZeroStats (ต่อ card instance)
+    private int modifiedCost = -1; // -1 = ใช้ original, >= 0 = ค่า override
+    private int modifiedATK = -1;  // -1 = ใช้ original, >= 0 = ค่า override
+    
     // 🎯 Intercept System
     public bool canBypassIntercept = false; // การ์ดนี้โจมตีข้ามการกันได้
     public int bypassCostThreshold = 0; // ข้ามการกันได้เฉพาะ Equip ที่ cost < threshold (0 = ไม่ข้ามไม่ได้, -1 = ข้ามทั้งหมด)
@@ -186,6 +190,25 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         // แสดง ATK และ Cost เสมอ (มือ, Panel, สนาม)
         if (atkText == null || costText == null) return;
         
+        // 🔥 ถ้าอยู่ใน Hand Reveal Panel ให้ซ่อน Cost/ATK
+        if (BattleManager.Instance != null && BattleManager.Instance.handRevealListRoot != null)
+        {
+            if (transform.IsChildOf(BattleManager.Instance.handRevealListRoot))
+            {
+                atkText.gameObject.SetActive(false);
+                costText.gameObject.SetActive(false);
+                return;
+            }
+        }
+        
+        // 🔥 ถ้า frameImage ถูก hide ไป = Card Back -> ซ่อน Cost/ATK
+        if (frameImage != null && frameImage.color.a == 0f)
+        {
+            atkText.gameObject.SetActive(false);
+            costText.gameObject.SetActive(false);
+            return;
+        }
+        
         // 🔥 เช็คว่าอยู่ใน Battle Scene หรือไม่
         bool inBattleScene = BattleManager.Instance != null;
         
@@ -217,7 +240,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             }
 
             // 🔥 แสดง Cost (มุมขวาบน) - แสดงเสมอในมือ Panel หรือสนาม
-            costText.text = _cardData.cost.ToString();
+            costText.text = GetCost().ToString(); // 🔥 ใช้ GetCost() เพื่อให้ได้ค่า override ถ้ามี
             costText.color = Color.white;
             costText.gameObject.SetActive(true);
         }
@@ -235,6 +258,70 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
         // ใช้การเปลี่ยนสีการ์ดแทนข้อความสถานะ
         statusText.gameObject.SetActive(false);
+    }
+
+    // 🔥 เมธอด public สำหรับอัปเดต Cost/ATK display (ใช้เมื่อ ui.enabled = false)
+    public void RefreshCardDisplay()
+    {
+        if (atkText == null || costText == null) return;
+        
+        // 🔥 ถ้าอยู่ใน Hand Reveal Panel ให้ซ่อน Cost/ATK
+        if (BattleManager.Instance != null && BattleManager.Instance.handRevealListRoot != null)
+        {
+            if (transform.IsChildOf(BattleManager.Instance.handRevealListRoot))
+            {
+                HideCardInfo();
+                return;
+            }
+        }
+        
+        // 🔥 เช็คว่าเป็น Card Back หรือไม่ (frameImage alpha = 0)
+        bool isCardBack = frameImage != null && frameImage.color.a == 0f;
+        
+        if (isCardBack)
+        {
+            HideCardInfo();
+            return;
+        }
+        
+        // 🔥 ดึงค่า Cost และ ATK โดยตรง
+        bool inBattleScene = BattleManager.Instance != null;
+        
+        if (inBattleScene && _cardData != null)
+        {
+            // แสดง Cost
+            costText.text = GetCost().ToString();
+            costText.color = Color.white;
+            costText.gameObject.SetActive(true);
+            
+            // แสดง ATK ถ้าเป็น Monster/Token
+            if (_cardData.type == CardType.Monster || _cardData.type == CardType.Token)
+            {
+                int currentATK = GetModifiedATK(isPlayerAttack: true);
+                var graveyardEffect = _cardData.effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
+                
+                if (graveyardEffect.action == ActionType.GraveyardATK && currentATK > _cardData.atk)
+                {
+                    atkText.color = new Color(0.5f, 1f, 0.5f); // สีเขียว
+                }
+                else
+                {
+                    atkText.color = Color.white;
+                }
+                
+                atkText.text = currentATK.ToString();
+                atkText.gameObject.SetActive(true);
+            }
+            else
+            {
+                atkText.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            costText.gameObject.SetActive(false);
+            atkText.gameObject.SetActive(false);
+        }
     }
 
     public int GetMaxAttacksPerTurn()
@@ -266,6 +353,13 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public int GetModifiedATK(bool isPlayerAttack = true)
     {
         if (_cardData == null) return 0;
+        
+        // 🔥 ถ้าถูก ZeroStats ให้คืน 0 เสมอ
+        if (modifiedATK >= 0)
+        {
+            return modifiedATK;
+        }
+        
         int baseATK = _cardData.atk;
 
         // 🔥 เช็คสกิล GraveyardATK (เพิ่มพลังตามจำนวนการ์ดในสุสาน)
@@ -630,12 +724,62 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     // --- Helper Functions ---
     public int GetCost()
     {
+        // 🔥 ถ้าถูก ZeroStats ให้คืน 0 เสมอ
+        if (modifiedCost >= 0)
+        {
+            return modifiedCost;
+        }
         return _cardData != null ? _cardData.cost : 0;
+    }
+
+    // 🔥 เซ็ต Cost และ ATK ให้ 0 (สำหรับ ZeroStats skill - ต่อ card instance เท่านั้น)
+    public void SetZeroStats()
+    {
+        modifiedCost = 0;
+        modifiedATK = 0;
+        Debug.Log($"💀 SetZeroStats: {_cardData?.cardName} → Cost=0, ATK=0 (instance only)");
     }
 
     public CardData GetData()
     {
         return _cardData;
+    }
+
+    // 🔥 ซ่อนข้อมูลการ์ด (Cost และ ATK) ใช้สำหรับ Card Back ของบอท
+    public void HideCardInfo()
+    {
+        // 🔥 ซ่อน child objects ทั้งหมดที่ชื่อ ATKDisplay/CostDisplay (รวมถึง prefab)
+        foreach (Transform child in transform)
+        {
+            if (child.name == "ATKDisplay" || child.name == "CostDisplay")
+            {
+                child.gameObject.SetActive(false);
+            }
+        }
+        
+        if (costText != null)
+        {
+            costText.text = ""; // เซ็ตเป็นเปล่าเพื่อให้แน่ใจว่าไม่แสดง 0
+            costText.gameObject.SetActive(false);
+        }
+        if (atkText != null)
+        {
+            atkText.text = ""; // เซ็ตเป็นเปล่าเพื่อให้แน่ใจว่าไม่แสดง 0
+            atkText.gameObject.SetActive(false);
+        }
+    }
+
+    // 🔥 แสดงข้อมูลการ์ด (Cost และ ATK) อีกครั้ง
+    public void ShowCardInfo()
+    {
+        if (costText != null)
+        {
+            costText.gameObject.SetActive(true);
+        }
+        if (atkText != null && _cardData != null && (_cardData.type == CardType.Monster || _cardData.type == CardType.Token))
+        {
+            atkText.gameObject.SetActive(true);
+        }
     }
 
     bool IsInsideHandRevealPreview()
@@ -1081,8 +1225,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         if (_cardData == null || BattleManager.Instance == null) return false;
         
-        // ตรวจสอบ PP พอหรือไม่
-        return BattleManager.Instance.currentPP >= _cardData.cost;
+        // ตรวจสอบ PP พอหรือไม่ (ใช้ GetCost() เพื่อให้ ZeroStats work)
+        return BattleManager.Instance.currentPP >= GetCost();
     }
 
     /// <summary>

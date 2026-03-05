@@ -49,7 +49,7 @@ public class CardGenerator
             "[Deploy] อัญเชิญ 'Rogue Token' 1 ตัว ลงในสนามของคุณ",
             "[A01: IDOR] (Create) มันไม่ขโมย, มัน 'สร้าง'! มันแทรกแซงฟังก์ชันเพื่อ 'สร้าง User ผี'",
             new List<CardEffect> { 
-                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.Self, action = ActionType.SummonToken, value = 1 } 
+                new CardEffect { trigger = EffectTrigger.OnDeploy, targetType = TargetType.Self, action = ActionType.SummonToken, value = 1, tokenCardId = "T_001" } 
             });
 
         CreateCard("M_A01_05", "Blind Executor", CardType.Monster, MainCategory.A01, SubCategory.IDOR, 2, 2,

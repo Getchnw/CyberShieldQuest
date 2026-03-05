@@ -2493,6 +2493,7 @@ public class BattleManager : MonoBehaviour
         }
         // แสดงกรอบเมื่อการ์ดหงายหน้า
         ui.SetFrameVisible(true);
+        ui.ShowCardInfo(); // 🔥 แสดงค่า Cost และ ATK เมื่อบอทเล่นการ์ด
 
         // 🔥 อนุญาตให้คลิกดูรายละเอียดการ์ดบนสนามบอท
         var cg = ui.GetComponent<CanvasGroup>();
@@ -3641,6 +3642,7 @@ public class BattleManager : MonoBehaviour
                     }
                     // ซ่อนกรอบสำหรับการ์ดหลัง
                     ui.SetFrameVisible(false);
+                    ui.HideCardInfo(); // 🔥 ซ่อนค่า Cost และ ATK
 
                     // อนิเมชั่นบินไปมือบอท
                     float duration = 0.3f;
@@ -3686,6 +3688,7 @@ public class BattleManager : MonoBehaviour
                             Debug.Log($"🖼️ Set raycast target to TRUE for {cardData.cardName}");
                         }
                         ui.SetFrameVisible(true); // แสดงกรอบ
+                        ui.ShowCardInfo(); // 🔥 แสดงค่า Cost และ ATK
                         cg.blocksRaycasts = true; // 🔥 อนุญาตให้คลิกการ์ดที่ถูก reveal
                         
                         // บันทึกการ์ดที่ reveal เพื่อจัดที่ออกมือ
@@ -5265,6 +5268,7 @@ public class BattleManager : MonoBehaviour
             if (ui != null)
             {
                 ui.Setup(card);
+                ui.RefreshCardDisplay(); // 🔥 อัปเดต Cost/ATK display เนื่องจาก ui.enabled = false
                 // ปิด interaction ของ BattleCardUI บนการ์ด preview ใน panel นี้
                 // เพื่อไม่ให้คลิกขวาไปเข้าลอจิกเล่นการ์ด/โจมตี/ลาก
                 ui.enabled = false;
@@ -5804,46 +5808,56 @@ public class BattleManager : MonoBehaviour
     {
         List<BattleCardUI> targets = GetTargetCards(effect, isPlayer);
 
-        // 🔥 ถ้ามีหลายเป้าหมาย ให้ผู้เล่นเลือก 1 ตัว
+        // 🔥 ถ้ามีหลายเป้าหมาย ให้ผู้เล่นเลือก 1 ตัว (แต่บอทเลือกอัตโนมัติ)
         if (targets.Count > 1)
         {
-            Debug.Log($"🎯 ZeroStats: มี {targets.Count} เป้าหมาย ให้เลือก 1 ตัว");
+            Debug.Log($"🎯 ZeroStats: มี {targets.Count} เป้าหมาย");
 
-            // Highlight เป้าหมายที่เลือกได้
-            foreach (var t in targets)
+            if (isPlayer)
             {
-                t.SetHighlight(true);
-            }
+                // ผู้เล่น = รอเลือก
+                Debug.Log("👤 ZeroStats: ผู้เล่นเลือกเป้าหมาย");
+                
+                // Highlight เป้าหมายที่เลือกได้
+                foreach (var t in targets)
+                {
+                    t.SetHighlight(true);
+                }
 
-            // รอให้ผู้เล่นเลือก
-            yield return StartCoroutine(WaitForTargetSelection(targets, selectCount: 1));
+                // รอให้ผู้เล่นเลือก
+                yield return StartCoroutine(WaitForTargetSelection(targets, selectCount: 1));
 
-            // ลบ Highlight
-            foreach (var t in targets)
-            {
-                t.SetHighlight(false);
-            }
+                // ลบ Highlight
+                foreach (var t in targets)
+                {
+                    t.SetHighlight(false);
+                }
 
-            // ใช้เป้าหมายที่เลือก
-            if (selectedTargets != null && selectedTargets.Count > 0)
-            {
-                targets = selectedTargets;
+                // ใช้เป้าหมายที่เลือก
+                if (selectedTargets != null && selectedTargets.Count > 0)
+                {
+                    targets = selectedTargets;
+                }
+                else
+                {
+                    Debug.Log("⚠️ ไม่ได้เลือกเป้าหมาย ยกเลิก ZeroStats");
+                    yield break;
+                }
             }
             else
             {
-                Debug.Log("⚠️ ไม่ได้เลือกเป้าหมาย ยกเลิก ZeroStats");
-                yield break;
+                // บอท = เลือกแรก
+                Debug.Log("🤖 ZeroStats: บอทเลือกเป้าหมายแรก");
+                targets = new List<BattleCardUI> { targets[0] };
             }
         }
 
-        // ตั้งค่า Cost = 0 และ ATK = 0
+        // ตั้งค่า Cost = 0 และ ATK = 0 (ต่อ card instance นี้เท่านั้น)
         foreach (var target in targets)
         {
             if (target != null && target.GetData() != null)
             {
-                target.GetData().cost = 0;
-                target.GetData().atk = 0;
-                Debug.Log($"💀 ZeroStats: {target.GetData().cardName} → Cost=0, ATK=0");
+                target.SetZeroStats(); // 🔥 เรียกเมธอดแทนที่จะแก้ CardData โดยตรง
                 AddBattleLog($"  {target.GetData().cardName} nullified! (Cost=0, ATK=0)");
             }
         }
@@ -7562,6 +7576,7 @@ public class BattleManager : MonoBehaviour
                 }
             }
             ui.SetFrameVisible(false);
+            ui.HideCardInfo(); // 🔥 ซ่อนค่า Cost และ ATK เมื่อเป็น Card Back
 
             var cg = ui.GetComponent<CanvasGroup>();
             if (cg == null) cg = ui.gameObject.AddComponent<CanvasGroup>();
@@ -8093,6 +8108,7 @@ public class BattleManager : MonoBehaviour
                 if (ui != null)
                 {
                     ui.Setup(card);
+                    ui.RefreshCardDisplay(); // 🔥 อัปเดต Cost/ATK display เนื่องจาก ui.enabled = false
                     ui.enabled = false; // โหมด preview: ห้ามลาก/เล่นการ์ดจาก panel
 
                     // ตั้ง CanvasGroup ให้คลิกได้แน่นอน
@@ -8221,6 +8237,7 @@ public class BattleManager : MonoBehaviour
             if (ui != null)
             {
                 ui.Setup(card);
+                ui.RefreshCardDisplay(); // 🔥 อัปเดต Cost/ATK display เนื่องจาก ui.enabled = false
                 ui.enabled = false; // โหมดเลือกจากสุสาน: ใช้ EventTrigger เท่านั้น
 
                 var cg = ui.GetComponent<CanvasGroup>();
@@ -8497,6 +8514,7 @@ public class BattleManager : MonoBehaviour
                 if (ui != null)
                 {
                     ui.Setup(card);
+                    ui.HideCardInfo(); // 🔥 ซ่อน Cost/ATK ใน Hand Reveal Panel
 
                     // ปิด interaction ของ BattleCardUI บนการ์ด preview ใน panel นี้
                     // เพื่อไม่ให้คลิกขวาไปเข้าลอจิกเล่นการ์ด/โจมตี/ลาก
@@ -9078,6 +9096,7 @@ public class BattleManager : MonoBehaviour
                         }
                     }
                     card.SetFrameVisible(false);
+                    card.HideCardInfo(); // 🔥 ซ่อนค่า Cost และ ATK
                     Debug.Log($"🔄 Hiding {card.GetData().cardName}");
                 }
             }
