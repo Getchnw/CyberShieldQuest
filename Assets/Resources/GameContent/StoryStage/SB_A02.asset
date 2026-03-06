@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SB_A02
   m_EditorClassIdentifier: 
   stageID: SB_A02
-  stageName: "\u0E3AStory Battle A02"
+  stageName: Story Battle A02
   stageName_th: "\u0E14\u0E48\u0E32\u0E19\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49\u0E02\u0E2D\u0E07\u0E1A\u0E17
     A02"
   story: {fileID: 11400000, guid: c36db4412ad8b414a9cd10c85db056cf, type: 2}

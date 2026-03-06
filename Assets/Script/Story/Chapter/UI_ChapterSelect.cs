@@ -319,6 +319,7 @@ public class UI_ChapterSelect : MonoBehaviour
             // // ตั้งค่า flag ว่าเป็นด่านเนื้อเรื่อง เพื่อให้ StageManager ใช้ Logic ที่ถูกต้อง
             // stageData.isStoryBattle = true;
 
+
             // 6. ใส่ข้อมูล (สมมติ ChapterData มีตัวแปร 'chapterName')
             if (Name != null)
             {

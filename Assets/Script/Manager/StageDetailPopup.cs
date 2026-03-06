@@ -184,7 +184,7 @@ public class StageDetailPopup : MonoBehaviour
                 {
                     TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
                     ? $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
-                    : $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
+                    : $"<color=green>Use the entire deck as its type {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
                 }
             }
             else
@@ -193,7 +193,7 @@ public class StageDetailPopup : MonoBehaviour
                 {
                     TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
                     ? $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
-                    : $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
+                    : $"<color=red>Use the entire deck as its type {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
                 }
             }
 
