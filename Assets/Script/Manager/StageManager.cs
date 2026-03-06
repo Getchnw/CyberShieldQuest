@@ -61,6 +61,9 @@ public class StageManager : MonoBehaviour
         public int durationMinutes = 30; // ระยะเวลาที่บอสอยู่
         public TMPro.TextMeshProUGUI countdownText;
 
+        [Header("Type of Stage Settings")]
+        public bool isStoryBattle;
+        public Button YessButton_Recheck;
         public bool IsTimeActive()
         {
             if (!isSecretBoss) return true;
@@ -206,6 +209,7 @@ public class StageManager : MonoBehaviour
     public List<StageData> allStages;   // ลากปุ่มด่านทั้งหมดมาใส่ตรงนี้
     public StageDetailPopup detailPopup; // ลากหน้าต่าง Popup มาใส่ตรงนี้
 
+
     void Start()
     {
         Debug.Log("🟢 StageManager Start() เริ่มทำงาน");
@@ -214,33 +218,95 @@ public class StageManager : MonoBehaviour
         if (detailPopup != null) detailPopup.Close();
 
         // อัปเดตสถานะด่าน (ล็อค/ปลดล็อค)
-        UpdateStageStatus();
+        foreach (var stage in allStages)
+        {
+            if (stage.isStoryBattle)
+            {
+                UpdateStoryStageStatus(stage);
+            }
+            else
+            {
+                UpdateStageStatus(stage);
+            }
+        }
 
         Debug.Log($"🟢 มีด่านทั้งหมด: {allStages.Count} ด่าน");
     }
 
+    // เพิ่มฟังก์ชันนี้ใน StageManager.cs
+    public void RegisterStage(StageData newStage)
+    {
+        if (!allStages.Contains(newStage))
+        {
+            allStages.Add(newStage);
+        }
+
+        // อัปเดตสถานะปุ่มนี้ทันทีที่มันเกิดมา
+        if (newStage.isStoryBattle)
+        {
+            UpdateStoryStageStatus(newStage);
+        }
+        else
+        {
+            UpdateStageStatus(newStage);
+        }
+    }
+
+
     void Update()
     {
+
         // อัปเดต Text Countdown ทุกเฟรม
         foreach (var stage in allStages)
         {
             if (stage.isSecretBoss && stage.countdownText != null)
             {
                 stage.countdownText.text = stage.GetStatusMessage();
+                // เช็ค Logic การปลดล็อคทุกๆ 1 วินาที (เพื่อเปลี่ยนปุ่มจาก Gray เป็น Red เมื่อถึงเวลา)
+                checkTimer += Time.deltaTime;
+                if (checkTimer >= 1.0f)
+                {
+                    UpdateStageStatus(stage);
+                    checkTimer = 0f;
+                }
             }
+
         }
 
-        // เช็ค Logic การปลดล็อคทุกๆ 1 วินาที (เพื่อเปลี่ยนปุ่มจาก Gray เป็น Red เมื่อถึงเวลา)
-        checkTimer += Time.deltaTime;
-        if (checkTimer >= 1.0f)
+    }
+
+    public void UpdateStoryStageStatus(StageData stage)
+    {
+        // ใส่ฟังก์ชันนี้ใน StageManager เพื่ออัปเดตสถานะของด่านใน Story Battle
+        Debug.Log("🔵 UpdateStoryStageStatus() ถูกเรียก");
+        if (GameManager.Instance == null)
         {
-            UpdateStageStatus();
-            checkTimer = 0f;
+            Debug.LogError("❌ ไม่พบ GameManager ใน Scene!");
+            return;
         }
+        //  เงื่อนขการลดล็อก เ็น้าที่ของ UI Chaterer Select
+
+        // จัดการ Event การกดปุ่ม
+        if (stage.isStoryBattle)
+        {
+            stage.stageButton.onClick.RemoveAllListeners(); // ล้างคำสั่งเก่าออกก่อน
+            // ุ่มตตรงน้าchapter
+            stage.stageButton.onClick.AddListener(() => OpenDetail(stage));
+            // ุ่มrecheck ลังจบpottest
+            stage.YessButton_Recheck.onClick.RemoveAllListeners();
+            stage.YessButton_Recheck.onClick.AddListener(() => OpenDetail(stage));
+            Debug.Log($"✅ เพิ่ม Event ให้ปุ่ม Story Battle: {stage.stageName}");
+        }
+        else
+        {
+            Debug.Log($"🔒 ด่าน Story Battle {stage.stageName} ยังล็อคอยู่");
+        }
+
+
     }
 
     // ฟังก์ชันหลักสำหรับเช็คและอัปเดตปุ่ม
-    public void UpdateStageStatus()
+    public void UpdateStageStatus(StageData stage)
     {
         Debug.Log("🔵 UpdateStageStatus() ถูกเรียก");
 
@@ -253,79 +319,78 @@ public class StageManager : MonoBehaviour
         // ดึงข้อมูลการเรียน (Post-Test)
         var status = GameManager.Instance.CurrentGameData.statusPostTest;
 
-        foreach (var stage in allStages)
+
+        // 1. เช็คเงื่อนไขบทเรียน (Chapters)
+        bool passChapters = CheckChapterUnlock(stage.requiredChapters, status);
+
+        // 2. เช็คเงื่อนไขด่านก่อนหน้า (Linear Progression)
+        bool passPrevStages = CheckPrevStageUnlock(stage.requiredPrevStages);
+
+        // ต้องผ่านทั้ง 2 เงื่อนไขถึงจะเล่นได้
+        bool isUnlocked = passChapters && passPrevStages;
+
+        if (stage.isSecretBoss)
         {
-            // 1. เช็คเงื่อนไขบทเรียน (Chapters)
-            bool passChapters = CheckChapterUnlock(stage.requiredChapters, status);
+            // บอสลับจะเปิดให้กดได้ก็ต่อเมื่อ (เงื่อนไขด่านครบ + อยู่ในเวลาเกิด)
+            bool isBossTime = stage.IsTimeActive();
+            stage.stageButton.interactable = isUnlocked && isBossTime;
 
-            // 2. เช็คเงื่อนไขด่านก่อนหน้า (Linear Progression)
-            bool passPrevStages = CheckPrevStageUnlock(stage.requiredPrevStages);
+            // แสดงหน้าตาปุ่ม (ถ้ายังไม่ถึงเวลาหรือเงื่อนไขไม่ครบ ให้แสดง lockIcon)
+            if (stage.lockIcon != null)
+                stage.lockIcon.SetActive(!isUnlocked || !isBossTime);
 
-            // ต้องผ่านทั้ง 2 เงื่อนไขถึงจะเล่นได้
-            bool isUnlocked = passChapters && passPrevStages;
+            // ปุ่มบอสลับให้เปิด Active ไว้ตลอดเพื่อให้คนเห็น Countdown
+            stage.stageButton.gameObject.SetActive(true);
+            stage.countdownText.gameObject.SetActive(true);
 
-            if (stage.isSecretBoss)
-            {
-                // บอสลับจะเปิดให้กดได้ก็ต่อเมื่อ (เงื่อนไขด่านครบ + อยู่ในเวลาเกิด)
-                bool isBossTime = stage.IsTimeActive();
-                stage.stageButton.interactable = isUnlocked && isBossTime;
-
-                // แสดงหน้าตาปุ่ม (ถ้ายังไม่ถึงเวลาหรือเงื่อนไขไม่ครบ ให้แสดง lockIcon)
-                if (stage.lockIcon != null)
-                    stage.lockIcon.SetActive(!isUnlocked || !isBossTime);
-
-                // ปุ่มบอสลับให้เปิด Active ไว้ตลอดเพื่อให้คนเห็น Countdown
-                stage.stageButton.gameObject.SetActive(true);
-                stage.countdownText.gameObject.SetActive(true);
-
-                // เปลี่ยนสีปุ่มให้ดูต่างออกไปเมื่อยังไม่ถึงเวลา
-                stage.stageButton.image.color = (isUnlocked && isBossTime) ? Color.red : Color.gray;
-            }
-            else
-            {
-                // ด่านปกติ: ปลดล็อคตามเงื่อนไขปกติ
-                stage.stageButton.interactable = isUnlocked;
-
-                // เปิด/ปิด ไอคอนกุญแจ
-                if (stage.lockIcon != null)
-                    stage.lockIcon.SetActive(!isUnlocked);
-
-                // เปลี่ยนสีปุ่ม (ขาว=เล่นได้, เทา=ล็อค)
-                stage.stageButton.image.color = isUnlocked ? Color.white : Color.gray;
-            }
-
-            // ⭐ อัปเดตดาว
-            var progress = GameManager.Instance.GetStageProgress(stage.stageID);
-            if (progress != null)
-            {
-                int earnedStars = progress.starsEarned;
-                if (progress.completedStarMissions != null && progress.completedStarMissions.Count > 0)
-                {
-                    earnedStars = Mathf.Clamp(progress.completedStarMissions.FindAll(done => done).Count, 0, 3);
-                }
-
-                Debug.Log($"Stage {stage.stageID}: {earnedStars}/3 Stars");
-                stage.UpdateStarDisplay(earnedStars);
-            }
-            else
-            {
-                Debug.Log($"⚪ Stage {stage.stageID}: ยังไม่เล่น");
-                stage.UpdateStarDisplay(0); // ยังไม่เคยเล่น = 0 ดาว
-            }
-
-            // --- จัดการ Event การกดปุ่ม ---
-            stage.stageButton.onClick.RemoveAllListeners(); // ล้างคำสั่งเก่าออกก่อน
-            if (isUnlocked)
-            {
-                // ถ้าปลดล็อค -> กดแล้วเปิด Popup
-                stage.stageButton.onClick.AddListener(() => OpenDetail(stage));
-                Debug.Log($"✅ เพิ่ม Event ให้ปุ่ม: {stage.stageName}");
-            }
-            else
-            {
-                Debug.Log($"🔒 ด่าน {stage.stageName} ยังล็อคอยู่");
-            }
+            // เปลี่ยนสีปุ่มให้ดูต่างออกไปเมื่อยังไม่ถึงเวลา
+            stage.stageButton.image.color = (isUnlocked && isBossTime) ? Color.red : Color.gray;
         }
+        else
+        {
+            // ด่านปกติ: ปลดล็อคตามเงื่อนไขปกติ
+            stage.stageButton.interactable = isUnlocked;
+
+            // เปิด/ปิด ไอคอนกุญแจ
+            if (stage.lockIcon != null)
+                stage.lockIcon.SetActive(!isUnlocked);
+
+            // เปลี่ยนสีปุ่ม (ขาว=เล่นได้, เทา=ล็อค)
+            stage.stageButton.image.color = isUnlocked ? Color.white : Color.gray;
+        }
+
+        // ⭐ อัปเดตดาว
+        var progress = GameManager.Instance.GetStageProgress(stage.stageID);
+        if (progress != null)
+        {
+            int earnedStars = progress.starsEarned;
+            if (progress.completedStarMissions != null && progress.completedStarMissions.Count > 0)
+            {
+                earnedStars = Mathf.Clamp(progress.completedStarMissions.FindAll(done => done).Count, 0, 3);
+            }
+
+            Debug.Log($"Stage {stage.stageID}: {earnedStars}/3 Stars");
+            stage.UpdateStarDisplay(earnedStars);
+        }
+        else
+        {
+            Debug.Log($"⚪ Stage {stage.stageID}: ยังไม่เล่น");
+            stage.UpdateStarDisplay(0); // ยังไม่เคยเล่น = 0 ดาว
+        }
+
+        // --- จัดการ Event การกดปุ่ม ---
+        stage.stageButton.onClick.RemoveAllListeners(); // ล้างคำสั่งเก่าออกก่อน
+        if (isUnlocked)
+        {
+            // ถ้าปลดล็อค -> กดแล้วเปิด Popup
+            stage.stageButton.onClick.AddListener(() => OpenDetail(stage));
+            Debug.Log($"✅ เพิ่ม Event ให้ปุ่ม: {stage.stageName}");
+        }
+        else
+        {
+            Debug.Log($"🔒 ด่าน {stage.stageName} ยังล็อคอยู่");
+        }
+
     }
 
     // ฟังก์ชันเปิด Popup

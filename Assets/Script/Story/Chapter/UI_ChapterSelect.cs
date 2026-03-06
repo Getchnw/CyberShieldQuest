@@ -18,6 +18,9 @@ public class UI_ChapterSelect : MonoBehaviour
     [SerializeField] private Button buttonNext; // 3. ลากปุ่ม "ถัดไป" มาใส่
     [SerializeField] private Button buttonPrev;
 
+    public Recheck_PopUp recheck_Popup;
+    public Button YesButton_Recheck;
+
     // เอาไว้เก็บPageที่สร้าง
     private List<GameObject> instantiatedPages = new List<GameObject>();
     private int currentPageIndex = 0;
@@ -138,6 +141,8 @@ public class UI_ChapterSelect : MonoBehaviour
         string selectedStoryId = GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId;
         // 2. "ถาม" Database ว่า Story ID นี้ มี Chapter อะไรบ้าง
         List<ChapterData> chapters = GameContentDatabase.Instance.GetChaptersByStoryID(selectedStoryId);
+        // ดึงด่านต่อสู้ของ Story นี้มาเช็คเงื่อนไขปลดล็อก
+        List<StoryStage> storyStages = GameContentDatabase.Instance.GetStoryStagesByStoryID(selectedStoryId);
         var chapterProgress = GameManager.Instance.CurrentGameData.chapterProgress ?? new List<PlayerChapterProgress>();
         if (chapters == null || chapters.Count == 0)
         {
@@ -258,6 +263,217 @@ public class UI_ChapterSelect : MonoBehaviour
             cardsOnCurrentPage++;
             chapterCounter++;
         }
+
+        // 8. วนลูปสร้างปุ่มตามจำนวน StoryStage ที่ดึงมาได้ เพื่อเช็คเงื่อนไขปลดล็อก (ต่อจากchapter)
+        foreach (var storyStage in storyStages)
+        {
+            // สร้างปุ่มจาก Prefab แล้วยัดใส่ Box (แบบเดียวกับตอนสร้าง Chapter แต่ไม่ต้องตั้งค่าปุ่ม)
+            if (currentPageBox == null || cardsOnCurrentPage >= cardsPerPage)
+            {
+                currentPageBox = Instantiate(BoxPrefab, buttonContainer);
+                instantiatedPages.Add(currentPageBox); // เก็บหน้าไว้ใน List
+                cardsOnCurrentPage = 0;
+            }
+
+            // ดึงข้อมูลความคืบหน้าของด่านนี้
+            var stageProgress = GameManager.Instance.CurrentGameData.stageProgress.Find(sp => sp.stageID == storyStage.stageID);
+            bool isStageCompleted = (stageProgress != null && stageProgress.isCompleted);
+
+            // 5. ค้นหาส่วนประกอบใน Prefab ที่เพิ่งสร้าง
+            // (GetComponentInChildren จะค้นหา Text, Button ที่อยู่ข้างใน)
+            GameObject newButton = Instantiate(chapterButtonPrefab, currentPageBox.transform);
+            TextMeshProUGUI Name = newButton.GetComponentInChildren<TextMeshProUGUI>();
+            Button buttonComponent = newButton.GetComponent<Button>();
+            Image cardImage = newButton.GetComponent<Image>();
+            Transform lockTransform = newButton.transform.Find("Lock");
+            Transform StarTransform = newButton.transform.Find("Star box");
+            Image LockImage = null;
+            if (lockTransform != null) LockImage = lockTransform.GetComponent<Image>();
+            if (StarTransform != null)
+            {
+                StarTransform.gameObject.SetActive(false);
+            }
+
+            // 2. เตรียมข้อมูล StageData เพื่อส่งให้ StageManager
+            // เราจะสร้าง Object ใหม่ขึ้นมาเพื่อถือข้อมูลชั่วคราว
+            StageManager.StageData stageData = new StageManager.StageData();
+            stageData.stageID = storyStage.stageID;
+            stageData.stageName = storyStage.stageName;
+            stageData.stageName_th = storyStage.stageName_th;
+            stageData.stageButton = newButton.GetComponent<Button>();
+
+            // ค้นหา lockIcon ภายใน Prefab (สมมติว่าชื่อ "Lock")
+            // Transform lockTr = newButton.transform.Find("Lock");
+            // if (lockTr != null) stageData.lockIcon = lockTr.gameObject;
+
+            stageData.botSprite = storyStage.stageImage;
+            stageData.botLevel = storyStage.botLevel;
+            stageData.deckDescription = storyStage.deckDescription;
+            stageData.deckDescription_th = storyStage.deckDescription_th;
+            stageData.starConditions = storyStage.starConditions;
+            stageData.requiredChapters = storyStage.requiredChapters;
+            stageData.botDecks = storyStage.botDecks;
+            stageData.isStoryBattle = storyStage.isStoryBattle;
+            stageData.YessButton_Recheck = YesButton_Recheck;
+
+            // // ตั้งค่า flag ว่าเป็นด่านเนื้อเรื่อง เพื่อให้ StageManager ใช้ Logic ที่ถูกต้อง
+            // stageData.isStoryBattle = true;
+
+            // 6. ใส่ข้อมูล (สมมติ ChapterData มีตัวแปร 'chapterName')
+            if (Name != null)
+            {
+                Name.text = storyStage.stageName;
+            }
+            if (cardImage != null && storyStage.stageImage != null)
+            {
+                // นำ Sprite จาก Database มาใส่ใน Image component
+                cardImage.sprite = storyStage.stageImage;
+            }
+
+            bool isUnlocked = false;
+            switch (selectedStoryId)
+            {
+                case "A01":
+                    isUnlocked = GameManager.Instance.CurrentGameData.statusPostTest.hasSucessPost_A01;
+                    break;
+                case "A02":
+                    isUnlocked = GameManager.Instance.CurrentGameData.statusPostTest.hasSucessPost_A02;
+                    break;
+                case "A03":
+                    isUnlocked = GameManager.Instance.CurrentGameData.statusPostTest.hasSucessPost_A03;
+                    break;
+
+            }
+            if (buttonComponent != null)
+            {
+                if (isUnlocked)
+                {
+                    Debug.Log($"Stage {storyStage.stageName} is unlocked. Setting up button to open detail popup.");
+                    buttonComponent.interactable = true;
+                    // buttonComponent.onClick.AddListener();
+                    //if (comingSoonTransform != null) comingSoonTransform.gameObject.SetActive(false);
+                    if (LockImage != null) LockImage.gameObject.SetActive(false);
+                }
+                else
+                {
+                    buttonComponent.interactable = false;
+                    if (LockImage != null) LockImage.gameObject.SetActive(true);
+                    //if (comingSoonTransform != null) comingSoonTransform.gameObject.SetActive(false);
+                }
+            }
+
+            // 3. ลงทะเบียนกับ StageManager (ถ้ามีใน Scene)
+            if (StageManager.Instance != null)
+            {
+                StageManager.Instance.RegisterStage(stageData);
+            }
+
+            cardsOnCurrentPage++;
+            chapterCounter++;
+        }
+
+        // --- แก้ไขในส่วนวนลูปสร้าง StoryStage (#8) ---
+        // foreach (var storyStage in storyStages)
+        // {
+        //     // 1. Instantiate ปุ่มปกติของคุณ
+        //     if (currentPageBox == null || cardsOnCurrentPage >= cardsPerPage)
+        //     {
+        //         currentPageBox = Instantiate(BoxPrefab, buttonContainer);
+        //         instantiatedPages.Add(currentPageBox);
+        //         cardsOnCurrentPage = 0;
+        //     }
+
+        //     GameObject newButton = Instantiate(chapterButtonPrefab, currentPageBox.transform);
+
+        //     // 2. เตรียมข้อมูล StageData เพื่อส่งให้ StageManager
+        //     // เราจะสร้าง Object ใหม่ขึ้นมาเพื่อถือข้อมูลชั่วคราว
+        //     StageManager.StageData stageData = new StageManager.StageData();
+        //     stageData.stageID = storyStage.stageID;
+        //     stageData.stageName = storyStage.stageName;
+        //     stageData.stageName_th = storyStage.stageName_th;
+        //     stageData.stageButton = newButton.GetComponent<Button>();
+
+        //     // ค้นหา lockIcon ภายใน Prefab (สมมติว่าชื่อ "Lock")
+        //     Transform lockTr = newButton.transform.Find("Lock");
+        //     if (lockTr != null) stageData.lockIcon = lockTr.gameObject;
+
+        //     stageData.botSprite = storyStage.stageImage;
+        //     stageData.botLevel = storyStage.botLevel;
+        //     stageData.deckDescription = storyStage.deckDescription;
+        //     stageData.deckDescription_th = storyStage.deckDescription_th;
+        //     stageData.starConditions = storyStage.starConditions;
+        //     stageData.requiredChapters = storyStage.requiredChapters;
+        //     stageData.botDecks = storyStage.botDecks;
+        //     stageData.isStoryBattle = storyStage.isStoryBattle;
+        //     stageData.YessButton_Recheck = YesButton_Recheck;
+
+        //     // // ตั้งค่า flag ว่าเป็นด่านเนื้อเรื่อง เพื่อให้ StageManager ใช้ Logic ที่ถูกต้อง
+        //     // stageData.isStoryBattle = true;
+
+        //     // 3. ลงทะเบียนกับ StageManager (ถ้ามีใน Scene)
+        //     if (StageManager.Instance != null)
+        //     {
+        //         StageManager.Instance.RegisterStage(stageData);
+        //     }
+
+        //     TextMeshProUGUI Name = newButton.GetComponentInChildren<TextMeshProUGUI>();
+        //     Button buttonComponent = newButton.GetComponent<Button>();
+        //     Image cardImage = newButton.GetComponent<Image>();
+        //     Transform lockTransform = newButton.transform.Find("Lock");
+        //     Transform StarTransform = newButton.transform.Find("Star box");
+        //     Image LockImage = null;
+        //     if (lockTransform != null) LockImage = lockTransform.GetComponent<Image>();
+        //     if (StarTransform != null)
+        //     {
+        //         StarTransform.gameObject.SetActive(false);
+        //     }
+
+        //     // 6. ใส่ข้อมูล (สมมติ ChapterData มีตัวแปร 'chapterName')
+        //     if (Name != null)
+        //     {
+        //         Name.text = storyStage.stageName;
+        //     }
+        //     if (cardImage != null && storyStage.stageImage != null)
+        //     {
+        //         // นำ Sprite จาก Database มาใส่ใน Image component
+        //         cardImage.sprite = storyStage.stageImage;
+        //     }
+
+        //     bool isUnlocked = false;
+        //     switch (selectedStoryId)
+        //     {
+        //         case "A01":
+        //             isUnlocked = GameManager.Instance.CurrentGameData.statusPostTest.hasSucessPost_A01;
+        //             break;
+        //         case "A02":
+        //             isUnlocked = GameManager.Instance.CurrentGameData.statusPostTest.hasSucessPost_A02;
+        //             break;
+        //         case "A03":
+        //             isUnlocked = GameManager.Instance.CurrentGameData.statusPostTest.hasSucessPost_A03;
+        //             break;
+
+        //     }
+        //     if (buttonComponent != null)
+        //     {
+        //         if (isUnlocked)
+        //         {
+        //             Debug.Log($"Stage {storyStage.stageName} is unlocked. Setting up button to open detail popup.");
+        //             buttonComponent.interactable = true;
+        //             // buttonComponent.onClick.AddListener();
+        //             //if (comingSoonTransform != null) comingSoonTransform.gameObject.SetActive(false);
+        //             if (LockImage != null) LockImage.gameObject.SetActive(false);
+        //         }
+        //         else
+        //         {
+        //             buttonComponent.interactable = false;
+        //             if (LockImage != null) LockImage.gameObject.SetActive(true);
+        //             //if (comingSoonTransform != null) comingSoonTransform.gameObject.SetActive(false);
+        //         }
+        //     }
+
+        //     cardsOnCurrentPage++;
+        //     chapterCounter++;
+        // }
     }
 
     void SetupPagination()

@@ -4834,6 +4834,14 @@ MonoBehaviour:
     m_Localized: Drag words from the "Word Bank" to fill in the blanks correctly.
     m_Metadata:
       m_Items: []
+  - m_Id: 7238618542465024
+    m_Localized: BATTLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7240189997178880
+    m_Localized: CANCEL
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

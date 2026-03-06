@@ -35,6 +35,8 @@ public class GameContentDatabase : MonoBehaviour
     [SerializeField] private List<DailyQuestsData> dailyQuestDatabase = new List<DailyQuestsData>();
     // ข้อมูล Achievement
     [SerializeField] private List<AchievementData> achievementDatabase = new List<AchievementData>();
+
+    [SerializeField] private List<StoryStage> StoryStageDatabase = new List<StoryStage>();
     void Awake()
     {
         // --- โค้ด Singleton ---
@@ -642,6 +644,23 @@ public class GameContentDatabase : MonoBehaviour
             //             }
             // #endif
         }
+
+        if (StoryStageDatabase == null || StoryStageDatabase.Count == 0)
+        {
+            var loadStoryStageData = Resources.LoadAll<StoryStage>("GameContent/StoryStage");
+            if (loadStoryStageData != null && loadStoryStageData.Length > 0)
+            {
+                StoryStageDatabase = new List<StoryStage>(loadStoryStageData);
+            }
+        }
+    }
+
+    public List<StoryStage> GetStoryStagesByStoryID(string storyId)
+    {
+        if (StoryStageDatabase == null || StoryStageDatabase.Count == 0) return null;
+        return StoryStageDatabase
+                .Where(stage => stage.story != null && stage.story.story_id == storyId)
+                .ToList();
     }
 
     //ฟังก์ชันดึงข้อมูลตาม ID ต่างๆ

@@ -42,6 +42,7 @@ public class TestController : MonoBehaviour
     // private bool isPostTest = false;
     private enum TestMode { None, PreTest, PostTest }
     private TestMode currentTestMode = TestMode.None;
+    public Recheck_PopUp recheck_Popup;
 
     IEnumerator Start()
     {
@@ -298,6 +299,7 @@ public class TestController : MonoBehaviour
         }
         else if (currentTestMode == TestMode.PostTest)
         {
+            recheck_Popup.Open();
             GameManager.Instance.SavePreTest_PostTest(false, storyId, correctAnswersCount, calculatedMaxScore, answerList);
         }
 

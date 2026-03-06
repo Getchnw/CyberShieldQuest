@@ -7,7 +7,7 @@ public class UI_LoadStory : MonoBehaviour
 {
     //ลาก GameObject "Story1" ถึง "Story10"
     [SerializeField] private List<UI_StoryItem> storyItemSlots;
-    
+
     private List<StoryData> allStoryData;
 
     void Start()
@@ -18,7 +18,7 @@ public class UI_LoadStory : MonoBehaviour
             return;
         }
         allStoryData = GameContentDatabase.Instance.GetStoryAll();
-        
+
         // เรียกใช้ฟังก์ชันสร้าง UI
         PopulateStoryUI();
     }
@@ -33,6 +33,7 @@ public class UI_LoadStory : MonoBehaviour
         }
         //ดึงProgress
         var allChapterProgress = GameManager.Instance.CurrentGameData.chapterProgress ?? new List<PlayerChapterProgress>();
+        string[] StageId_storyBattle = { "SB_A01", "SB_A02", "SB_A03" };
         // วนลูปตามจำนวน "ช่อง UI" ที่เรามี
         for (int i = 0; i < storyItemSlots.Count; i++)
         {
@@ -41,10 +42,10 @@ public class UI_LoadStory : MonoBehaviour
             {
                 // 1. ดึง "ช่อง UI"
                 UI_StoryItem uiSlot = storyItemSlots[i];
-                
+
                 // 2. ดึง "ข้อมูล"
                 StoryData data = allStoryData[i];
-                
+
                 //ฟังก์ชัน เช็คstatus lock/unlock
                 bool isProgressUnlocked = false;
                 if (i == 0)
@@ -56,19 +57,19 @@ public class UI_LoadStory : MonoBehaviour
                 {
                     // 1. หา Story ก่อนหน้า
                     StoryData previousStory = allStoryData[i - 1];
-                    
+
                     // 2. หา Chapter ทั้งหมดของ Story ก่อนหน้า
                     List<ChapterData> previousStoryChapters = GameContentDatabase.Instance.GetChaptersByStoryID(previousStory.story_id);
-                    
+
                     if (previousStoryChapters != null && previousStoryChapters.Count > 0)
                     {
                         // 3. หา Chapter "สุดท้าย" ของ Story ก่อนหน้า
                         ChapterData lastChapterOfPreviousStory = previousStoryChapters[previousStoryChapters.Count - 1];
-                        
+
                         // 4. ตรวจสอบ Progress ของ Chapter สุดท้ายนั้น
                         PlayerChapterProgress previousProgress = allChapterProgress.Find(
                             p => p.chapter_id == lastChapterOfPreviousStory.chapter_id);
-                        
+
                         // 5. ถ้า Chapter สุดท้ายนั้น "is_completed" = ปลดล็อก
                         if (previousProgress != null && previousProgress.is_completed)
                         {
@@ -77,9 +78,31 @@ public class UI_LoadStory : MonoBehaviour
                         // ยังเรียนไม่เสร็จก็เป็นfalse
                     }
                 }
+                // ดึงความคืบหน้าของ StoryBattle
+                bool isProgressStoryBattle = false;
+                // isProgressStoryBattle = GameManager.Instance.CurrentGameData.stageProgress.Find(sp => sp.stageID == StageId_storyBattle[i]).Any().isCompleted;
+
+                // หาข้อมูลด่านนั้นในลิสต์มาเก็บไว้ก่อน
+                var storyBattle = GameManager.Instance.CurrentGameData.stageProgress
+                    .Find(sp => sp.stageID == StageId_storyBattle[i]);
+
+                //ถ้าหาเจอ (ไม่เป็น null) และด่านนั้นผ่านแล้ว (isCompleted เป็น true)
+                isProgressStoryBattle = (storyBattle != null && storyBattle.isCompleted);
+
+                // รวม isProgressStoryBattle กับ isProgressUnlocked
+                bool final_isProgressUnlocked = false;
+                if (i == 0)
+                {
+                    final_isProgressUnlocked = true;
+                }
+                else
+                {
+                    final_isProgressUnlocked = isProgressUnlocked && isProgressStoryBattle;
+                }
+
                 // 3. สั่งให้ "ช่อง UI" อัปเดตตัวเอง โดยส่ง "ข้อมูล" และ "ฟังก์ชัน" ไปให้
                 uiSlot.gameObject.SetActive(true); // เปิดช่องนี้
-                uiSlot.Setup(data, isProgressUnlocked, SelectStory);                
+                uiSlot.Setup(data, final_isProgressUnlocked, SelectStory);
             }
             else
             {
@@ -96,14 +119,14 @@ public class UI_LoadStory : MonoBehaviour
         Debug.Log($"Player selected Story ID: {storyId}");
 
         // บันทึก Story ID ที่ผู้เล่นเลือก
-        GameManager.Instance.SaveSelectedStory(storyId); 
-        
+        GameManager.Instance.SaveSelectedStory(storyId);
+
         // (โค้ดไปหน้าเลือก Chapter ต่อไป...)
         LoadScene("Template_select_chapter_story");
     }
 
     // (แก้ชื่อเมธอดจาก LoadSence และเพิ่ม .SceneManagement)
-    public void LoadScene (string namescene) 
+    public void LoadScene(string namescene)
     {
         SceneManager.LoadScene(namescene);
     }

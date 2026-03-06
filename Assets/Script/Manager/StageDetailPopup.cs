@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 using UnityEngine.SceneManagement;
 using TMPro; // ถ้าใช้ TextMeshPro
 using System.Collections.Generic;
@@ -34,6 +35,8 @@ public class StageDetailPopup : MonoBehaviour
     public TextMeshProUGUI statusText;         // แสดงสถานะ (ชนะแล้ว/ยังไม่เล่น/ดาวที่ได้)
     public Image completedBadge;               // ⭐ Badge สำหรับแสดง "COMPLETED"
 
+    public TextMeshProUGUI TypeDeckText_StoryBattle;
+
     public Button startButton;
     public Button closeButton;
     // ตัวแปรเก็บข้อมูลด่านปัจจุบันที่กำลังดูอยู่
@@ -41,6 +44,10 @@ public class StageDetailPopup : MonoBehaviour
 
     void Awake()
     {
+        if (currentStageData == null)
+        {
+            Debug.LogWarning("⚠️ currentStageData ยังไม่ได้รับค่า! ตรวจสอบว่า StageManager เรียก Open(data) หรือยัง และ detailPopup ถูก assign ใน Inspector");
+        }
         // ตั้งค่าปุ่มปิดและปุ่มเริ่ม
         if (closeButton != null)
         {
@@ -61,6 +68,98 @@ public class StageDetailPopup : MonoBehaviour
         {
             Debug.LogError("❌ startButton ไม่ได้ reference ใน Inspector!");
         }
+
+        if (currentStageData.isStoryBattle)
+        {
+            Debug.Log("🔵 กำลังตั้งค่าเงื่อนไข Deck สำหรับ Story Battle...");
+            // เช็คประเภทเด็ค
+            // ตรงประเภท เปิดให้กดเริ่มเกมได้
+            bool ischeckDeck = CheckDeck(GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId);
+            startButton.interactable = ischeckDeck;
+
+            if (ischeckDeck)
+            {
+                // ตรงประเภท
+                if (TypeDeckText_StoryBattle != null)
+                {
+                    TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
+                    ? $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
+                    : $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
+                }
+            }
+            else
+            {
+                if (TypeDeckText_StoryBattle != null)
+                {
+                    TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
+                    ? $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
+                    : $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
+                }
+            }
+
+        }
+    }
+
+    private bool CheckDeck(string StoryId)
+    {
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("❌ GameManager.Instance เป็น null! ตรวจสอบว่า GameManager มีอยู่ในฉากและถูกตั้งค่าเป็น Singleton อย่างถูกต้อง");
+            return false;
+        }
+        // 1. ดึงข้อมูล GameData จาก GameManager
+        var data = GameManager.Instance.CurrentGameData; //
+        if (data == null || data.decks == null || data.decks.Count == 0) return false;
+
+        // 2. หาเด็คที่ผู้เล่นเลือกใช้งานอยู่ (อ้างอิงจาก selectedDeckId ที่เราคุยกันก่อนหน้า)
+        // var currentDeck = data.decks.FirstOrDefault(d => d.deck_id == data.selectedDeckId);
+        // if (currentDeck == null || currentDeck.card_ids_in_deck.Count == 0) return false;
+
+        int selectedIndex = PlayerPrefs.GetInt("SelectedDeckIndex", 0);
+
+        // ป้องกันกรณี Index เกินจำนวนเด็คที่มี
+        if (selectedIndex < 0 || selectedIndex >= data.decks.Count) selectedIndex = 0;
+
+        // ดึง DeckData ตามลำดับ Index
+        DeckData currentDeck = data.decks[selectedIndex];
+        if (currentDeck == null || currentDeck.card_ids_in_deck.Count == 0) return false;
+
+        // 3. วนลูปเช็คการ์ดทุกใบในเด็ค
+        foreach (string id in currentDeck.card_ids_in_deck)
+        {
+            // เรียกใช้ฟังก์ชัน GetCardByID ที่คุณเตรียมไว้
+            CardData card = GameContentDatabase.Instance.GetCardByID(id);
+
+            if (card != null)
+            {
+                MainCategory mainCategory = ChangeStoryBattleToMainCategory(StoryId);
+                // ตรวจสอบว่า FromStroryId ของการ์ด ตรงกับ StoryId ของด่านหรือไม่
+                // (ใช้ชื่อ FromStroryId ตาม typo ใน CardData ของคุณ)
+                if (card.mainCategory != mainCategory)
+                {
+                    Debug.Log($"[CheckDeck] การ์ด {card.cardName} ไม่ใช่ประเภท {StoryId}");
+                    return false; // พบการ์ดที่ไม่เข้าพวก
+                }
+            }
+        }
+
+        return true; // การ์ดทุกใบในเด็คตรงประเภททั้งหมด
+    }
+
+    private MainCategory ChangeStoryBattleToMainCategory(string StoryId)
+    {
+        switch (StoryId)
+        {
+            case "A01":
+                return MainCategory.A01;
+            case "A02":
+                return MainCategory.A02;
+            case "A03":
+                return MainCategory.A03;
+            default:
+                Debug.LogWarning($"[ChangeStoryBattleToMainCategory] StoryId {StoryId} ไม่ตรงกับกรณีที่กำหนด");
+                return MainCategory.General; // ค่า default ถ้าไม่ตรงกับกรณีใดๆ
+        }
     }
 
     // ฟังก์ชันเปิด Popup และอัปเดตข้อมูล
@@ -69,6 +168,36 @@ public class StageDetailPopup : MonoBehaviour
         Debug.Log($"[POPUP] Open() ถูกเรียก สำหรับ {data.stageName}");
 
         currentStageData = data;
+
+        if (currentStageData.isStoryBattle)
+        {
+            Debug.Log("🔵 กำลังตั้งค่าเงื่อนไข Deck สำหรับ Story Battle...");
+            // เช็คประเภทเด็ค
+            // ตรงประเภท เปิดให้กดเริ่มเกมได้
+            bool ischeckDeck = CheckDeck(GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId);
+            startButton.interactable = ischeckDeck;
+
+            if (ischeckDeck)
+            {
+                // ตรงประเภท
+                if (TypeDeckText_StoryBattle != null)
+                {
+                    TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
+                    ? $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
+                    : $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
+                }
+            }
+            else
+            {
+                if (TypeDeckText_StoryBattle != null)
+                {
+                    TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
+                    ? $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
+                    : $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
+                }
+            }
+
+        }
 
         // 1. อัปเดตข้อความต่างๆ
         if (LocalizationSettings.SelectedLocale.Identifier.Code == "th")
@@ -101,63 +230,63 @@ public class StageDetailPopup : MonoBehaviour
         var progress = GameManager.Instance != null ? GameManager.Instance.GetStageProgress(data.stageID) : null;
         int starsEarned = (progress != null && progress.isCompleted) ? progress.starsEarned : 0;
         List<bool> completedMissions = progress != null ? progress.completedStarMissions : null;
-
-        for (int i = 0; i < starCriteriaTexts.Length; i++)
-        {
-            if (LocalizationSettings.SelectedLocale.Identifier.Code == "th")
+        if (starCriteriaTexts.Length > 0)
+            for (int i = 0; i < starCriteriaTexts.Length; i++)
             {
-                // Thai
-                if (i < data.starConditions.Count)
+                if (LocalizationSettings.SelectedLocale.Identifier.Code == "th")
                 {
-                    bool hasMissionState = completedMissions != null && i < completedMissions.Count;
-                    bool starCompleted = hasMissionState ? completedMissions[i] : (i < starsEarned);
-
-                    if (starCompleted)
+                    // Thai
+                    if (i < data.starConditions.Count)
                     {
-                        // ทำแล้ว = [X] + สีเขียว
-                        starCriteriaTexts[i].text = $"[X] {data.starConditions[i].description_th}";
-                        starCriteriaTexts[i].color = new Color(0.2f, 1f, 0.2f); // สีเขียว
+                        bool hasMissionState = completedMissions != null && i < completedMissions.Count;
+                        bool starCompleted = hasMissionState ? completedMissions[i] : (i < starsEarned);
+
+                        if (starCompleted)
+                        {
+                            // ทำแล้ว = [X] + สีเขียว
+                            starCriteriaTexts[i].text = $"[X] {data.starConditions[i].description_th}";
+                            starCriteriaTexts[i].color = new Color(0.2f, 1f, 0.2f); // สีเขียว
+                        }
+                        else
+                        {
+                            // ยังไม่ทำ = [ ] + สีขาว
+                            starCriteriaTexts[i].text = $"[ ] {data.starConditions[i].description_th}";
+                            starCriteriaTexts[i].color = Color.white;
+                        }
                     }
                     else
                     {
-                        // ยังไม่ทำ = [ ] + สีขาว
-                        starCriteriaTexts[i].text = $"[ ] {data.starConditions[i].description_th}";
-                        starCriteriaTexts[i].color = Color.white;
+                        Debug.Log("I'm Here");
+                        starCriteriaTexts[i].text = ""; // เคลียร์ข้อความถ้าไม่มี
                     }
                 }
                 else
                 {
-                    Debug.Log("I'm Here");
-                    starCriteriaTexts[i].text = ""; // เคลียร์ข้อความถ้าไม่มี
-                }
-            }
-            else
-            {
-                // Englih
-                if (i < data.starConditions.Count)
-                {
-                    bool hasMissionState = completedMissions != null && i < completedMissions.Count;
-                    bool starCompleted = hasMissionState ? completedMissions[i] : (i < starsEarned);
-
-                    if (starCompleted)
+                    // Englih
+                    if (i < data.starConditions.Count)
                     {
-                        // ทำแล้ว = [X] + สีเขียว
-                        starCriteriaTexts[i].text = $"[X] {data.starConditions[i].description}";
-                        starCriteriaTexts[i].color = new Color(0.2f, 1f, 0.2f); // สีเขียว
+                        bool hasMissionState = completedMissions != null && i < completedMissions.Count;
+                        bool starCompleted = hasMissionState ? completedMissions[i] : (i < starsEarned);
+
+                        if (starCompleted)
+                        {
+                            // ทำแล้ว = [X] + สีเขียว
+                            starCriteriaTexts[i].text = $"[X] {data.starConditions[i].description}";
+                            starCriteriaTexts[i].color = new Color(0.2f, 1f, 0.2f); // สีเขียว
+                        }
+                        else
+                        {
+                            // ยังไม่ทำ = [ ] + สีขาว
+                            starCriteriaTexts[i].text = $"[ ] {data.starConditions[i].description}";
+                            starCriteriaTexts[i].color = Color.white;
+                        }
                     }
                     else
                     {
-                        // ยังไม่ทำ = [ ] + สีขาว
-                        starCriteriaTexts[i].text = $"[ ] {data.starConditions[i].description}";
-                        starCriteriaTexts[i].color = Color.white;
+                        starCriteriaTexts[i].text = ""; // เคลียร์ข้อความถ้าไม่มี
                     }
                 }
-                else
-                {
-                    starCriteriaTexts[i].text = ""; // เคลียร์ข้อความถ้าไม่มี
-                }
             }
-        }
 
         // 4. อัปเดตสถานะ (ชนะแล้ว/ยังไม่เล่น)
         Debug.Log($"[POPUP] statusText = {(statusText != null ? "Found" : "NULL")}");
@@ -220,12 +349,13 @@ public class StageDetailPopup : MonoBehaviour
     void OnStartClick()
     {
         Debug.Log("🔵 OnStartClick ถูกเรียก!");
-
         if (currentStageData == null)
         {
             Debug.LogError("❌ currentStageData เป็น null! ตรวจสอบว่า StageManager เรียก Open(data) หรือยัง และ detailPopup ถูก assign ใน Inspector");
             return;
         }
+
+        // เพิ่มเงื่อนไขเช็ค Deck
 
         // บันทึก Stage ID ลงหน่วยความจำ (เผื่อระบบ Battle ต้องอ่าน ID นี้)
         Debug.Log($"✅ กำลังเริ่มด่าน: {currentStageData.stageID}");
