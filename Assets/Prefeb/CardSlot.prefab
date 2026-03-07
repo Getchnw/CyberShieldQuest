@@ -333,6 +333,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34c6940d8072e354491b7a49e2e446d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  iconOnDeploy: {fileID: 21300000, guid: f628835546ae52c48b093cd1c96aba4c, type: 3}
+  iconOnStrike: {fileID: 21300000, guid: af28f0b45488e7343ab238462f835932, type: 3}
+  iconOnStrikeHit: {fileID: 21300000, guid: 266e892a738eeb44f959b61576be5387, type: 3}
+  iconOnIntercept: {fileID: 0}
+  iconOnDestroyed: {fileID: 0}
+  iconOnTurnEnd: {fileID: 0}
+  iconContinuous: {fileID: 21300000, guid: f91eda59289dff54893d715f0f97dece, type: 3}
+  iconDestroy: {fileID: 0}
+  iconDisableAttack: {fileID: 21300000, guid: b719b9ceabddd144690a35a6f77d2246, type: 3}
+  iconDisableAbility: {fileID: 21300000, guid: d1a578e40cff28b45b98e0ed2d823462, type: 3}
+  iconRevealHand: {fileID: 21300000, guid: 5c4cec9af0977114e909f8c09dbaa7e8, type: 3}
+  iconDiscardDeck: {fileID: 21300000, guid: adadf2fe0e120814c86afd1e9391cd0d, type: 3}
+  iconSummonToken: {fileID: 21300000, guid: 415dd881088ea11478ce5b1c3d78c103, type: 3}
+  iconModifyStat: {fileID: 0}
+  iconControlEquip: {fileID: 21300000, guid: adadf2fe0e120814c86afd1e9391cd0d, type: 3}
+  iconHealHP: {fileID: 21300000, guid: abf8af3b42ec64f4aac5316abbdcf821, type: 3}
+  iconForceIntercept: {fileID: 21300000, guid: c161bc6b82f2e3c4c95c888c43d8fb1d, type: 3}
+  iconBypassIntercept: {fileID: 21300000, guid: 6467327ba8db82e4db2fc07bf30d1c0c, type: 3}
+  iconDisableIntercept: {fileID: 0}
+  iconDrawCard: {fileID: 0}
+  iconRush: {fileID: 0}
+  iconDoubleStrike: {fileID: 21300000, guid: dd9c5ce614489ff42bc538222c8cad82, type: 3}
+  iconGraveyardATK: {fileID: 21300000, guid: 30d7c676381880b4a8f2a5df45cd6572, type: 3}
+  iconZeroStats: {fileID: 21300000, guid: 7eb10556d389b044eafc0bd6440e06ea, type: 3}
+  iconRemoveCategory: {fileID: 0}
+  iconForceChooseDiscard: {fileID: 21300000, guid: 4d09ae9974ed7734ba4790a529ad7624, type: 3}
+  iconReturnEquipFromGraveyard: {fileID: 21300000, guid: 502b37873138df74482634532f827de1, type: 3}
+  iconPeekDiscardTopDeck: {fileID: 21300000, guid: 5ea3cf5e7ce82ae4db22752a150c2133, type: 3}
+  iconMarkInterceptMillDeck: {fileID: 21300000, guid: 5ea3cf5e7ce82ae4db22752a150c2133, type: 3}
+  iconProtection: {fileID: 21300000, guid: b2cf3321fd3987f47a0b17e3b46fc871, type: 3}
   frameSprite: {fileID: 0}
   commonFrame: {fileID: 21300000, guid: 026f9ff8c6d16e947a173157ede79a1b, type: 3}
   rareFrame: {fileID: 21300000, guid: be01e642111c5de49a6392d4584503fd, type: 3}
@@ -349,8 +379,14 @@ MonoBehaviour:
   bypassAllowedSubCat: 0
   mustIntercept: 0
   cannotIntercept: 0
+  markedInterceptTarget: {fileID: 0}
+  markedInterceptMillCount: 0
   hasLostCategory: 0
   categoryLostTurnsRemaining: 0
+  isControlled: 0
+  controlledTurnsRemaining: 0
+  originalEquipSlot: {fileID: 0}
+  originalOwnerIsPlayer: 1
 --- !u!225 &4905903470944591649
 CanvasGroup:
   m_ObjectHideFlags: 0

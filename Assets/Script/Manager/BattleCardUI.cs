@@ -14,6 +14,49 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     private TextMeshProUGUI atkText; // 🔥 แสดงพลังปัจจุบัน (ซ้ายล่าง)
     private TextMeshProUGUI costText; // 🔥 แสดงคอส (ขวาบน)
     private TextMeshProUGUI statusText; // 🔥 แสดงสถานะพิเศษบนการ์ด (เช่น ห้าม Intercept)
+    
+    [Header("Card Symbol Icons")]
+    private Image skillIconContainer; // 🎨 ฐานรองสำหรับโซนแสดงไอคอนสกิล
+    private Image[] skillIcons = new Image[4]; // 🔥 ไอคอนสกิล 4 ช่อง (รองรับหลายสกิล)
+    private Image triggerIcon; // 🎯 แสดงไอคอน Trigger (รูป) - backward compat
+    private Image actionIcon; // ⚡ แสดงไอคอน Action (รูป) - backward compat
+    private TextMeshProUGUI triggerSymbol; // 🎯 แสดงสัญลักษณ์ Trigger (fallback)
+    private TextMeshProUGUI actionSymbol; // ⚡ แสดงสัญลักษณ์ Action (fallback)
+    private TextMeshProUGUI subCategoryBadge; // 🏷️ แสดง SubCategory (ด้านล่างขวา)
+    
+    [Header("Trigger Icon Sprites (ตั้งใน Inspector)")]
+    public Sprite iconOnDeploy;
+    public Sprite iconOnStrike;
+    public Sprite iconOnStrikeHit;
+    public Sprite iconOnIntercept;
+    public Sprite iconOnDestroyed;
+    public Sprite iconOnTurnEnd;
+    public Sprite iconContinuous;
+    
+    [Header("Action Icon Sprites (ตั้งใน Inspector)")]
+    public Sprite iconDestroy;
+    public Sprite iconDisableAttack;
+    public Sprite iconDisableAbility;
+    public Sprite iconRevealHand;
+    public Sprite iconDiscardDeck;
+    public Sprite iconSummonToken;
+    public Sprite iconModifyStat;
+    public Sprite iconControlEquip;
+    public Sprite iconHealHP;
+    public Sprite iconForceIntercept;
+    public Sprite iconBypassIntercept;
+    public Sprite iconDisableIntercept;
+    public Sprite iconDrawCard;
+    public Sprite iconRush;
+    public Sprite iconDoubleStrike;
+    public Sprite iconGraveyardATK;
+    public Sprite iconZeroStats;
+    public Sprite iconRemoveCategory;
+    public Sprite iconForceChooseDiscard;
+    public Sprite iconReturnEquipFromGraveyard;
+    public Sprite iconPeekDiscardTopDeck;
+    public Sprite iconMarkInterceptMillDeck;
+    public Sprite iconProtection; // ใช้ร่วมกันสำหรับทุก Protect action
 
     [Header("Card Frame")]
     public Sprite frameSprite; // 🔥 Sprite ของกรอบการ์ด (ตั้งใน Inspector)
@@ -533,7 +576,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 RectTransform atkRect = atkObj.GetComponent<RectTransform>();
                 atkRect.anchorMin = Vector2.zero;
                 atkRect.anchorMax = Vector2.one;
-                atkRect.offsetMin = new Vector2(12, 8); // 🔥 มุมซ้ายล่าง (ห่างจากขอบ)
+                atkRect.offsetMin = new Vector2(12, 3); // 🔥 มุมซ้ายล่าง (ต่ำลง)
                 atkRect.offsetMax = new Vector2(-12, -8);
             }
 
@@ -565,7 +608,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 costRect.anchorMin = Vector2.zero;
                 costRect.anchorMax = Vector2.one;
                 costRect.offsetMin = new Vector2(12, 13);
-                costRect.offsetMax = new Vector2(-10, -1 ); // 🔥 มุมขวาบน (สูงขึ้นอีก 10px)
+                costRect.offsetMax = new Vector2(-10, 5); // 🔥 มุมขวาบน (สูงขึ้นอีก)
             }
 
             // 🔥 สร้างข้อความสถานะพิเศษ (กึ่งกลางด้านบน)
@@ -598,6 +641,228 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 statusRect.offsetMin = new Vector2(8, 8);
                 statusRect.offsetMax = new Vector2(-8, -8);
             }
+            
+            // � สร้างฐานรอง (Container) สำหรับโซนแสดงไอคอนสกิล
+            if (skillIconContainer == null)
+            {
+                foreach (Transform child in transform)
+                {
+                    if (child.name == "SkillIconContainer") Destroy(child.gameObject);
+                }
+
+                GameObject containerObj = new GameObject("SkillIconContainer");
+                containerObj.transform.SetParent(transform, false);
+                containerObj.transform.SetAsLastSibling();
+
+                skillIconContainer = containerObj.AddComponent<Image>();
+                skillIconContainer.raycastTarget = false;
+                skillIconContainer.color = new Color(0.05f, 0.05f, 0.05f, 0.90f); // สีดำโปร่งแสง
+                skillIconContainer.gameObject.SetActive(false);
+
+                // 🔒 ใช้ percentage-based anchors เพื่อให้ scale ตามขนาดการ์ด
+                RectTransform containerRect = containerObj.GetComponent<RectTransform>();
+                // ตำแหน่ง: ชิดซ้ายบน 6% จากซ้าย, 78%-90% จากล่าง - ขยายกว้างสำหรับ 4 ไอคอน
+                containerRect.anchorMin = new Vector2(0.06f, 0.78f);
+                containerRect.anchorMax = new Vector2(0.97f, 0.90f);
+                containerRect.pivot = new Vector2(0, 1);
+                containerRect.offsetMin = Vector2.zero;
+                containerRect.offsetMax = Vector2.zero;
+
+                // เพิ่มขอบมนให้ดูสวยงาม (ใช้ Outline)
+                var outline = containerObj.AddComponent<Outline>();
+                outline.effectColor = new Color(0.25f, 0.25f, 0.25f, 0.8f); // ขอบสีเทาดำ
+                outline.effectDistance = new Vector2(1.5f, -1.5f);
+            }
+
+            // 🔥 สร้าง 4 Skill Icon Slots ใน Container
+            for (int i = 0; i < 4; i++)
+            {
+                if (skillIcons[i] == null)
+                {
+                    string iconName = $"SkillIcon_{i}";
+                    foreach (Transform child in skillIconContainer.transform)
+                    {
+                        if (child.name == iconName) Destroy(child.gameObject);
+                    }
+
+                    GameObject iconObj = new GameObject(iconName);
+                    iconObj.transform.SetParent(skillIconContainer.transform, false);
+                    iconObj.transform.SetAsLastSibling();
+
+                    skillIcons[i] = iconObj.AddComponent<Image>();
+                    skillIcons[i].raycastTarget = false;
+                    skillIcons[i].preserveAspect = true;
+                    skillIcons[i].gameObject.SetActive(false);
+
+                    // 🔒 แบ่ง 4 ช่อง (0-24%, 25-49%, 50-74%, 75-99%)
+                    float startX = i * 0.25f + 0.02f;
+                    float endX = (i + 1) * 0.25f - 0.02f;
+                    
+                    RectTransform iconRect = iconObj.GetComponent<RectTransform>();
+                    iconRect.anchorMin = new Vector2(startX, 0.1f);
+                    iconRect.anchorMax = new Vector2(endX, 0.9f);
+                    iconRect.pivot = new Vector2(0.5f, 0.5f);
+                    iconRect.offsetMin = Vector2.zero;
+                    iconRect.offsetMax = Vector2.zero;
+                }
+            }
+
+            // 🎯 สร้างไอคอน Trigger (รูป - ใต้ชื่อการ์ด ชิดซ้าย)
+            if (triggerIcon == null)
+            {
+                foreach (Transform child in transform)
+                {
+                    if (child.name == "TriggerIcon") Destroy(child.gameObject);
+                }
+
+                // ตรวจสอบว่า skillIconContainer มีอยู่หรือไม่
+                Transform parentTransform = skillIconContainer != null ? skillIconContainer.transform : transform;
+
+                GameObject triggerIconObj = new GameObject("TriggerIcon");
+                triggerIconObj.transform.SetParent(parentTransform, false);
+                triggerIconObj.transform.SetAsLastSibling();
+
+                triggerIcon = triggerIconObj.AddComponent<Image>();
+                triggerIcon.raycastTarget = false;
+                triggerIcon.preserveAspect = true;
+                triggerIcon.gameObject.SetActive(false);
+
+                // 🔒 ใช้ percentage anchors ใน container (2%-48% ของความกว้าง container)
+                RectTransform iconRect = triggerIconObj.GetComponent<RectTransform>();
+                iconRect.anchorMin = new Vector2(0.02f, 0.1f);
+                iconRect.anchorMax = new Vector2(0.48f, 0.9f);
+                iconRect.pivot = new Vector2(0.5f, 0.5f);
+                iconRect.offsetMin = Vector2.zero;
+                iconRect.offsetMax = Vector2.zero;
+            }
+            
+            // 🎯 สร้างสัญลักษณ์ Trigger (Text fallback)
+            if (triggerSymbol == null)
+            {
+                foreach (Transform child in transform)
+                {
+                    if (child.name == "TriggerSymbol") Destroy(child.gameObject);
+                }
+
+                GameObject triggerObj = new GameObject("TriggerSymbol");
+                triggerObj.transform.SetParent(transform, false);
+                triggerObj.transform.SetAsLastSibling();
+
+                triggerSymbol = triggerObj.AddComponent<TextMeshProUGUI>();
+                triggerSymbol.fontSize = 28;
+                triggerSymbol.alignment = TextAlignmentOptions.Left;
+                triggerSymbol.color = Color.white;
+                triggerSymbol.fontStyle = FontStyles.Bold;
+                triggerSymbol.text = "";
+                triggerSymbol.raycastTarget = false;
+                triggerSymbol.gameObject.SetActive(false);
+                
+                // เพิ่ม outline เพื่อให้เห็นชัด
+                triggerSymbol.outlineWidth = 0.2f;
+                triggerSymbol.outlineColor = Color.black;
+
+                // 🔒 ใช้ percentage anchors ในการ์ด (ชิดซ้ายบน)
+                RectTransform triggerRect = triggerObj.GetComponent<RectTransform>();
+                triggerRect.anchorMin = new Vector2(0.03f, 0.80f);
+                triggerRect.anchorMax = new Vector2(0.30f, 0.92f);
+                triggerRect.pivot = new Vector2(0, 1);
+                triggerRect.offsetMin = Vector2.zero;
+                triggerRect.offsetMax = Vector2.zero;
+            }
+            
+            // ⚡ สร้างไอคอน Action (รูป - ข้าง Trigger)
+            if (actionIcon == null)
+            {
+                foreach (Transform child in transform)
+                {
+                    if (child.name == "ActionIcon") Destroy(child.gameObject);
+                }
+
+                // ตรวจสอบว่า skillIconContainer มีอยู่หรือไม่
+                Transform parentTransform = skillIconContainer != null ? skillIconContainer.transform : transform;
+
+                GameObject actionIconObj = new GameObject("ActionIcon");
+                actionIconObj.transform.SetParent(parentTransform, false);
+                actionIconObj.transform.SetAsLastSibling();
+
+                actionIcon = actionIconObj.AddComponent<Image>();
+                actionIcon.raycastTarget = false;
+                actionIcon.preserveAspect = true;
+                actionIcon.gameObject.SetActive(false);
+
+                // 🔒 ใช้ percentage anchors ใน container (52%-98% ของความกว้าง container)
+                RectTransform iconRect = actionIconObj.GetComponent<RectTransform>();
+                iconRect.anchorMin = new Vector2(0.52f, 0.1f);
+                iconRect.anchorMax = new Vector2(0.98f, 0.9f);
+                iconRect.pivot = new Vector2(0.5f, 0.5f);
+                iconRect.offsetMin = Vector2.zero;
+                iconRect.offsetMax = Vector2.zero;
+            }
+            
+            // ⚡ สร้างสัญลักษณ์ Action (Text fallback)
+            if (actionSymbol == null)
+            {
+                foreach (Transform child in transform)
+                {
+                    if (child.name == "ActionSymbol") Destroy(child.gameObject);
+                }
+
+                GameObject actionObj = new GameObject("ActionSymbol");
+                actionObj.transform.SetParent(transform, false);
+                actionObj.transform.SetAsLastSibling();
+
+                actionSymbol = actionObj.AddComponent<TextMeshProUGUI>();
+                actionSymbol.fontSize = 28;
+                actionSymbol.alignment = TextAlignmentOptions.Left;
+                actionSymbol.color = Color.white;
+                actionSymbol.fontStyle = FontStyles.Bold;
+                actionSymbol.text = "";
+                actionSymbol.raycastTarget = false;
+                actionSymbol.gameObject.SetActive(false);
+                
+                actionSymbol.outlineWidth = 0.2f;
+                actionSymbol.outlineColor = Color.black;
+
+                // 🔒 ใช้ percentage anchors ในการ์ด (ข้าง Trigger)
+                RectTransform actionRect = actionObj.GetComponent<RectTransform>();
+                actionRect.anchorMin = new Vector2(0.28f, 0.80f);
+                actionRect.anchorMax = new Vector2(0.55f, 0.92f);
+                actionRect.pivot = new Vector2(0, 1);
+                actionRect.offsetMin = Vector2.zero;
+                actionRect.offsetMax = Vector2.zero;
+            }
+            
+            // 🏷️ สร้าง SubCategory Badge (ด้านล่างขวา)
+            if (subCategoryBadge == null)
+            {
+                foreach (Transform child in transform)
+                {
+                    if (child.name == "SubCategoryBadge") Destroy(child.gameObject);
+                }
+
+                GameObject badgeObj = new GameObject("SubCategoryBadge");
+                badgeObj.transform.SetParent(transform, false);
+                badgeObj.transform.SetAsLastSibling();
+
+                subCategoryBadge = badgeObj.AddComponent<TextMeshProUGUI>();
+                subCategoryBadge.fontSize = 16;
+                subCategoryBadge.alignment = TextAlignmentOptions.BottomRight;
+                subCategoryBadge.color = Color.white;
+                subCategoryBadge.fontStyle = FontStyles.Bold;
+                subCategoryBadge.text = "";
+                subCategoryBadge.raycastTarget = false;
+                subCategoryBadge.gameObject.SetActive(false);
+                
+                subCategoryBadge.outlineWidth = 0.25f;
+                subCategoryBadge.outlineColor = Color.black;
+
+                RectTransform badgeRect = badgeObj.GetComponent<RectTransform>();
+                badgeRect.anchorMin = new Vector2(1, 0);
+                badgeRect.anchorMax = new Vector2(1, 0);
+                badgeRect.pivot = new Vector2(1, 0);
+                badgeRect.anchoredPosition = new Vector2(-6, 32); // มุมขวาล่าง เหนือ ATK
+                badgeRect.sizeDelta = new Vector2(60, 24);
+            }
     }
 
     /// <summary>ปรับขนาดการ์ดตามตำแหน่ง (ในมือ vs บนสนาม)</summary>
@@ -624,6 +889,9 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public void Setup(CardData data)
     {
         _cardData = data;
+        
+        // 🔥 สร้าง UI elements ถ้ายังไม่มี (เพื่อให้แสดงไอคอนได้ทุก scene)
+        CreateUIElementsIfNeeded();
         
         // ตั้งรูปการ์ด และบังคับให้รับ Raycast เสมอ (กันกรณี prefab ปิดไว้)
         if (artworkImage != null)
@@ -662,7 +930,10 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             statusText.gameObject.SetActive(false);
         }
         
-        // 🎈 หยุดอนิเมชั่นลอยเพื่อไม่รบกวน HorizontalLayoutGroup
+        // � อัปเดตสัญลักษณ์บนการ์ด (Trigger, Action, SubCategory)
+        UpdateSymbolDisplay();
+        
+        // �🎈 หยุดอนิเมชั่นลอยเพื่อไม่รบกวน HorizontalLayoutGroup
         floatTime = 0f;
         originalPosition = transform.localPosition;
         isFloating = false; // 🔥 ปิดลอยในมือ
@@ -745,6 +1016,406 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         return _cardData;
     }
 
+    // 🎯 === Sprite Mapping System ===
+    
+    /// <summary>แปลง EffectTrigger เป็น Sprite (คืน null ถ้าไม่มี)</summary>
+    private Sprite GetTriggerSprite(EffectTrigger trigger)
+    {
+        switch (trigger)
+        {
+            case EffectTrigger.OnDeploy: return iconOnDeploy;
+            case EffectTrigger.OnStrike: return iconOnStrike;
+            case EffectTrigger.OnStrikeHit: return iconOnStrikeHit;
+            case EffectTrigger.OnIntercept: return iconOnIntercept;
+            case EffectTrigger.OnDestroyed: return iconOnDestroyed;
+            case EffectTrigger.OnTurnEnd: return iconOnTurnEnd;
+            case EffectTrigger.Continuous: return iconContinuous;
+            default: return null;
+        }
+    }
+    
+    /// <summary>แปลง ActionType เป็น Sprite (คืน null ถ้าไม่มี)</summary>
+    private Sprite GetActionSprite(ActionType action)
+    {
+        switch (action)
+        {
+            case ActionType.Destroy: return iconDestroy;
+            case ActionType.DisableAttack: return iconDisableAttack;
+            case ActionType.DisableAbility: return iconDisableAbility;
+            case ActionType.RevealHand:
+            case ActionType.RevealHandMultiple: return iconRevealHand;
+            case ActionType.DiscardDeck: return iconDiscardDeck;
+            case ActionType.SummonToken: return iconSummonToken;
+            case ActionType.ModifyStat: return iconModifyStat;
+            case ActionType.ControlEquip: return iconControlEquip;
+            case ActionType.HealHP:
+            case ActionType.HealOnMonsterSummoned: return iconHealHP;
+            case ActionType.ForceIntercept: return iconForceIntercept;
+            case ActionType.BypassIntercept: return iconBypassIntercept;
+            case ActionType.DisableIntercept: return iconDisableIntercept;
+            case ActionType.DrawCard: return iconDrawCard;
+            case ActionType.Rush: return iconRush;
+            case ActionType.DoubleStrike: return iconDoubleStrike;
+            case ActionType.GraveyardATK: return iconGraveyardATK;
+            case ActionType.ZeroStats: return iconZeroStats;
+            case ActionType.RemoveCategory: return iconRemoveCategory;
+            case ActionType.ForceChooseDiscard: return iconForceChooseDiscard;
+            case ActionType.ReturnEquipFromGraveyard: return iconReturnEquipFromGraveyard;
+            case ActionType.PeekDiscardTopDeck: return iconPeekDiscardTopDeck;
+            case ActionType.MarkInterceptMillDeck: return iconMarkInterceptMillDeck;
+            case ActionType.InterceptAlwaysTypeMatch: return iconForceIntercept; // ใช้รูปเดียวกัน
+            case ActionType.ProtectDrawnCards:
+            case ActionType.ProtectRevealHandMultiple:
+            case ActionType.ProtectForceInterceptEquip:
+            case ActionType.ProtectOtherOwnEquipFromAbilityDestroy: return iconProtection;
+            default: return null;
+        }
+    }
+
+    // 🎯 === Symbol Mapping System (Text Fallback) ===
+    
+    /// <summary>แปลง EffectTrigger เป็นสัญลักษณ์</summary>
+    private string GetTriggerSymbol(EffectTrigger trigger)
+    {
+        switch (trigger)
+        {
+            case EffectTrigger.OnDeploy: return "▶"; // เมื่อลงสนาม (Deploy)
+            case EffectTrigger.OnStrike: return "★"; // เมื่อโจมตี (Strike)
+            case EffectTrigger.OnStrikeHit: return "◆"; // เมื่อโจมตีโดน (Hit)
+            case EffectTrigger.OnIntercept: return "■"; // เมื่อกันการโจมตี (Intercept)
+            case EffectTrigger.OnDestroyed: return "✕"; // เมื่อถูกทำลาย (desTroyed)
+            case EffectTrigger.OnTurnEnd: return "●"; // สิ้นสุดเทิร์น (End)
+            case EffectTrigger.Continuous: return "∞"; // ต่อเนื่อง (Continuous)
+            default: return "";
+        }
+    }
+    
+    /// <summary>แปลง EffectTrigger เป็นสีประจำ</summary>
+    private Color GetTriggerColor(EffectTrigger trigger)
+    {
+        switch (trigger)
+        {
+            case EffectTrigger.OnDeploy: return new Color(0.2f, 0.8f, 0.2f); // เขียว
+            case EffectTrigger.OnStrike: return new Color(1f, 0.4f, 0.2f); // ส้มแดง
+            case EffectTrigger.OnStrikeHit: return new Color(1f, 0.2f, 0.2f); // แดง
+            case EffectTrigger.OnIntercept: return new Color(0.3f, 0.6f, 1f); // ฟ้า
+            case EffectTrigger.OnDestroyed: return new Color(0.6f, 0.3f, 0.8f); // ม่วง
+            case EffectTrigger.OnTurnEnd: return new Color(1f, 0.9f, 0.3f); // เหลือง
+            case EffectTrigger.Continuous: return new Color(0f, 1f, 1f); // ฟ้าอมเขียว
+            default: return Color.white;
+        }
+    }
+    
+    /// <summary>แปลง ActionType เป็นสัญลักษณ์</summary>
+    private string GetActionSymbol(ActionType action)
+    {
+        switch (action)
+        {
+            // การทำลาย/ควบคุม
+            case ActionType.Destroy: return "✕"; // ทำลาย
+            case ActionType.ControlEquip: return "♠"; // ควบคุม Equip
+            case ActionType.RemoveCategory: return "○"; // ลบ Category
+            case ActionType.ZeroStats: return "0"; // ลดสถานะเป็น 0
+            
+            // ปิด/ห้าม
+            case ActionType.DisableAttack: return "⊘"; // ห้ามโจมตี
+            case ActionType.DisableAbility: return "⊗"; // ปิดสกิล
+            case ActionType.DisableIntercept: return "⊖"; // ห้ามกันการโจมตี
+            
+            // ดู/เปิดเผย
+            case ActionType.RevealHand: return "◎"; // ดูมือ 1 ใบ
+            case ActionType.RevealHandMultiple: return "◉"; // ดูมือหลายใบ
+            case ActionType.PeekDiscardTopDeck: return "▽"; // ดูและทิ้งบนเด็ค
+            
+            // ทิ้ง/เด็ค
+            case ActionType.DiscardDeck: return "▼"; // Mill จากเด็ค
+            case ActionType.ForceChooseDiscard: return "▿"; // บังคับเลือกทิ้ง
+            case ActionType.MarkInterceptMillDeck: return "▾"; // Mill เด็คเมื่อ Intercept
+            
+            // เรียก/สร้าง
+            case ActionType.SummonToken: return "+"; // เรียก Token
+            case ActionType.DrawCard: return "△"; // จั่วการ์ด
+            case ActionType.ReturnEquipFromGraveyard: return "↺"; // คืน Equip จากสุสาน
+            
+            // การโจมตี
+            case ActionType.Rush: return "»"; // โจมตีได้ทันที
+            case ActionType.DoubleStrike: return "★★"; // โจมตี 2 ครั้ง
+            case ActionType.GraveyardATK: return "†"; // พลังจากสุสาน
+            case ActionType.BypassIntercept: return "→"; // ข้ามการกัน
+            
+            // การกัน
+            case ActionType.ForceIntercept: return "↔"; // บังคับกัน
+            case ActionType.InterceptAlwaysTypeMatch: return "◈"; // กันได้เสมอ (type match)
+            
+            // รักษา
+            case ActionType.HealHP: return "♥"; // รักษา HP
+            case ActionType.HealOnMonsterSummoned: return "♡"; // รักษาเมื่อ Summon Monster
+            
+            // ปรับสถานะ
+            case ActionType.ModifyStat: return "±"; // ปรับสถานะ
+            
+            // Protection
+            case ActionType.ProtectDrawnCards: return "■△"; // ปกป้องการ์ดที่จั่ว
+            case ActionType.ProtectRevealHandMultiple: return "■◎"; // ปกป้องจากการดูมือ
+            case ActionType.ProtectForceInterceptEquip: return "■↔"; // ปกป้องจากบังคับกัน
+            case ActionType.ProtectOtherOwnEquipFromAbilityDestroy: return "■✕"; // ปกป้อง Equip ตัวเองจากสกิลทำลาย
+            
+            default: return "◆";
+        }
+    }
+    
+    /// <summary>แปลง ActionType เป็นสีประจำ</summary>
+    private Color GetActionColor(ActionType action)
+    {
+        switch (action)
+        {
+            // 🔥 การทำลาย/ควบคุม - สีแดง
+            case ActionType.Destroy:
+            case ActionType.ZeroStats:
+            case ActionType.RemoveCategory:
+                return new Color(1f, 0.3f, 0.3f); // แดง
+            
+            // 🛡️ ปิด/ห้าม - สีส้ม
+            case ActionType.DisableAttack:
+            case ActionType.DisableAbility:
+            case ActionType.DisableIntercept:
+                return new Color(1f, 0.6f, 0.2f); // ส้ม
+            
+            // 👁️ ดู/เปิดเผย - สีม่วง
+            case ActionType.RevealHand:
+            case ActionType.RevealHandMultiple:
+            case ActionType.PeekDiscardTopDeck:
+                return new Color(0.8f, 0.4f, 1f); // ม่วง
+            
+            // 📤 ทิ้ง/เด็ค - สีน้ำตาล
+            case ActionType.DiscardDeck:
+            case ActionType.ForceChooseDiscard:
+            case ActionType.MarkInterceptMillDeck:
+                return new Color(0.7f, 0.5f, 0.3f); // น้ำตาล
+            
+            // ➕ เรียก/สร้าง - สีเขียว
+            case ActionType.SummonToken:
+            case ActionType.DrawCard:
+            case ActionType.ReturnEquipFromGraveyard:
+                return new Color(0.3f, 0.9f, 0.3f); // เขียว
+            
+            // ⚔️ การโจมตี - สีฟ้าเข้ม
+            case ActionType.Rush:
+            case ActionType.DoubleStrike:
+            case ActionType.GraveyardATK:
+            case ActionType.BypassIntercept:
+                return new Color(0.3f, 0.7f, 1f); // ฟ้า
+            
+            // 🛡️ การกัน - สีเขียวอมฟ้า
+            case ActionType.ForceIntercept:
+            case ActionType.InterceptAlwaysTypeMatch:
+                return new Color(0.2f, 0.8f, 0.8f); // เขียวอมฟ้า
+            
+            // ❤️ รักษา - สีชมพู
+            case ActionType.HealHP:
+            case ActionType.HealOnMonsterSummoned:
+                return new Color(1f, 0.5f, 0.7f); // ชมพู
+            
+            // ±️ ปรับสถานะ - สีเหลือง
+            case ActionType.ModifyStat:
+                return new Color(1f, 0.9f, 0.3f); // เหลือง
+            
+            // 🎮 ควบคุม - สีม่วงเข้ม
+            case ActionType.ControlEquip:
+                return new Color(0.6f, 0.2f, 0.8f); // ม่วงเข้ม
+            
+            // 🛡️ Protection - สีทอง
+            case ActionType.ProtectDrawnCards:
+            case ActionType.ProtectRevealHandMultiple:
+            case ActionType.ProtectForceInterceptEquip:
+            case ActionType.ProtectOtherOwnEquipFromAbilityDestroy:
+                return new Color(1f, 0.85f, 0.4f); // ทอง
+            
+            default: return Color.white;
+        }
+    }
+    
+    /// <summary>แปลง SubCategory เป็นตัวย่อ</summary>
+    private string GetSubCategoryBadgeText(SubCategory sub)
+    {
+        switch (sub)
+        {
+            case SubCategory.IDOR: return "IDOR";
+            case SubCategory.PathTraversal: return "PATH";
+            case SubCategory.MFLAC: return "MFLAC";
+            case SubCategory.InsecureTransit: return "TRANS";
+            case SubCategory.InsecureRest: return "REST";
+            case SubCategory.WeakHash: return "HASH";
+            case SubCategory.NoSalt: return "SALT";
+            case SubCategory.BadKey: return "KEY";
+            case SubCategory.SQLi: return "SQLi";
+            case SubCategory.XSS: return "XSS";
+            case SubCategory.OSCommand: return "CMD";
+            case SubCategory.XXE: return "XXE";
+            default: return "";
+        }
+    }
+    
+    /// <summary>แปลง SubCategory เป็นสี</summary>
+    private Color GetSubCategoryColor(SubCategory sub)
+    {
+        switch (sub)
+        {
+            case SubCategory.SQLi: return new Color(1f, 0.5f, 0f); // ส้ม
+            case SubCategory.XSS: return new Color(1f, 0.8f, 0f); // เหลืองทอง
+            case SubCategory.OSCommand: return new Color(0.8f, 0.2f, 0.2f); // แดงเข้ม
+            case SubCategory.XXE: return new Color(0.9f, 0.4f, 0.6f); // ชมพู
+            case SubCategory.IDOR: return new Color(0.4f, 0.7f, 1f); // ฟ้าอ่อน
+            case SubCategory.PathTraversal: return new Color(0.6f, 0.8f, 0.4f); // เขียวอ่อน
+            case SubCategory.WeakHash: 
+            case SubCategory.NoSalt: 
+            case SubCategory.BadKey: return new Color(0.7f, 0.5f, 0.9f); // ม่วงอ่อน
+            default: return new Color(0.8f, 0.8f, 0.8f); // เทา
+        }
+    }
+    
+    /// <summary>อัปเดตการแสดงสัญลักษณ์บนการ์ด (Trigger, Action, SubCategory)</summary>
+    public void UpdateSymbolDisplay()
+    {
+        if (_cardData == null) return;
+        
+        int iconIndex = 0; // ตำแหน่ง slot ปัจจุบัน (0-3)
+        bool showAnyIcon = false; // เช็คว่ามีไอคอนใดแสดงอยู่หรือไม่
+
+        // 🔥 ซ่อน icons เก่าก่อน (triggerIcon/actionIcon สำหรับ backward compat)
+        if (triggerIcon != null) triggerIcon.gameObject.SetActive(false);
+        if (actionIcon != null) actionIcon.gameObject.SetActive(false);
+        if (triggerSymbol != null) triggerSymbol.gameObject.SetActive(false);
+        if (actionSymbol != null) actionSymbol.gameObject.SetActive(false);
+        
+        // 🔥 ซ่อน skillIcons ทั้งหมดก่อน
+        for (int i = 0; i < skillIcons.Length; i++)
+        {
+            if (skillIcons[i] != null) skillIcons[i].gameObject.SetActive(false);
+        }
+        
+        // 🎯 รวบรวม sprites ทั้งหมดที่ต้องแสดง (Trigger และ Action แยกกัน สูงสุด 4 ตัว)
+        var spritesToShow = new System.Collections.Generic.List<Sprite>();
+        
+        // รวบรวม Trigger sprites ทั้งหมด
+        foreach (var effect in _cardData.effects)
+        {
+            if (spritesToShow.Count >= 4) break;
+            if (effect.trigger != EffectTrigger.None)
+            {
+                Sprite triggerSprite = GetTriggerSprite(effect.trigger);
+                if (triggerSprite != null && !spritesToShow.Contains(triggerSprite))
+                {
+                    spritesToShow.Add(triggerSprite);
+                }
+            }
+        }
+        
+        // รวบรวม Action sprites ทั้งหมด
+        foreach (var effect in _cardData.effects)
+        {
+            if (spritesToShow.Count >= 4) break;
+            if (effect.action != ActionType.None)
+            {
+                Sprite actionSprite = GetActionSprite(effect.action);
+                if (actionSprite != null && !spritesToShow.Contains(actionSprite))
+                {
+                    spritesToShow.Add(actionSprite);
+                }
+            }
+        }
+        
+        // แสดง sprites ใน slots
+        foreach (var sprite in spritesToShow)
+        {
+            if (iconIndex >= 4) break;
+            
+            if (skillIcons[iconIndex] != null)
+            {
+                skillIcons[iconIndex].sprite = sprite;
+                skillIcons[iconIndex].color = Color.white;
+                skillIcons[iconIndex].gameObject.SetActive(true);
+                showAnyIcon = true;
+                iconIndex++;
+            }
+        }
+        
+        // 🎨 แสดง/ซ่อน container และปรับขนาดตามจำนวนไอคอน
+        if (skillIconContainer != null)
+        {
+            if (showAnyIcon && iconIndex > 0)
+            {
+                skillIconContainer.gameObject.SetActive(true);
+                
+                // 🔥 ปรับขนาด container ตามจำนวนไอคอน (dynamic width)
+                RectTransform containerRect = skillIconContainer.GetComponent<RectTransform>();
+                // ความกว้างต่อไอคอน ≈ 22% (รวม padding)
+                float widthPerIcon = 0.22f;
+                float endX = 0.06f + (iconIndex * widthPerIcon);
+                endX = Mathf.Min(endX, 0.97f); // จำกัดไม่ให้เกิน 97%
+                
+                containerRect.anchorMin = new Vector2(0.06f, 0.78f);
+                containerRect.anchorMax = new Vector2(endX, 0.90f);
+                
+                // 🔥 ปรับ position ของ icons ให้กระจายเต็ม container
+                float iconWidth = 1f / iconIndex; // แบ่งเท่าๆ กัน
+                for (int i = 0; i < iconIndex; i++)
+                {
+                    if (skillIcons[i] != null)
+                    {
+                        RectTransform iconRect = skillIcons[i].GetComponent<RectTransform>();
+                        float startX = i * iconWidth + 0.02f;
+                        float endXIcon = (i + 1) * iconWidth - 0.02f;
+                        iconRect.anchorMin = new Vector2(startX, 0.1f);
+                        iconRect.anchorMax = new Vector2(endXIcon, 0.9f);
+                    }
+                }
+            }
+            else
+            {
+                skillIconContainer.gameObject.SetActive(false);
+            }
+        }
+        
+        // 🏷️ แสดง SubCategory Badge
+        if (subCategoryBadge != null)
+        {
+            if (_cardData.subCategory != SubCategory.General)
+            {
+                string badgeText = GetSubCategoryBadgeText(_cardData.subCategory);
+                subCategoryBadge.text = badgeText;
+                subCategoryBadge.color = GetSubCategoryColor(_cardData.subCategory);
+                subCategoryBadge.gameObject.SetActive(!string.IsNullOrEmpty(badgeText));
+            }
+            else
+            {
+                subCategoryBadge.gameObject.SetActive(false);
+            }
+        }
+    }
+    
+    /// <summary>ซ่อนสัญลักษณ์ทั้งหมด (ใช้สำหรับ Card Back)</summary>
+    public void HideSymbols()
+    {
+        if (skillIconContainer != null) skillIconContainer.gameObject.SetActive(false);
+        // 🔥 ซ่อน skillIcons ทั้ง 4 ช่อง
+        for (int i = 0; i < skillIcons.Length; i++)
+        {
+            if (skillIcons[i] != null) skillIcons[i].gameObject.SetActive(false);
+        }
+        if (triggerIcon != null) triggerIcon.gameObject.SetActive(false);
+        if (actionIcon != null) actionIcon.gameObject.SetActive(false);
+        if (triggerSymbol != null) triggerSymbol.gameObject.SetActive(false);
+        if (actionSymbol != null) actionSymbol.gameObject.SetActive(false);
+        if (subCategoryBadge != null) subCategoryBadge.gameObject.SetActive(false);
+    }
+    
+    /// <summary>แสดงสัญลักษณ์อีกครั้ง (เมื่อเปิดหน้าการ์ด)</summary>
+    public void ShowSymbols()
+    {
+        UpdateSymbolDisplay();
+    }
+
     // 🔥 ซ่อนข้อมูลการ์ด (Cost และ ATK) ใช้สำหรับ Card Back ของบอท
     public void HideCardInfo()
     {
@@ -767,6 +1438,9 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             atkText.text = ""; // เซ็ตเป็นเปล่าเพื่อให้แน่ใจว่าไม่แสดง 0
             atkText.gameObject.SetActive(false);
         }
+        
+        // 🎯 ซ่อนสัญลักษณ์ด้วย
+        HideSymbols();
     }
 
     // 🔥 แสดงข้อมูลการ์ด (Cost และ ATK) อีกครั้ง
@@ -780,6 +1454,9 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         {
             atkText.gameObject.SetActive(true);
         }
+        
+        // 🎯 แสดงสัญลักษณ์ด้วย
+        ShowSymbols();
     }
 
     bool IsInsideHandRevealPreview()
