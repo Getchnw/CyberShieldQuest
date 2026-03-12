@@ -1018,9 +1018,17 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     // 🎯 === Sprite Mapping System ===
     
-    /// <summary>แปลง EffectTrigger เป็น Sprite (คืน null ถ้าไม่มี)</summary>
+    /// <summary>แปลง EffectTrigger เป็น Sprite (คืน null ถ้าไม่มี) - ใช้จาก SkillIconAssets ก่อน fallback เป็น local</summary>
     private Sprite GetTriggerSprite(EffectTrigger trigger)
     {
+        // ลองใช้จาก SkillIconAssets ก่อน (shared instance)
+        if (SkillIconAssets.Instance != null)
+        {
+            Sprite sharedSprite = SkillIconAssets.Instance.GetTriggerSprite(trigger);
+            if (sharedSprite != null) return sharedSprite;
+        }
+        
+        // Fallback เป็น local sprites (ถ้ามี)
         switch (trigger)
         {
             case EffectTrigger.OnDeploy: return iconOnDeploy;
@@ -1034,9 +1042,17 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
     }
     
-    /// <summary>แปลง ActionType เป็น Sprite (คืน null ถ้าไม่มี)</summary>
+    /// <summary>แปลง ActionType เป็น Sprite (คืน null ถ้าไม่มี) - ใช้จาก SkillIconAssets ก่อน fallback เป็น local</summary>
     private Sprite GetActionSprite(ActionType action)
     {
+        // ลองใช้จาก SkillIconAssets ก่อน (shared instance)
+        if (SkillIconAssets.Instance != null)
+        {
+            Sprite sharedSprite = SkillIconAssets.Instance.GetActionSprite(action);
+            if (sharedSprite != null) return sharedSprite;
+        }
+        
+        // Fallback เป็น local sprites (ถ้ามี)
         switch (action)
         {
             case ActionType.Destroy: return iconDestroy;
@@ -1063,7 +1079,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             case ActionType.ReturnEquipFromGraveyard: return iconReturnEquipFromGraveyard;
             case ActionType.PeekDiscardTopDeck: return iconPeekDiscardTopDeck;
             case ActionType.MarkInterceptMillDeck: return iconMarkInterceptMillDeck;
-            case ActionType.InterceptAlwaysTypeMatch: return iconForceIntercept; // ใช้รูปเดียวกัน
+            case ActionType.InterceptAlwaysTypeMatch: return iconForceIntercept;
             case ActionType.ProtectDrawnCards:
             case ActionType.ProtectRevealHandMultiple:
             case ActionType.ProtectForceInterceptEquip:
@@ -1896,14 +1912,122 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     }
 
     /// <summary>
-    /// ตรวจสอบว่าการ์ดสามารถเล่นได้หรือไม่ (มี PP พอ)
+    /// ตรวจสอบว่าการ์ดสามารถเล่นได้หรือไม่ (มี PP พอ และมีเป้าหมายที่ถูกต้อง)
     /// </summary>
     public bool CanPlayCard()
     {
         if (_cardData == null || BattleManager.Instance == null) return false;
-        
+
         // ตรวจสอบ PP พอหรือไม่ (ใช้ GetCost() เพื่อให้ ZeroStats work)
-        return BattleManager.Instance.currentPP >= GetCost();
+        if (BattleManager.Instance.currentPP < GetCost()) return false;
+
+        // ตรวจสอบว่ามีเป้าหมายที่ถูกต้องสำหรับทุก OnDeploy effect (เฉพาะ Spell/EquipSpell)
+        if (_cardData.type == CardType.Spell || _cardData.type == CardType.EquipSpell)
+        {
+            if (!HasAllValidTargets()) return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// ตรวจสอบว่า OnDeploy effects ทั้งหมดของการ์ดนี้มีเป้าหมายที่ถูกต้อง
+    /// </summary>
+    private bool HasAllValidTargets()
+    {
+        if (_cardData == null || _cardData.effects == null) return true;
+
+        foreach (var effect in _cardData.effects)
+        {
+            // ตรวจสอบเฉพาะ OnDeploy (เอฟเฟกต์ที่ใช้ทันทีเมื่อเล่น)
+            if (effect.trigger != EffectTrigger.OnDeploy) continue;
+
+            if (!HasValidTargetForEffect(effect)) return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// ตรวจสอบว่า effect นี้มีเป้าหมายที่ถูกต้องในสนามปัจจุบัน
+    /// </summary>
+    private bool HasValidTargetForEffect(CardEffect effect)
+    {
+        var bm = BattleManager.Instance;
+
+        switch (effect.targetType)
+        {
+            case TargetType.Self:
+                // ReturnEquipFromGraveyard ต้องมี EquipSpell ในสุสานของผู้เล่น
+                if (effect.action == ActionType.ReturnEquipFromGraveyard)
+                    return bm.HasEquipInPlayerGraveyard();
+                return true; // Self effects อื่นๆ ใช้ได้เสมอ
+
+            case TargetType.EnemyMonster:
+                return HasCardInSlots(bm.enemyMonsterSlots, effect);
+
+            case TargetType.EnemyEquip:
+                return HasCardInSlots(bm.enemyEquipSlots, effect);
+
+            case TargetType.EnemyHand:
+                return bm.enemyHandArea != null && bm.enemyHandArea.childCount > 0;
+
+            case TargetType.EnemyDeck:
+                return bm.GetEnemyDeckCount() > 0;
+
+            case TargetType.EnemyPlayer:
+            case TargetType.AllGlobal:
+                return true; // ใช้ได้เสมอ ไม่ต้องการเป้าหมายเฉพาะ
+
+            default:
+                return true;
+        }
+    }
+
+    /// <summary>
+    /// ตรวจสอบว่าใน slots มีการ์ดที่ตรงกับเงื่อนไขของ effect หรือไม่
+    /// </summary>
+    private bool HasCardInSlots(Transform[] slots, CardEffect effect)
+    {
+        if (slots == null) return false;
+
+        foreach (var slot in slots)
+        {
+            if (slot == null || slot.childCount == 0) continue;
+
+            var card = slot.GetChild(0).GetComponent<BattleCardUI>();
+            if (card == null || !card.isOnField) continue;
+
+            var data = card.GetData();
+            if (data == null) continue;
+
+            // --- กรองตาม MainCategory ---
+            if (effect.targetMainCat != MainCategory.General && data.mainCategory != effect.targetMainCat)
+                continue;
+
+            // --- กรองตาม SubCategory (ใช้ GetModifiedSubCategory เพื่อรองรับ RemoveCategory) ---
+            if (effect.targetSubCat != SubCategory.General && card.GetModifiedSubCategory() != effect.targetSubCat)
+                continue;
+
+            // --- กรองตาม Cost สูงสุด ---
+            if (effect.targetMaxCost > 0 && data.cost > effect.targetMaxCost)
+                continue;
+
+            // --- กรองตาม ชื่อการ์ดเจาะจง ---
+            if (!string.IsNullOrEmpty(effect.targetCardNameFilter) && data.cardName != effect.targetCardNameFilter)
+                continue;
+
+            // --- กรองตาม Exclude filter ---
+            if (effect.useExcludeFilter)
+            {
+                if (effect.excludeMainCat != MainCategory.General && data.mainCategory == effect.excludeMainCat)
+                    continue;
+                if (effect.excludeSubCat != SubCategory.General && card.GetModifiedSubCategory() == effect.excludeSubCat)
+                    continue;
+            }
+
+            return true; // พบเป้าหมายที่ถูกต้องอย่างน้อย 1 ใบ
+        }
+        return false;
     }
 
     /// <summary>

@@ -1820,8 +1820,19 @@ public class BattleManager : MonoBehaviour
                 case ActionType.DiscardDeck:
                 case ActionType.RevealHand:
                 case ActionType.RevealHandMultiple:
-                case ActionType.PeekDiscardTopDeck:
                     // เทพอกพ/ดูมือ is ok ก็ว่า ok (ต้องการ discard/reveal ได้)
+                    break;
+
+                case ActionType.PeekDiscardTopDeck:
+                    // ต้องมีการ์ดในเด็คของฝ่ายตรงข้าม
+                    {
+                        List<CardData> targetDeckCheck = isPlayer ? enemyDeckList : deckList;
+                        if (targetDeckCheck == null || targetDeckCheck.Count == 0)
+                        {
+                            Debug.Log($"🚫 Effect {effect.action} เด็คฝ่ายตรงข้ามว่างเปล่า ไม่สามารถใช้ได้!");
+                            return false;
+                        }
+                    }
                     break;
 
                 case ActionType.BypassIntercept:
@@ -4909,6 +4920,10 @@ public class BattleManager : MonoBehaviour
         if (targetDeck == null || targetDeck.Count == 0)
         {
             AddBattleLog($"{(targetIsPlayerDeck ? "Player" : "Bot")} deck is empty");
+            if (isPlayer && sourceCard != null)
+            {
+                ShowDamagePopupString("เด็คฝ่ายตรงข้ามว่างเปล่า", sourceCard.transform);
+            }
             yield break;
         }
 
@@ -5072,9 +5087,9 @@ public class BattleManager : MonoBehaviour
 
         ClearListRoot(handRevealListRoot);
         SetupHandRevealScroll();
+        handRevealPanel.SetActive(true);
         PopulatePeekDiscardSelectionList(currentPeekCards, currentPeekSelectableCards, selectedPeekDiscardIndices);
         UpdatePeekDiscardMultiTitle();
-        handRevealPanel.SetActive(true);
 
         while (!peekDiscardConfirmed)
         {
@@ -5155,8 +5170,8 @@ public class BattleManager : MonoBehaviour
 
         ClearListRoot(handRevealListRoot);
         SetupHandRevealScroll();
-        PopulatePeekDiscardSelectionList(cards, selectableCards);
         handRevealPanel.SetActive(true);
+        PopulatePeekDiscardSelectionList(cards, selectableCards);
 
         while (!peekDiscardConfirmed)
         {
@@ -5189,27 +5204,36 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
+        string filterDesc = GetPeekDiscardFilterText(effect);
+        int peekCount = cards.Count;
         if (handRevealTitleText != null)
         {
-            handRevealTitleText.text = $"🔍 ไม่มีการ์ดที่เข้าเงื่อนไขทิ้ง [{GetPeekDiscardFilterText(effect)}]";
+            handRevealTitleText.text = $"🔍 ดู {peekCount} ใบบนสุดของเด็ค — ไม่มีการ์ดที่เข้าเงื่อนไข [{filterDesc}] — กดปิดเพื่อดำเนินการต่อ";
         }
 
+        // เปิดปุ่มปิดให้ผู้ใช้กดปิด panel เอง
+        peekDiscardConfirmed = false;
         if (handRevealCloseButton != null)
         {
             handRevealCloseButton.onClick.RemoveAllListeners();
-            handRevealCloseButton.interactable = false;
+            handRevealCloseButton.onClick.AddListener(() => { peekDiscardConfirmed = true; });
+            handRevealCloseButton.interactable = true;
 
             var closeCg = handRevealCloseButton.GetComponent<CanvasGroup>();
             if (closeCg == null) closeCg = handRevealCloseButton.gameObject.AddComponent<CanvasGroup>();
-            closeCg.blocksRaycasts = false;
+            closeCg.blocksRaycasts = true;
         }
 
         ClearListRoot(handRevealListRoot);
         SetupHandRevealScroll();
-        PopulatePeekDiscardSelectionList(cards, new List<CardData>());
         handRevealPanel.SetActive(true);
+        PopulatePeekDiscardSelectionList(cards, new List<CardData>());
 
-        yield return new WaitForSeconds(1.25f);
+        // รอจนกว่าผู้ใช้จะกดปิด (ไม่ auto-close)
+        while (!peekDiscardConfirmed)
+        {
+            yield return null;
+        }
 
         CloseHandRevealPanel();
 
@@ -7316,6 +7340,12 @@ public class BattleManager : MonoBehaviour
     // 🔥 Helper ฟังก์ชันสำหรับสกิล GraveyardATK
     public int GetPlayerGraveyardCount() => playerGraveyard.Count;
     public int GetEnemyGraveyardCount() => enemyGraveyard.Count;
+
+    /// <summary>ตรวจสอบว่าสุสานผู้เล่นมีการ์ด EquipSpell อย่างน้อย 1 ใบ (ใช้กับ ReturnEquipFromGraveyard)</summary>
+    public bool HasEquipInPlayerGraveyard() => HasEquipInGraveyard(true);
+
+    /// <summary>จำนวนการ์ดที่เหลือในเด็คบอท</summary>
+    public int GetEnemyDeckCount() => enemyDeckList.Count;
 
     /// <summary>ดึงการ์ดจากสุสาน (เพื่อเรียกกลับมา)</summary>
     CardData RestoreFromGraveyard(int index, bool isPlayer)
