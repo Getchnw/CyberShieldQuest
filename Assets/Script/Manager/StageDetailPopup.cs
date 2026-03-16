@@ -399,6 +399,7 @@ public class StageDetailPopup : MonoBehaviour
 
         // โหลดฉากแบบ async เพื่อไม่ให้ค้าง
         Debug.Log("🟡 กำลังโหลด Battle Scene (async)...");
+        BattleManager.SetBattleReturnScene(SceneManager.GetActiveScene().name);
         SceneManager.LoadSceneAsync("Battle");
     }
 }

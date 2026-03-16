@@ -12,6 +12,48 @@ public enum BattleState { START, PLAYERTURN, ENEMYTURN, DEFENDER_CHOICE, FORCED_
 public class BattleManager : MonoBehaviour
 {
     public static BattleManager Instance;
+    private const string BattleReturnSceneKey = "BattleReturnScene";
+    private const string DefaultBattleSceneName = "Battle";
+    private static bool sceneTrackerInitialized = false;
+    private static string lastNonBattleSceneName = string.Empty;
+    private string resolvedReturnSceneName = string.Empty;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    static void InitializeBattleSceneTracker()
+    {
+        if (sceneTrackerInitialized) return;
+
+        sceneTrackerInitialized = true;
+        SceneManager.activeSceneChanged += OnActiveSceneChanged;
+
+        Scene currentScene = SceneManager.GetActiveScene();
+        if (IsValidNonBattleSceneName(currentScene.name))
+        {
+            lastNonBattleSceneName = currentScene.name;
+        }
+    }
+
+    static void OnActiveSceneChanged(Scene previousScene, Scene nextScene)
+    {
+        if (IsValidNonBattleSceneName(previousScene.name))
+        {
+            lastNonBattleSceneName = previousScene.name;
+        }
+    }
+
+    static bool IsValidNonBattleSceneName(string sceneName)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName)) return false;
+        return !sceneName.Equals(DefaultBattleSceneName, System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static void SetBattleReturnScene(string sceneName)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName)) return;
+
+        PlayerPrefs.SetString(BattleReturnSceneKey, sceneName);
+        PlayerPrefs.Save();
+    }
 
     [Header("--- Game State ---")]
     public BattleState state;
@@ -329,6 +371,7 @@ public class BattleManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        ResolveReturnSceneName();
 
         EnsureHandRevealReferences();
 
@@ -3987,10 +4030,7 @@ public class BattleManager : MonoBehaviour
             yield return new WaitForSeconds(endDelay);
         }
 
-        if (!string.IsNullOrEmpty(stageSceneName))
-        {
-            SceneManager.LoadScene(stageSceneName);
-        }
+        LoadReturnScene();
     }
 
     void ShowDamagePopupString(string t, Transform pos)
@@ -7891,10 +7931,53 @@ public class BattleManager : MonoBehaviour
     void OnQuitBattlePressed()
     {
         Time.timeScale = 1f;
-        if (!string.IsNullOrEmpty(stageSceneName))
+        LoadReturnScene();
+    }
+
+    void ResolveReturnSceneName()
+    {
+        string explicitReturnScene = PlayerPrefs.GetString(BattleReturnSceneKey, string.Empty);
+        PlayerPrefs.DeleteKey(BattleReturnSceneKey);
+
+        if (!string.IsNullOrWhiteSpace(explicitReturnScene)
+            && !explicitReturnScene.Equals(SceneManager.GetActiveScene().name, System.StringComparison.OrdinalIgnoreCase)
+            && Application.CanStreamedLevelBeLoaded(explicitReturnScene))
         {
-            SceneManager.LoadScene(stageSceneName);
+            resolvedReturnSceneName = explicitReturnScene;
+            return;
         }
+
+        if (IsValidNonBattleSceneName(lastNonBattleSceneName)
+            && !lastNonBattleSceneName.Equals(SceneManager.GetActiveScene().name, System.StringComparison.OrdinalIgnoreCase)
+            && Application.CanStreamedLevelBeLoaded(lastNonBattleSceneName))
+        {
+            resolvedReturnSceneName = lastNonBattleSceneName;
+            return;
+        }
+
+        resolvedReturnSceneName = stageSceneName;
+    }
+
+    void LoadReturnScene()
+    {
+        string activeSceneName = SceneManager.GetActiveScene().name;
+        string targetScene = !string.IsNullOrWhiteSpace(resolvedReturnSceneName)
+            ? resolvedReturnSceneName
+            : stageSceneName;
+
+        if (targetScene.Equals(activeSceneName, System.StringComparison.OrdinalIgnoreCase)
+            || !Application.CanStreamedLevelBeLoaded(targetScene))
+        {
+            targetScene = stageSceneName;
+        }
+
+        if (string.IsNullOrWhiteSpace(targetScene) || !Application.CanStreamedLevelBeLoaded(targetScene))
+        {
+            Debug.LogError("❌ No valid return scene found for battle exit.");
+            return;
+        }
+
+        SceneManager.LoadScene(targetScene);
     }
 
     void OnToggleLogPanel()
