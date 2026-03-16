@@ -6,7 +6,7 @@ using TMPro;
 using UnityEngine.UI;
 using UnityEngine.Localization.Settings;
 
-public class CollectionManager : MonoBehaviour
+public class CardCollection : MonoBehaviour
 {
     [Header("UI References")]
     public Transform contentGrid;
@@ -19,32 +19,42 @@ public class CollectionManager : MonoBehaviour
 
     private List<CardData> allCardsLibrary;
 
+    private bool IsEnglish()
+    {
+        return LocalizationSettings.SelectedLocale != null &&
+               LocalizationSettings.SelectedLocale.Identifier.Code == "en";
+    }
+
     void Start()
     {
         LoadCardLibrary();
         RefreshUI();
 
-        // 🔥 ฟังการเปลี่ยนแปลง inventory
+        // ฟังการเปลี่ยนแปลงข้อมูลเพื่อรีเฟรช UI ทันที
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnInventoryChanged += RefreshUI;
+            GameManager.Instance.OnDataLoaded += RefreshUI;
         }
     }
 
     private void OnDestroy()
     {
-        // 🔥 ลบ listener เวลาออกจาก scene
+        // ลบ listener เวลาออกจาก scene
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnInventoryChanged -= RefreshUI;
+            GameManager.Instance.OnDataLoaded -= RefreshUI;
         }
     }
 
     void Update()
     {
-        if (GameManager.Instance != null && scrapText != null)
+        if (GameManager.Instance != null &&
+            GameManager.Instance.CurrentGameData != null &&
+            scrapText != null)
         {
-            if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
+            if (IsEnglish())
             {
                 // English
                 scrapText.text = $"Scrap: {GameManager.Instance.CurrentGameData.profile.scrap}";
@@ -68,6 +78,11 @@ public class CollectionManager : MonoBehaviour
 
     void RefreshUI()
     {
+        if (contentGrid == null || cardPrefab == null || allCardsLibrary == null || GameManager.Instance == null)
+        {
+            return;
+        }
+
         foreach (Transform child in contentGrid) Destroy(child.gameObject);
 
         foreach (var card in allCardsLibrary)
@@ -98,7 +113,7 @@ public class CollectionManager : MonoBehaviour
     void OnCraftButton(CardData card)
     {
         int cost = CraftingSystem.GetCraftCost(card.rarity);
-        if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
+        if (IsEnglish())
         {
             // English
             ConfirmAction($"Create  {card.cardName} \nCost: {cost} Scrap?", () => StartCoroutine(CraftProcess(card)));
@@ -113,7 +128,7 @@ public class CollectionManager : MonoBehaviour
     void OnDismantleButton(CardData card)
     {
         int val = CraftingSystem.GetDismantleValue(card.rarity);
-        if (LocalizationSettings.SelectedLocale.Identifier.Code == "en")
+        if (IsEnglish())
         {
             // English
             ConfirmAction($"Dismantle {card.cardName} \nGain: {val} Scrap?", () => StartCoroutine(DismantleProcess(card)));
@@ -121,7 +136,7 @@ public class CollectionManager : MonoBehaviour
         else
         {
             // Thai
-            ConfirmAction($"ย่อยการ์ด  {card.cardName} \nได้รับชิ้นส่วนทั้งหมด {val} ชิ้นส่วน", () => StartCoroutine(CraftProcess(card)));
+            ConfirmAction($"ย่อยการ์ด  {card.cardName} \nได้รับชิ้นส่วนทั้งหมด {val} ชิ้นส่วน", () => StartCoroutine(DismantleProcess(card)));
         }
     }
 
@@ -129,6 +144,11 @@ public class CollectionManager : MonoBehaviour
 
     IEnumerator CraftProcess(CardData card)
     {
+        if (GameManager.Instance == null || GameManager.Instance.CurrentGameData == null)
+        {
+            yield break;
+        }
+
         int cost = CraftingSystem.GetCraftCost(card.rarity);
         if (GameManager.Instance.CurrentGameData.profile.scrap >= cost)
         {
@@ -136,11 +156,17 @@ public class CollectionManager : MonoBehaviour
             GameManager.Instance.AddCardToInventory(card.card_id, 1);
             GameManager.Instance.SaveCurrentGame();
 
-            DailyQuestManager.Instance.UpdateProgress(QuestType.Card, 1, "craft");
+            if (DailyQuestManager.Instance != null)
+            {
+                DailyQuestManager.Instance.UpdateProgress(QuestType.Card, 1, "craft");
+            }
 
             // 🔥 ปิด confirm + detail popup
             confirmPopup?.Close();
             detailPopup?.Close();
+
+            // สำรองไว้เผื่อ listener หลุด จะได้อัปเดต collection ทันที
+            RefreshUI();
 
             // ให้ Save มีเวลา execute
             yield return null;
@@ -149,6 +175,11 @@ public class CollectionManager : MonoBehaviour
 
     IEnumerator DismantleProcess(CardData card)
     {
+        if (GameManager.Instance == null || GameManager.Instance.CurrentGameData == null)
+        {
+            yield break;
+        }
+
         int owned = GameManager.Instance.GetCardAmount(card.card_id);
         if (owned > 0)
         {
@@ -157,11 +188,17 @@ public class CollectionManager : MonoBehaviour
             GameManager.Instance.AddCardToInventory(card.card_id, -1);
             GameManager.Instance.SaveCurrentGame();
 
-            DailyQuestManager.Instance.UpdateProgress(QuestType.Card, 1, "scrap");
+            if (DailyQuestManager.Instance != null)
+            {
+                DailyQuestManager.Instance.UpdateProgress(QuestType.Card, 1, "scrap");
+            }
 
             // 🔥 ปิด confirm + detail popup
             confirmPopup?.Close();
             detailPopup?.Close();
+
+            // สำรองไว้เผื่อ listener หลุด จะได้อัปเดต collection ทันที
+            RefreshUI();
 
             // ให้ Save มีเวลา execute
             yield return null;
