@@ -247,9 +247,90 @@ public class BattleManager : MonoBehaviour
     public BattleStatistics currentBattleStats = new BattleStatistics();
     public static BattleStatistics LastBattleStats { get; private set; } // เก็บสถิติเกมล่าสุดสำหรับเข้าถึงจากภายนอก
 
+    GameObject FindUiObjectByNameContains(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword)) return null;
+
+        string lowerKeyword = keyword.ToLowerInvariant();
+        var allRects = FindObjectsOfType<RectTransform>(true);
+        foreach (var rect in allRects)
+        {
+            if (rect == null || !rect.gameObject.scene.IsValid()) continue;
+            if (rect.name.ToLowerInvariant().Contains(lowerKeyword))
+            {
+                return rect.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    void EnsureHandRevealReferences()
+    {
+        if (handRevealPanel == null)
+        {
+            handRevealPanel = FindUiObjectByNameContains("handrevealpanel");
+            if (handRevealPanel == null)
+            {
+                handRevealPanel = FindUiObjectByNameContains("hand reveal");
+            }
+        }
+
+        if (handRevealPanel == null) return;
+
+        if (handRevealListRoot == null)
+        {
+            var panelScrollRect = handRevealPanel.GetComponent<ScrollRect>();
+            if (panelScrollRect != null && panelScrollRect.content != null)
+            {
+                handRevealListRoot = panelScrollRect.content;
+            }
+        }
+
+        if (handRevealListRoot == null)
+        {
+            var nestedScrollRect = handRevealPanel.GetComponentInChildren<ScrollRect>(true);
+            if (nestedScrollRect != null && nestedScrollRect.content != null)
+            {
+                handRevealListRoot = nestedScrollRect.content;
+            }
+        }
+
+        if (handRevealListRoot == null)
+        {
+            var contentRoot = handRevealPanel.GetComponentsInChildren<RectTransform>(true)
+                .FirstOrDefault(x => x != null && x != handRevealPanel.transform &&
+                                     (x.name.ToLowerInvariant().Contains("content") ||
+                                      x.name.ToLowerInvariant().Contains("list") ||
+                                      x.name.ToLowerInvariant().Contains("root")));
+            if (contentRoot != null)
+            {
+                handRevealListRoot = contentRoot;
+            }
+        }
+
+        if (handRevealCloseButton == null)
+        {
+            handRevealCloseButton = handRevealPanel.GetComponentsInChildren<Button>(true)
+                .FirstOrDefault(x => x != null &&
+                                     (x.name.ToLowerInvariant().Contains("close") ||
+                                      x.name.ToLowerInvariant().Contains("exit") ||
+                                      x.name.ToLowerInvariant().Contains("back") ||
+                                      x.name.ToLowerInvariant().Contains("x")));
+        }
+
+        if (handRevealTitleText == null)
+        {
+            handRevealTitleText = handRevealPanel.GetComponentsInChildren<TextMeshProUGUI>(true)
+                .FirstOrDefault(x => x != null && x.name.ToLowerInvariant().Contains("title"));
+        }
+    }
+
     void Awake()
     {
         Instance = this;
+
+        EnsureHandRevealReferences();
 
         // ผูกปุ่ม TakeDamage อัตโนมัติ กันลืมตั้งใน Inspector
         if (takeDamageButton)
@@ -349,6 +430,8 @@ public class BattleManager : MonoBehaviour
     void Start()
     {
         state = BattleState.START;
+
+        EnsureHandRevealReferences();
 
         // 📊 เริ่มต้นสถิติใหม่
         currentBattleStats.Initialize();
@@ -5045,6 +5128,8 @@ public class BattleManager : MonoBehaviour
 
     IEnumerator PlayerChoosePeekDiscardCardsMulti(List<CardData> cards, List<CardData> selectableCards, CardEffect effect, int requiredCount)
     {
+        EnsureHandRevealReferences();
+
         selectedPeekDiscardCards.Clear();
         selectedPeekDiscardIndices.Clear();
         requiredPeekDiscardCount = Mathf.Max(1, requiredCount);
@@ -5134,6 +5219,8 @@ public class BattleManager : MonoBehaviour
 
     IEnumerator PlayerChoosePeekDiscardCard(List<CardData> cards, List<CardData> selectableCards, CardEffect effect, int pickNumber, int pickTotal)
     {
+        EnsureHandRevealReferences();
+
         selectedPeekDiscardCard = null;
         peekDiscardConfirmed = false;
         isChoosingPeekDiscard = true;
@@ -5194,6 +5281,8 @@ public class BattleManager : MonoBehaviour
 
     IEnumerator ShowPeekDiscardNoMatchFeedback(List<CardData> cards, CardEffect effect)
     {
+        EnsureHandRevealReferences();
+
         if (cards == null || cards.Count == 0)
         {
             yield break;
@@ -8366,9 +8455,17 @@ public class BattleManager : MonoBehaviour
     /// <summary>เปิด Panel แสดงการ์ดบนมือที่ดูได้</summary>
     void ShowHandRevealPanel(List<CardData> cards, string targetName)
     {
+        EnsureHandRevealReferences();
+
         if (handRevealPanel == null)
         {
             Debug.LogError("❌ handRevealPanel ยังไม่ถูกตั้ง!");
+            return;
+        }
+
+        if (handRevealListRoot == null)
+        {
+            Debug.LogError("❌ handRevealListRoot ยังไม่ถูกตั้ง! ไม่สามารถแสดงรายการการ์ดได้");
             return;
         }
 
@@ -8407,11 +8504,11 @@ public class BattleManager : MonoBehaviour
         // Setup Scroll
         SetupHandRevealScroll();
 
+        // เปิด panel ก่อน populate เผื่อเกิดข้อผิดพลาดระหว่างสร้าง list
+        handRevealPanel.SetActive(true);
+
         // สร้างการ์ดใหม่
         PopulateHandRevealList(cards);
-
-        // เปิด Panel
-        handRevealPanel.SetActive(true);
         Debug.Log($"✅ เปิด Hand Reveal Panel: {cards.Count} ใบ");
     }
 
@@ -8428,10 +8525,15 @@ public class BattleManager : MonoBehaviour
     /// <summary>ตั้งค่า ScrollRect สำหรับ Hand Reveal Panel</summary>
     void SetupHandRevealScroll()
     {
+        EnsureHandRevealReferences();
         if (handRevealPanel == null || handRevealListRoot == null) return;
 
         // หา ScrollRect component
         var scrollRect = handRevealPanel.GetComponent<ScrollRect>();
+        if (scrollRect == null)
+        {
+            scrollRect = handRevealPanel.GetComponentInChildren<ScrollRect>(true);
+        }
         if (scrollRect == null)
         {
             scrollRect = handRevealPanel.AddComponent<ScrollRect>();
@@ -8464,7 +8566,7 @@ public class BattleManager : MonoBehaviour
         if (img == null)
         {
             img = viewportRect.gameObject.AddComponent<Image>();
-            img.color = new Color(0, 0, 0, 0.9f); // พื้นหลังสีดำโปร่งใส
+            img.color = new Color(0, 0, 0, 0f); // โปร่งใสไว้ก่อนเพื่อไม่ให้บังเลย์เอาต์เดิม
         }
 
         Debug.Log($"✅ Setup Scroll for Hand Reveal Panel");
@@ -8536,74 +8638,96 @@ public class BattleManager : MonoBehaviour
             int successCount = 0;
             foreach (var card in cards)
             {
-                var item = Instantiate(cardPrefab, handRevealListRoot);
-                item.transform.localScale = Vector3.one * scaleFactor;
-                item.name = $"Revealed_{card.cardName}";
-
-                var ui = item.GetComponent<BattleCardUI>();
-                if (ui != null)
+                try
                 {
-                    ui.Setup(card);
-                    ui.HideCardInfo(); // 🔥 ซ่อน Cost/ATK ใน Hand Reveal Panel
-
-                    // ปิด interaction ของ BattleCardUI บนการ์ด preview ใน panel นี้
-                    // เพื่อไม่ให้คลิกขวาไปเข้าลอจิกเล่นการ์ด/โจมตี/ลาก
-                    ui.enabled = false;
-
-                    // 🔥 แสดงรูปการ์ด
-                    var img = item.GetComponent<Image>();
-                    if (img != null)
+                    if (card == null)
                     {
-                        if (card.artwork != null)
-                        {
-                            img.sprite = card.artwork;
-                            img.color = Color.white; // ไม่โปร่งใส
-                        }
-                        img.raycastTarget = true;
+                        Debug.LogWarning("⚠️ Hand Reveal พบการ์ด null - ข้ามรายการนี้");
+                        continue;
                     }
 
-                    // ตั้ง CanvasGroup ให้คลิกได้ (แต่ไม่ให้ลากได้)
-                    var cg = ui.GetComponent<CanvasGroup>();
-                    if (cg == null) cg = ui.gameObject.AddComponent<CanvasGroup>();
-                    cg.interactable = true;
-                    cg.blocksRaycasts = true;
-                    cg.alpha = 1f;
+                    var item = Instantiate(cardPrefab, handRevealListRoot);
+                    item.transform.localScale = Vector3.one * scaleFactor;
+                    item.name = $"Revealed_{card.cardName}";
 
-                    CardData cardData = card; // capture ค่าสำหรับ lambda
+                    var ui = item.GetComponent<BattleCardUI>();
+                    if (ui != null)
+                    {
+                        ui.Setup(card);
+                        ui.HideCardInfo(); // 🔥 ซ่อน Cost/ATK ใน Hand Reveal Panel
 
-                    // 🔥 เอาปุ่มออกถ้ามี (ป้องกันบัตรสำหรับ click conflict)
-                    var btn = item.GetComponent<Button>();
-                    if (btn != null)
-                    {
-                        btn.onClick.RemoveAllListeners();
-                    }
+                        // ปิด interaction ของ BattleCardUI บนการ์ด preview ใน panel นี้
+                        // เพื่อไม่ให้คลิกขวาไปเข้าลอจิกเล่นการ์ด/โจมตี/ลาก
+                        ui.enabled = false;
 
-                    // 🔥 เพิ่มลิสเนอร์คลิกแบบง่ายๆ สำหรับการ์ดบนมือ
-                    var pointerClickHandler = item.GetComponent<PointerClickHandler>();
-                    if (pointerClickHandler == null)
-                    {
-                        pointerClickHandler = item.AddComponent<PointerClickHandler>();
-                    }
-                    pointerClickHandler.OnClickAction = () =>
-                    {
-                        if (cardDetailView != null)
+                        // 🔥 แสดงรูปการ์ด
+                        var img = item.GetComponent<Image>();
+                        if (img != null)
                         {
-                            cardDetailView.Open(cardData);
-                            Debug.Log($"🔓 เปิดรายละเอียดการ์ดบนมือ: {cardData.cardName}");
+                            if (card.artwork != null)
+                            {
+                                img.sprite = card.artwork;
+                                img.color = Color.white; // ไม่โปร่งใส
+                            }
+                            img.raycastTarget = true;
                         }
-                        else
+
+                        // ตั้ง CanvasGroup ให้คลิกได้ (แต่ไม่ให้ลากได้)
+                        var cg = ui.GetComponent<CanvasGroup>();
+                        if (cg == null) cg = ui.gameObject.AddComponent<CanvasGroup>();
+                        cg.interactable = true;
+                        cg.blocksRaycasts = true;
+                        cg.alpha = 1f;
+
+                        CardData cardData = card; // capture ค่าสำหรับ lambda
+
+                        // 🔥 เอาปุ่มออกถ้ามี (ป้องกันบัตรสำหรับ click conflict)
+                        var btn = item.GetComponent<Button>();
+                        if (btn != null)
                         {
-                            Debug.LogError("❌ CardDetailView ยังไม่ได้ตั้งค่าใน BattleManager!");
+                            btn.onClick.RemoveAllListeners();
                         }
-                    };
 
-                    Debug.Log($"✅ Card setup: {card.cardName} | Image: {(img != null && img.sprite != null ? "OK" : "MISSING")} | PointerClickHandler: OK");
+                        // 🔥 เพิ่มลิสเนอร์คลิกแบบง่ายๆ สำหรับการ์ดบนมือ
+                        var pointerClickHandler = item.GetComponent<PointerClickHandler>();
+                        if (pointerClickHandler == null)
+                        {
+                            pointerClickHandler = item.AddComponent<PointerClickHandler>();
+                        }
+                        pointerClickHandler.OnClickAction = () =>
+                        {
+                            if (cardDetailView != null)
+                            {
+                                cardDetailView.Open(cardData);
+                                Debug.Log($"🔓 เปิดรายละเอียดการ์ดบนมือ: {cardData.cardName}");
+                            }
+                            else
+                            {
+                                Debug.LogError("❌ CardDetailView ยังไม่ได้ตั้งค่าใน BattleManager!");
+                            }
+                        };
 
-                    successCount++;
+                        Debug.Log($"✅ Card setup: {card.cardName} | Image: {(img != null && img.sprite != null ? "OK" : "MISSING")} | PointerClickHandler: OK");
+
+                        successCount++;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"⚠️ Hand Reveal item ไม่มี BattleCardUI component: {card.cardName}");
+                    }
                 }
-                else
+                catch (System.Exception ex)
                 {
-                    Debug.LogWarning($"⚠️ Hand Reveal item ไม่มี BattleCardUI component: {card.cardName}");
+                    Debug.LogError($"❌ HandReveal card render failed: {(card != null ? card.cardName : "<null>")} | {ex}");
+
+                    // fallback item กัน panel ว่างทั้งหมดเมื่อการ์ดบางใบมีข้อมูลผิด
+                    var fallback = new GameObject("HandRevealFallbackItem");
+                    fallback.transform.SetParent(handRevealListRoot, false);
+                    var fallbackText = fallback.AddComponent<TextMeshProUGUI>();
+                    fallbackText.text = card != null ? card.cardName : "Unknown Card";
+                    fallbackText.fontSize = 20f;
+                    fallbackText.alignment = TextAlignmentOptions.Center;
+                    fallbackText.color = Color.white;
                 }
             }
             Debug.Log($"✅ สร้างการ์ด Hand Reveal {successCount}/{cards.Count} ใบ");

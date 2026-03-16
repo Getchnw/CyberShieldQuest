@@ -264,7 +264,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 int currentATK = GetModifiedATK(isPlayerAttack: true);
                 
                 // ถ้ามี GraveyardATK ให้แสดงเป็นสีเขียว
-                var graveyardEffect = _cardData.effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
+                var effects = _cardData.effects ?? new System.Collections.Generic.List<CardEffect>();
+                var graveyardEffect = effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
                 if (graveyardEffect.action == ActionType.GraveyardATK && currentATK > _cardData.atk)
                 {
                     atkText.color = new Color(0.5f, 1f, 0.5f); // สีเขียวอ่อน
@@ -341,7 +342,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             if (_cardData.type == CardType.Monster || _cardData.type == CardType.Token)
             {
                 int currentATK = GetModifiedATK(isPlayerAttack: true);
-                var graveyardEffect = _cardData.effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
+                var effects = _cardData.effects ?? new System.Collections.Generic.List<CardEffect>();
+                var graveyardEffect = effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
                 
                 if (graveyardEffect.action == ActionType.GraveyardATK && currentATK > _cardData.atk)
                 {
@@ -378,7 +380,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
         else
         {
-            hasDoubleStrike = _cardData.effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.DoubleStrike);
+            var effects = _cardData.effects ?? new System.Collections.Generic.List<CardEffect>();
+            hasDoubleStrike = effects.Any(e => e.trigger == EffectTrigger.Continuous && e.action == ActionType.DoubleStrike);
         }
 
         return hasDoubleStrike ? 2 : 1;
@@ -406,7 +409,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         int baseATK = _cardData.atk;
 
         // 🔥 เช็คสกิล GraveyardATK (เพิ่มพลังตามจำนวนการ์ดในสุสาน)
-        var graveyardEffect = _cardData.effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
+        var effects = _cardData.effects ?? new System.Collections.Generic.List<CardEffect>();
+        var graveyardEffect = effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
         
         if (graveyardEffect.action == ActionType.GraveyardATK)
         {
@@ -889,9 +893,22 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public void Setup(CardData data)
     {
         _cardData = data;
+
+        if (_cardData == null)
+        {
+            Debug.LogError("❌ BattleCardUI.Setup called with null CardData");
+            return;
+        }
         
         // 🔥 สร้าง UI elements ถ้ายังไม่มี (เพื่อให้แสดงไอคอนได้ทุก scene)
-        CreateUIElementsIfNeeded();
+        try
+        {
+            CreateUIElementsIfNeeded();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"❌ CreateUIElementsIfNeeded failed for {_cardData.cardName}: {ex}");
+        }
         
         // ตั้งรูปการ์ด และบังคับให้รับ Raycast เสมอ (กันกรณี prefab ปิดไว้)
         if (artworkImage != null)
@@ -931,7 +948,14 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
         
         // � อัปเดตสัญลักษณ์บนการ์ด (Trigger, Action, SubCategory)
-        UpdateSymbolDisplay();
+        try
+        {
+            UpdateSymbolDisplay();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"❌ UpdateSymbolDisplay failed for {_cardData.cardName}: {ex}");
+        }
         
         // �🎈 หยุดอนิเมชั่นลอยเพื่อไม่รบกวน HorizontalLayoutGroup
         floatTime = 0f;
@@ -1294,6 +1318,8 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public void UpdateSymbolDisplay()
     {
         if (_cardData == null) return;
+
+        var effects = _cardData.effects ?? new System.Collections.Generic.List<CardEffect>();
         
         int iconIndex = 0; // ตำแหน่ง slot ปัจจุบัน (0-3)
         bool showAnyIcon = false; // เช็คว่ามีไอคอนใดแสดงอยู่หรือไม่
@@ -1314,7 +1340,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         var spritesToShow = new System.Collections.Generic.List<Sprite>();
         
         // รวบรวม Trigger sprites ทั้งหมด
-        foreach (var effect in _cardData.effects)
+        foreach (var effect in effects)
         {
             if (spritesToShow.Count >= 4) break;
             if (effect.trigger != EffectTrigger.None)
@@ -1328,7 +1354,7 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
         
         // รวบรวม Action sprites ทั้งหมด
-        foreach (var effect in _cardData.effects)
+        foreach (var effect in effects)
         {
             if (spritesToShow.Count >= 4) break;
             if (effect.action != ActionType.None)
