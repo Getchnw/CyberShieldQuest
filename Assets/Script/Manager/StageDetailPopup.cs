@@ -19,6 +19,8 @@ public class StageDetailPopup : MonoBehaviour
     private class RuntimeStarConditionData
     {
         public StarCondition.ConditionType type;
+        public string description;
+        public string descriptionTh;
         public int intValue;
         public float floatValue;
         public MainCategory category;
@@ -377,6 +379,8 @@ public class StageDetailPopup : MonoBehaviour
                 payload.conditions.Add(new RuntimeStarConditionData
                 {
                     type = condition.type,
+                    description = condition.description,
+                    descriptionTh = condition.description_th,
                     intValue = condition.intValue,
                     floatValue = condition.floatValue,
                     category = condition.category,

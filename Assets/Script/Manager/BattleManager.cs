@@ -118,6 +118,36 @@ public class BattleManager : MonoBehaviour
     public TextMeshProUGUI resultDetailText;
     public Button resultConfirmButton;
 
+    [Header("--- Result Confirm Button Label ---")]
+    public TextMeshProUGUI resultConfirmButtonText;
+    public string resultConfirmToStageLabel = "กลับไปหน้าเลือกตอน";
+    public string resultConfirmToStoryLabel = "กลับไปหน้าเนื้อเรื่อง";
+    public string resultConfirmDefaultLabel = "กลับ";
+
+    [Header("--- Reward Panel UI Bindings (Optional) ---")]
+    public TextMeshProUGUI rewardSummaryText;
+    public TextMeshProUGUI rewardDescriptionText;
+    public TextMeshProUGUI rewardMissionText;
+    public TextMeshProUGUI rewardStarCountText;
+    public TextMeshProUGUI rewardStarEarnedText;
+    public TextMeshProUGUI rewardExpText;
+    public TextMeshProUGUI rewardGoldText;
+    public TextMeshProUGUI rewardCardDropText;
+    public BattleCardUI rewardCardPreviewCardUI;
+    public Image rewardCardPreviewImage;
+    public TextMeshProUGUI rewardCardNameText;
+    public TextMeshProUGUI rewardCardAmountText;
+    public bool useQuizStyleCardDrop = true;
+
+    [Header("--- Battle Rewards ---")]
+    public bool enableBattleRewards = true;
+    [Min(0)] public int winExpReward = 45;
+    [Min(0)] public int loseExpReward = 15;
+    [Min(0)] public int winGoldReward = 120;
+    [Min(0)] public int loseGoldReward = 40;
+    [Range(0f, 1f)] public float winCardDropChance = 0.35f;
+    [Range(0f, 1f)] public float loseCardDropChance = 0.1f;
+
     [Header("--- Pause & Log ---")]
     public GameObject pausePanel;
     public Button pauseButton;
@@ -221,6 +251,7 @@ public class BattleManager : MonoBehaviour
     private BattleCardUI currentAttackerBot;
     private bool playerHasMadeChoice = false;
     private List<CardData> enemyDeckList = new List<CardData>();
+    private List<CardData> enemyDeckSnapshot = new List<CardData>();
     private Dictionary<string, CardData> revealedEnemyCards = new Dictionary<string, CardData>(); // เก็บการ์ดที่ทัยเหงแล้วท่อแคส
     private Dictionary<string, CardData> cardLookupCache = null;
     private Dictionary<string, CardData> cardNameLookupCache = null;
@@ -372,6 +403,7 @@ public class BattleManager : MonoBehaviour
     {
         Instance = this;
         ResolveReturnSceneName();
+        UpdateResultConfirmButtonLabel();
 
         EnsureHandRevealReferences();
 
@@ -536,6 +568,7 @@ public class BattleManager : MonoBehaviour
 
         // สำเนาเด็คให้บอทใช้แยกกัน จะได้ไม่เสกการ์ดซ้ำไม่จำกัด
         enemyDeckList = new List<CardData>(deckList);
+        enemyDeckSnapshot = enemyDeckList.Where(card => card != null).ToList();
         ShuffleList(deckList);
         ShuffleList(enemyDeckList);
 
@@ -3939,6 +3972,15 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    private class BattleRewardResult
+    {
+        public int expReward;
+        public int goldReward;
+        public float cardDropChance;
+        public bool dropRollSuccess;
+        public CardData droppedCard;
+    }
+
     IEnumerator EndBattle(bool playerWin)
     {
         if (isEnding) yield break;
@@ -3966,24 +4008,33 @@ public class BattleManager : MonoBehaviour
             Debug.Log($"💾 Battle result saved to history (Total: {BattleHistory.Instance.GetTotalBattles()})");
         }
 
-        // ⭐ ตรวจสอบและบันทึกดาว (ถ้าชนะ และมี StageID)
-        if (playerWin)
-        {
-            string currentStageID = PlayerPrefs.GetString("CurrentStageID", "");
-            if (!string.IsNullOrEmpty(currentStageID))
-            {
-                List<bool> missionResults = CalculateStarMissionResultsForCurrentStage(currentBattleStats, currentStageID);
-                int starsEarned = Mathf.Clamp(missionResults.Count(done => done), 0, 3);
-                Debug.Log($"Earned {starsEarned}/3 stars for stage {currentStageID}");
-                Debug.Log($"[DEBUG] Stats - Victory: {currentBattleStats.victory}, Turns: {currentBattleStats.turnsPlayed}, Spells: {currentBattleStats.spellsCast}");
+        string currentStageID = PlayerPrefs.GetString("CurrentStageID", "");
+        // Story battle ไม่ต้องแสดง mission/ดาว แม้จะมีค่า PlayerPrefs เก่าค้างอยู่
+        bool isStageBattle = !IsStoryBattleContext() && HasValidCurrentStageMissionPayload(currentStageID);
 
-                // บันทึกลง GameManager
-                if (GameManager.Instance != null)
-                {
-                    GameManager.Instance.CompleteStage(currentStageID, starsEarned, currentBattleStats, missionResults);
-                }
+        List<bool> missionResults = new List<bool>();
+        if (isStageBattle)
+        {
+            missionResults = CalculateStarMissionResultsForCurrentStage(currentBattleStats, currentStageID);
+        }
+
+        List<string> missionLabels = BuildMissionLabelsForCurrentStage(currentStageID, missionResults.Count);
+        int starsEarned = isStageBattle ? Mathf.Clamp(missionResults.Count(done => done), 0, 3) : 0;
+
+        // ⭐ ตรวจสอบและบันทึกดาว (ถ้าชนะ และเป็น Stage Battle เท่านั้น)
+        if (playerWin && isStageBattle)
+        {
+            Debug.Log($"Earned {starsEarned}/3 stars for stage {currentStageID}");
+            Debug.Log($"[DEBUG] Stats - Victory: {currentBattleStats.victory}, Turns: {currentBattleStats.turnsPlayed}, Spells: {currentBattleStats.spellsCast}");
+
+            // บันทึกลง GameManager
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.CompleteStage(currentStageID, starsEarned, currentBattleStats, missionResults);
             }
         }
+
+        BattleRewardResult rewardResult = ApplyBattleRewards(playerWin);
 
         // แสดงสถิติใน Console
         Debug.Log("\n" + currentBattleStats.GetSummary());
@@ -3994,6 +4045,15 @@ public class BattleManager : MonoBehaviour
         AddBattleLog($"Final HP: Player {currentHP}/{maxHP} | Enemy {enemyCurrentHP}/{enemyMaxHP}");
         AddBattleLog($"Cards Played: {currentBattleStats.totalCardsPlayed} (M:{currentBattleStats.monsterCardsPlayed} S:{currentBattleStats.spellCardsPlayed} E:{currentBattleStats.equipCardsPlayed})");
         AddBattleLog($"Damage: Dealt {currentBattleStats.totalDamageDealt} | Taken {currentBattleStats.totalDamageTaken}");
+        AddBattleLog($"Rewards: +{rewardResult.expReward} EXP | +{rewardResult.goldReward} Gold");
+        if (rewardResult.droppedCard != null)
+        {
+            AddBattleLog($"Card Drop: {rewardResult.droppedCard.cardName}");
+        }
+        else
+        {
+            AddBattleLog($"Card Drop: none ({rewardResult.cardDropChance * 100f:0.#}% chance)");
+        }
         if (currentBattleStats.perfectVictory) AddBattleLog("🏆 Perfect Victory!");
         if (currentBattleStats.quickVictory) AddBattleLog("⚡ Quick Victory!");
 
@@ -4008,9 +4068,13 @@ public class BattleManager : MonoBehaviour
         {
             resultPanel.SetActive(true);
             resultConfirmed = false;
+            UpdateResultConfirmButtonLabel();
 
             if (resultTitleText) resultTitleText.text = playerWin ? "VICTORY" : "DEFEAT";
-            if (resultDetailText) resultDetailText.text = playerWin ? "คุณชนะ!" : "คุณแพ้!";
+            SetRewardDescriptionText(BuildBattleResultDetailText(playerWin));
+
+            UpdateRewardPanelHeaderAndMissionText(playerWin, missionResults, missionLabels, isStageBattle);
+            UpdateRewardPanelSummaryText(starsEarned, rewardResult, isStageBattle);
 
             if (resultConfirmButton)
             {
@@ -4031,6 +4095,527 @@ public class BattleManager : MonoBehaviour
         }
 
         LoadReturnScene();
+    }
+
+    private void UpdateResultConfirmButtonLabel()
+    {
+        TextMeshProUGUI targetText = resultConfirmButtonText;
+        if (targetText == null && resultConfirmButton != null)
+            targetText = resultConfirmButton.GetComponentInChildren<TextMeshProUGUI>(true);
+
+        if (targetText == null)
+            return;
+
+        string targetScene = ResolveTargetSceneNameForDisplay();
+        targetText.text = BuildResultConfirmButtonLabel(targetScene);
+    }
+
+    private string ResolveTargetSceneNameForDisplay()
+    {
+        string activeSceneName = SceneManager.GetActiveScene().name;
+        string targetScene = !string.IsNullOrWhiteSpace(resolvedReturnSceneName)
+            ? resolvedReturnSceneName
+            : stageSceneName;
+
+        if (targetScene.Equals(activeSceneName, System.StringComparison.OrdinalIgnoreCase)
+            || !Application.CanStreamedLevelBeLoaded(targetScene))
+        {
+            targetScene = stageSceneName;
+        }
+
+        return targetScene;
+    }
+
+    private string BuildResultConfirmButtonLabel(string targetScene)
+    {
+        if (string.IsNullOrWhiteSpace(targetScene))
+            return resultConfirmDefaultLabel;
+
+        if (targetScene.IndexOf("story", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            return resultConfirmToStoryLabel;
+
+        if (targetScene.IndexOf("stage", System.StringComparison.OrdinalIgnoreCase) >= 0
+            || targetScene.IndexOf("chapter", System.StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            return resultConfirmToStageLabel;
+        }
+
+        return resultConfirmDefaultLabel;
+    }
+
+    private bool IsStoryBattleContext()
+    {
+        string targetScene = ResolveTargetSceneNameForDisplay();
+        return !string.IsNullOrWhiteSpace(targetScene)
+            && targetScene.IndexOf("story", System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private bool HasValidCurrentStageMissionPayload(string stageID)
+    {
+        if (string.IsNullOrEmpty(stageID))
+            return false;
+
+        string payloadJson = PlayerPrefs.GetString("CurrentStageConditionsJson", "");
+        if (string.IsNullOrEmpty(payloadJson))
+            return false;
+
+        RuntimeStageConditionPayload payload = JsonUtility.FromJson<RuntimeStageConditionPayload>(payloadJson);
+        return payload != null
+            && payload.conditions != null
+            && payload.conditions.Count > 0
+            && payload.stageID == stageID;
+    }
+
+    private BattleRewardResult ApplyBattleRewards(bool playerWin)
+    {
+        BattleRewardResult reward = new BattleRewardResult
+        {
+            expReward = playerWin ? winExpReward : loseExpReward,
+            goldReward = playerWin ? winGoldReward : loseGoldReward,
+            cardDropChance = playerWin ? winCardDropChance : loseCardDropChance,
+            dropRollSuccess = false,
+            droppedCard = null
+        };
+
+        if (!enableBattleRewards)
+            return reward;
+
+        if (GameManager.Instance == null || GameManager.Instance.CurrentGameData == null)
+            return reward;
+
+        if (reward.expReward > 0)
+            GameManager.Instance.AddExperience(reward.expReward);
+
+        if (reward.goldReward > 0)
+            GameManager.Instance.AddGold(reward.goldReward);
+
+        if (reward.cardDropChance > 0f && Random.value <= reward.cardDropChance)
+        {
+            reward.dropRollSuccess = true;
+            CardData droppedCard = RollCardDropFromBotDeck();
+            if (droppedCard != null && !string.IsNullOrEmpty(droppedCard.card_id))
+            {
+                GameManager.Instance.AddCardToInventory(droppedCard.card_id, 1);
+                reward.droppedCard = droppedCard;
+            }
+        }
+
+        // Persist card inventory updates because AddCardToInventory doesn't auto-save.
+        GameManager.Instance.SaveCurrentGame();
+
+        return reward;
+    }
+
+    private CardData RollCardDropFromBotDeck()
+    {
+        List<CardData> dropPool = BuildBotDeckDropPool();
+        if (dropPool.Count == 0)
+            return null;
+
+        int index = Random.Range(0, dropPool.Count);
+        return dropPool[index];
+    }
+
+    private List<CardData> BuildBotDeckDropPool()
+    {
+        if (enemyDeckSnapshot != null && enemyDeckSnapshot.Count > 0)
+            return enemyDeckSnapshot.Where(card => card != null && !string.IsNullOrEmpty(card.card_id)).ToList();
+
+        if (enemyDeckList != null && enemyDeckList.Count > 0)
+            return enemyDeckList.Where(card => card != null && !string.IsNullOrEmpty(card.card_id)).ToList();
+
+        return new List<CardData>();
+    }
+
+    private string BuildBattleResultDetailText(bool playerWin)
+    {
+        return playerWin
+            ? "Description : คุณชนะการต่อสู้และรับรางวัล"
+            : "Description : คุณแพ้การต่อสู้ แต่ยังได้รับรางวัลพื้นฐาน";
+    }
+
+    private void UpdateRewardPanelHeaderAndMissionText(bool playerWin, List<bool> missionResults, List<string> missionLabels, bool isStageBattle)
+    {
+        string summaryText = $"{(playerWin ? "VICTORY" : "DEFEAT")}";
+        TrySetRewardText(rewardSummaryText, "Score point", summaryText);
+
+        string missionText = BuildMissionDisplayText(missionResults, missionLabels, isStageBattle);
+        bool showMission = isStageBattle && !string.IsNullOrWhiteSpace(missionText);
+        SetRewardSectionVisibility(rewardMissionText, "Prize List", showMission);
+        TrySetRewardText(rewardMissionText, "Prize List", missionText);
+    }
+
+    private string BuildMissionDisplayText(List<bool> missionResults, List<string> missionLabels, bool isStageBattle)
+    {
+        if (!isStageBattle)
+            return string.Empty;
+
+        if (missionResults == null || missionResults.Count == 0)
+            return "Mission : ไม่มีข้อมูล";
+
+        int successCount = missionResults.Count(done => done);
+        List<string> completedMissionLabels = new List<string>();
+
+        for (int i = 0; i < missionResults.Count; i++)
+        {
+            if (!missionResults[i])
+                continue;
+
+            string label = (missionLabels != null && i < missionLabels.Count && !string.IsNullOrWhiteSpace(missionLabels[i]))
+                ? missionLabels[i]
+                : $"Mission {i + 1}";
+            completedMissionLabels.Add(label);
+        }
+
+        if (completedMissionLabels.Count == 0)
+            return $"Mission Success : {successCount}/{missionResults.Count}\nCompleted : ไม่มี";
+
+        return $"Mission Success : {successCount}/{missionResults.Count}\nCompleted : {string.Join(", ", completedMissionLabels)}";
+    }
+
+    private void UpdateRewardPanelSummaryText(int starsEarned, BattleRewardResult rewardResult, bool isStageBattle = true)
+    {
+        if (isStageBattle)
+        {
+            SetRewardSectionVisibility(rewardStarCountText, "star num", true);
+            SetRewardSectionVisibility(rewardStarEarnedText, "star Earned", true);
+            TrySetRewardText(rewardStarCountText, "star num", starsEarned.ToString());
+            TrySetRewardText(rewardStarEarnedText, "star Earned", $"Star Earned : {starsEarned}/3");
+        }
+        else
+        {
+            // Story battle ไม่มี mission/ดาว
+            SetRewardSectionVisibility(rewardStarCountText, "star num", false);
+            SetRewardSectionVisibility(rewardStarEarnedText, "star Earned", false);
+            TrySetRewardText(rewardStarCountText, "star num", string.Empty);
+            TrySetRewardText(rewardStarEarnedText, "star Earned", string.Empty);
+        }
+        TrySetRewardText(rewardExpText, "Exp", $"Experience  :  {rewardResult.expReward}");
+        TrySetRewardText(rewardGoldText, "Gold Reward", $"Gold  :  {rewardResult.goldReward}");
+
+        UpdateRewardCardDropDisplay(rewardResult);
+    }
+
+    private void UpdateRewardCardDropDisplay(BattleRewardResult rewardResult)
+    {
+        CardData droppedCard = rewardResult != null ? rewardResult.droppedCard : null;
+        bool hasDrop = droppedCard != null;
+
+        TextMeshProUGUI cardNameLabel = ResolveRewardCardNameText();
+        TextMeshProUGUI cardAmountLabel = ResolveRewardCardAmountText(cardNameLabel);
+        bool nameLabelIsHeading = cardNameLabel != null && rewardCardDropText != null && cardNameLabel == rewardCardDropText;
+
+        if (useQuizStyleCardDrop)
+        {
+            // Keep left label as section heading and show actual reward text near card image.
+            TrySetRewardText(rewardCardDropText, "Card", "Card");
+
+            if (cardAmountLabel != null)
+            {
+                cardAmountLabel.text = hasDrop ? $"{droppedCard.cardName}\nx1" : "-";
+            }
+            else if (cardNameLabel != null && !nameLabelIsHeading)
+            {
+                cardNameLabel.text = hasDrop ? $"{droppedCard.cardName}\nx1" : "-";
+            }
+            else
+            {
+                string fallbackCardLine = hasDrop ? $"Card : {droppedCard.cardName} x1" : "Card : -";
+                TrySetRewardText(rewardCardDropText, "Card", fallbackCardLine);
+            }
+
+            if (cardNameLabel != null && cardAmountLabel != null && cardNameLabel != cardAmountLabel && !nameLabelIsHeading)
+                cardNameLabel.text = string.Empty;
+
+            DisableRewardCardPreviewUIs();
+
+            Image previewImageQuiz = ResolveRewardCardPreviewImage();
+            if (previewImageQuiz != null)
+            {
+                previewImageQuiz.gameObject.SetActive(hasDrop);
+                if (hasDrop)
+                {
+                    previewImageQuiz.sprite = droppedCard.artwork;
+                    previewImageQuiz.color = Color.white;
+                }
+            }
+
+            return;
+        }
+
+        if (cardNameLabel != null)
+        {
+            string cardNameLine = hasDrop ? $"Card : {droppedCard.cardName}" : "Card : -";
+            if (cardAmountLabel == null && hasDrop)
+                cardNameLine += " x1";
+            cardNameLabel.text = cardNameLine;
+        }
+        else
+        {
+            string fallbackCardLine = hasDrop ? $"Card : {droppedCard.cardName} x1" : "Card : -";
+            TrySetRewardText(rewardCardDropText, "Card", fallbackCardLine);
+        }
+
+        if (cardAmountLabel != null)
+            cardAmountLabel.text = hasDrop ? "x1" : "-";
+
+        Image previewImage = ResolveRewardCardPreviewImage();
+        BattleCardUI previewCard = ResolveRewardCardPreviewUI();
+        if (previewCard != null)
+        {
+            previewCard.gameObject.SetActive(hasDrop);
+            if (!hasDrop)
+                return;
+
+            previewCard.Setup(droppedCard);
+            previewCard.isOnField = false;
+            previewCard.SetFrameVisible(true);
+            previewCard.UpdateCardSize();
+
+            RectTransform previewRect = previewCard.GetComponent<RectTransform>();
+            if (previewRect != null)
+                previewRect.sizeDelta = new Vector2(140f, 200f);
+
+            return;
+        }
+
+        if (previewImage == null)
+            return;
+
+        previewImage.gameObject.SetActive(hasDrop);
+        if (!hasDrop)
+            return;
+
+        previewImage.sprite = droppedCard.artwork;
+        previewImage.color = Color.white;
+    }
+
+    private BattleCardUI ResolveRewardCardPreviewUI()
+    {
+        return rewardCardPreviewCardUI;
+    }
+
+    private Transform GetRewardCardSectionTransform()
+    {
+        if (resultPanel == null)
+            return null;
+
+        return FindDescendantByNameContains(resultPanel.transform, "Card");
+    }
+
+    private TextMeshProUGUI ResolveRewardCardNameText()
+    {
+        if (rewardCardNameText != null)
+            return rewardCardNameText;
+
+        Transform cardSection = GetRewardCardSectionTransform();
+        if (cardSection != null)
+        {
+            TextMeshProUGUI[] texts = cardSection.GetComponentsInChildren<TextMeshProUGUI>(true);
+            rewardCardNameText = texts.FirstOrDefault(t => t != null && t.name.ToLowerInvariant().Contains("name"));
+            if (rewardCardNameText != null)
+                return rewardCardNameText;
+
+            rewardCardNameText = texts.FirstOrDefault(t => t != null && t.text.ToLowerInvariant().Contains("card"));
+            if (rewardCardNameText != null)
+                return rewardCardNameText;
+        }
+
+        if (rewardCardDropText != null)
+            rewardCardNameText = rewardCardDropText;
+
+        return rewardCardNameText;
+    }
+
+    private TextMeshProUGUI ResolveRewardCardAmountText(TextMeshProUGUI nameLabel)
+    {
+        if (rewardCardAmountText != null)
+            return rewardCardAmountText;
+
+        Transform cardSection = GetRewardCardSectionTransform();
+        if (cardSection == null)
+            return null;
+
+        TextMeshProUGUI[] texts = cardSection.GetComponentsInChildren<TextMeshProUGUI>(true);
+        rewardCardAmountText = texts.FirstOrDefault(t => t != null
+            && t != nameLabel
+            && t.name.ToLowerInvariant().Contains("amount"));
+        if (rewardCardAmountText != null)
+            return rewardCardAmountText;
+
+        rewardCardAmountText = texts.FirstOrDefault(t => t != null
+            && t != nameLabel
+            && t.text.Trim().Equals("New Text", System.StringComparison.OrdinalIgnoreCase));
+        if (rewardCardAmountText != null)
+            return rewardCardAmountText;
+
+        rewardCardAmountText = texts.FirstOrDefault(t => t != null
+            && t != nameLabel
+            && (t.text.Contains("x1") || t.text.Contains("x")));
+        return rewardCardAmountText;
+    }
+
+    private Image ResolveRewardCardPreviewImage()
+    {
+        if (rewardCardPreviewImage != null)
+            return rewardCardPreviewImage;
+
+        Transform cardSection = GetRewardCardSectionTransform();
+        if (cardSection == null)
+            return null;
+
+        Image sectionImage = cardSection.GetComponent<Image>();
+        Image[] images = cardSection.GetComponentsInChildren<Image>(true);
+        float bestArea = -1f;
+        foreach (Image image in images)
+        {
+            if (image == null || image == sectionImage)
+                continue;
+
+            RectTransform imageRect = image.GetComponent<RectTransform>();
+            float area = imageRect != null ? Mathf.Abs(imageRect.rect.width * imageRect.rect.height) : 0f;
+            if (area <= bestArea)
+                continue;
+
+            bestArea = area;
+            rewardCardPreviewImage = image;
+        }
+
+        return rewardCardPreviewImage;
+    }
+
+    private void DisableRewardCardPreviewUIs()
+    {
+        if (rewardCardPreviewCardUI != null)
+            rewardCardPreviewCardUI.gameObject.SetActive(false);
+
+        Transform cardSection = GetRewardCardSectionTransform();
+        if (cardSection == null)
+            return;
+
+        BattleCardUI[] previewCards = cardSection.GetComponentsInChildren<BattleCardUI>(true);
+        foreach (BattleCardUI preview in previewCards)
+        {
+            if (preview != null)
+                preview.gameObject.SetActive(false);
+        }
+    }
+
+    private void SetRewardSectionVisibility(TextMeshProUGUI boundText, string fallbackSectionName, bool visible)
+    {
+        if (boundText != null)
+        {
+            boundText.gameObject.SetActive(visible);
+            return;
+        }
+
+        if (resultPanel == null || string.IsNullOrWhiteSpace(fallbackSectionName))
+            return;
+
+        Transform section = FindDescendantByNameContains(resultPanel.transform, fallbackSectionName);
+        if (section != null)
+            section.gameObject.SetActive(visible);
+    }
+
+    private void SetRewardDescriptionText(string text)
+    {
+        if (rewardDescriptionText != null)
+        {
+            rewardDescriptionText.text = text;
+            return;
+        }
+
+        if (resultDetailText)
+            resultDetailText.text = text;
+    }
+
+    private bool TrySetRewardText(TextMeshProUGUI boundText, string fallbackSectionName, string text)
+    {
+        if (boundText != null)
+        {
+            boundText.text = text;
+            return true;
+        }
+
+        return TrySetResultPanelSectionText(fallbackSectionName, text);
+    }
+
+    private bool TrySetResultPanelSectionText(string sectionName, string text)
+    {
+        if (resultPanel == null || string.IsNullOrWhiteSpace(sectionName))
+            return false;
+
+        Transform section = FindDescendantByNameContains(resultPanel.transform, sectionName);
+        if (section == null)
+            return false;
+
+        TextMeshProUGUI targetText = section.GetComponent<TextMeshProUGUI>();
+        if (targetText == null)
+            targetText = section.GetComponentInChildren<TextMeshProUGUI>(true);
+
+        if (targetText == null)
+            return false;
+
+        targetText.text = text;
+        return true;
+    }
+
+    private Transform FindDescendantByNameContains(Transform root, string namePart)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(namePart))
+            return null;
+
+        string needle = namePart.ToLowerInvariant();
+        foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+        {
+            if (child == null) continue;
+            if (child.name.ToLowerInvariant().Contains(needle))
+                return child;
+        }
+
+        return null;
+    }
+
+    private List<string> BuildMissionLabelsForCurrentStage(string stageID, int missionCount)
+    {
+        List<string> labels = new List<string>();
+        if (string.IsNullOrEmpty(stageID))
+            return labels;
+
+        string payloadJson = PlayerPrefs.GetString("CurrentStageConditionsJson", "");
+        if (string.IsNullOrEmpty(payloadJson))
+            return labels;
+
+        RuntimeStageConditionPayload payload = JsonUtility.FromJson<RuntimeStageConditionPayload>(payloadJson);
+        bool hasValidPayload = payload != null
+            && payload.conditions != null
+            && payload.conditions.Count > 0
+            && payload.stageID == stageID;
+
+        if (!hasValidPayload)
+            return labels;
+
+        int maxCount = missionCount > 0 ? Mathf.Min(missionCount, payload.conditions.Count) : payload.conditions.Count;
+        for (int i = 0; i < maxCount; i++)
+        {
+            labels.Add(BuildMissionLabel(payload.conditions[i], i));
+        }
+
+        return labels;
+    }
+
+    private string BuildMissionLabel(RuntimeStarConditionData runtimeCondition, int index)
+    {
+        if (runtimeCondition == null)
+            return $"Mission {index + 1}";
+
+        if (!string.IsNullOrWhiteSpace(runtimeCondition.descriptionTh))
+            return runtimeCondition.descriptionTh;
+
+        if (!string.IsNullOrWhiteSpace(runtimeCondition.description))
+            return runtimeCondition.description;
+
+        return $"Mission {index + 1} ({runtimeCondition.type})";
     }
 
     void ShowDamagePopupString(string t, Transform pos)
@@ -9031,6 +9616,8 @@ public class BattleManager : MonoBehaviour
     private class RuntimeStarConditionData
     {
         public StarCondition.ConditionType type;
+        public string description;
+        public string descriptionTh;
         public int intValue;
         public float floatValue;
         public MainCategory category;
