@@ -33,7 +33,6 @@ public class UI_LoadStory : MonoBehaviour
         }
         //ดึงProgress
         var allChapterProgress = GameManager.Instance.CurrentGameData.chapterProgress ?? new List<PlayerChapterProgress>();
-        string[] StageId_storyBattle = { "SB_A01", "SB_A02", "SB_A03" };
         // วนลูปตามจำนวน "ช่อง UI" ที่เรามี
         for (int i = 0; i < storyItemSlots.Count; i++)
         {
@@ -80,14 +79,27 @@ public class UI_LoadStory : MonoBehaviour
                 }
                 // ดึงความคืบหน้าของ StoryBattle
                 bool isProgressStoryBattle = false;
-                // isProgressStoryBattle = GameManager.Instance.CurrentGameData.stageProgress.Find(sp => sp.stageID == StageId_storyBattle[i]).Any().isCompleted;
+                if (i == 0)
+                {
+                    isProgressStoryBattle = true;
+                }
+                else
+                {
+                    StoryData previousStory = allStoryData[i - 1];
+                    string requiredStoryBattleStageId = GetStoryBattleStageIdByStoryId(previousStory.story_id);
 
-                // หาข้อมูลด่านนั้นในลิสต์มาเก็บไว้ก่อน
-                var storyBattle = GameManager.Instance.CurrentGameData.stageProgress
-                    .Find(sp => sp.stageID == StageId_storyBattle[i]);
-
-                //ถ้าหาเจอ (ไม่เป็น null) และด่านนั้นผ่านแล้ว (isCompleted เป็น true)
-                isProgressStoryBattle = (storyBattle != null && storyBattle.isCompleted);
+                    if (string.IsNullOrEmpty(requiredStoryBattleStageId))
+                    {
+                        // If no configured battle stage exists for previous story, don't block unlock.
+                        isProgressStoryBattle = true;
+                    }
+                    else
+                    {
+                        var storyBattle = GameManager.Instance.CurrentGameData.stageProgress
+                            .Find(sp => sp.stageID == requiredStoryBattleStageId);
+                        isProgressStoryBattle = (storyBattle != null && storyBattle.isCompleted);
+                    }
+                }
 
                 // รวม isProgressStoryBattle กับ isProgressUnlocked
                 bool final_isProgressUnlocked = false;
@@ -111,6 +123,12 @@ public class UI_LoadStory : MonoBehaviour
                 storyItemSlots[i].gameObject.SetActive(false);
             }
         }
+    }
+
+    private string GetStoryBattleStageIdByStoryId(string storyId)
+    {
+        if (string.IsNullOrEmpty(storyId)) return string.Empty;
+        return $"SB_{storyId}";
     }
 
     // เมธอดนี้จะถูกเรียกโดย UI_StoryItem เมื่อปุ่มถูกกด

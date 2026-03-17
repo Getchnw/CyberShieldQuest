@@ -4009,8 +4009,9 @@ public class BattleManager : MonoBehaviour
         }
 
         string currentStageID = PlayerPrefs.GetString("CurrentStageID", "");
+        bool isStoryBattle = IsStoryBattleContext() || IsStoryBattleStageId(currentStageID);
         // Story battle ไม่ต้องแสดง mission/ดาว แม้จะมีค่า PlayerPrefs เก่าค้างอยู่
-        bool isStageBattle = !IsStoryBattleContext() && HasValidCurrentStageMissionPayload(currentStageID);
+        bool isStageBattle = !isStoryBattle && HasValidCurrentStageMissionPayload(currentStageID);
 
         List<bool> missionResults = new List<bool>();
         if (isStageBattle)
@@ -4021,7 +4022,6 @@ public class BattleManager : MonoBehaviour
         List<string> missionLabels = BuildMissionLabelsForCurrentStage(currentStageID, missionResults.Count);
         int starsEarned = isStageBattle ? Mathf.Clamp(missionResults.Count(done => done), 0, 3) : 0;
 
-        // ⭐ ตรวจสอบและบันทึกดาว (ถ้าชนะ และเป็น Stage Battle เท่านั้น)
         if (playerWin && isStageBattle)
         {
             Debug.Log($"Earned {starsEarned}/3 stars for stage {currentStageID}");
@@ -4031,6 +4031,14 @@ public class BattleManager : MonoBehaviour
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.CompleteStage(currentStageID, starsEarned, currentBattleStats, missionResults);
+            }
+        }
+        else if (playerWin && isStoryBattle && !string.IsNullOrEmpty(currentStageID))
+        {
+            // Mark story-battle stage as completed so next story can unlock.
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.CompleteStage(currentStageID, 0, currentBattleStats, null);
             }
         }
 
@@ -4148,6 +4156,12 @@ public class BattleManager : MonoBehaviour
         string targetScene = ResolveTargetSceneNameForDisplay();
         return !string.IsNullOrWhiteSpace(targetScene)
             && targetScene.IndexOf("story", System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private bool IsStoryBattleStageId(string stageID)
+    {
+        return !string.IsNullOrEmpty(stageID)
+            && stageID.StartsWith("SB_", System.StringComparison.OrdinalIgnoreCase);
     }
 
     private bool HasValidCurrentStageMissionPayload(string stageID)
