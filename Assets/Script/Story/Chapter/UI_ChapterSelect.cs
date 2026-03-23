@@ -325,6 +325,7 @@ public class UI_ChapterSelect : MonoBehaviour
             {
                 Name.text = storyStage.stageName;
             }
+            UpdateStoryStageCompleteBadge(newButton, Name, isStageCompleted);
             if (cardImage != null && storyStage.stageImage != null)
             {
                 // นำ Sprite จาก Database มาใส่ใน Image component
@@ -475,6 +476,62 @@ public class UI_ChapterSelect : MonoBehaviour
         //     cardsOnCurrentPage++;
         //     chapterCounter++;
         // }
+    }
+
+    private void UpdateStoryStageCompleteBadge(GameObject stageButtonObject, TextMeshProUGUI sourceNameText, bool isCompleted)
+    {
+        if (stageButtonObject == null) return;
+
+        const string badgeName = "CompleteBadge";
+        Transform badgeTransform = stageButtonObject.transform.Find(badgeName);
+        GameObject badgeObject;
+        TextMeshProUGUI badgeText;
+
+        if (badgeTransform == null)
+        {
+            badgeObject = new GameObject(badgeName, typeof(RectTransform));
+            badgeObject.transform.SetParent(stageButtonObject.transform, false);
+
+            RectTransform rect = badgeObject.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-22f, -14f);
+            rect.sizeDelta = new Vector2(250f, 56f);
+
+            badgeText = badgeObject.AddComponent<TextMeshProUGUI>();
+            badgeText.alignment = TextAlignmentOptions.TopRight;
+            badgeText.text = "COMPLETE";
+            badgeText.raycastTarget = false;
+            badgeText.color = new Color32(53, 255, 141, 255);
+        }
+        else
+        {
+            badgeObject = badgeTransform.gameObject;
+            badgeText = badgeObject.GetComponent<TextMeshProUGUI>();
+
+            if (badgeText == null)
+            {
+                badgeText = badgeObject.AddComponent<TextMeshProUGUI>();
+                badgeText.alignment = TextAlignmentOptions.TopRight;
+                badgeText.raycastTarget = false;
+                badgeText.color = new Color32(53, 255, 141, 255);
+            }
+        }
+
+        if (badgeText != null)
+        {
+            if (sourceNameText != null && sourceNameText.font != null)
+            {
+                badgeText.font = sourceNameText.font;
+            }
+
+            badgeText.fontSize = sourceNameText != null ? Mathf.Max(24f, sourceNameText.fontSize * 0.85f) : 28f;
+            badgeText.fontStyle = FontStyles.Bold;
+            badgeText.text = "COMPLETE";
+        }
+
+        badgeObject.SetActive(isCompleted);
     }
 
     void SetupPagination()

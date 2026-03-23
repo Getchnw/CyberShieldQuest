@@ -316,7 +316,18 @@ public class StageDetailPopup : MonoBehaviour
                 {
                     startButton.image.color = new Color(0.2f, 0.6f, 1f); // สีน้ำเงิน
                     var btnText = startButton.GetComponentInChildren<TextMeshProUGUI>();
-                    if (btnText != null) btnText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "เล่นอีกครั้ง" : "REPLAY";
+                    if (btnText != null)
+                    {
+                        // For Story Battle, show COMPLETE on the enter button after the player wins.
+                        if (data.isStoryBattle)
+                        {
+                            btnText.text = "COMPLETE";
+                        }
+                        else
+                        {
+                            btnText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "เล่นอีกครั้ง" : "REPLAY";
+                        }
+                    }
                 }
             }
             else
