@@ -292,6 +292,7 @@ public class BattleManager : MonoBehaviour
     private bool isChoosingGraveyardEquip = false;
     private CardData selectedGraveyardEquip = null;
     private bool graveyardEquipConfirmed = false;
+    private EffectCardTypeFilter graveyardReturnTypeFilter = EffectCardTypeFilter.EquipSpell;
 
     // 🔥 Mulligan System
     private int playerMulliganLeft = 1;
@@ -2011,9 +2012,9 @@ public class BattleManager : MonoBehaviour
                     break;
 
                 case ActionType.ReturnEquipFromGraveyard:
-                    if (!HasEquipInGraveyard(isPlayer))
+                    if (!HasMatchingCardInGraveyard(isPlayer, ResolveReturnFromGraveyardFilter(effect)))
                     {
-                        Debug.Log($"🚫 Effect {effect.action} ไม่มี Equip Spell ในสุสาน!");
+                        Debug.Log($"🚫 Effect {effect.action} ไม่มีการ์ดที่ตรงเงื่อนไขในสุสาน!");
                         return false;
                     }
                     break;
@@ -8069,8 +8070,14 @@ public class BattleManager : MonoBehaviour
     public int GetPlayerGraveyardCount() => playerGraveyard.Count;
     public int GetEnemyGraveyardCount() => enemyGraveyard.Count;
 
-    /// <summary>ตรวจสอบว่าสุสานผู้เล่นมีการ์ด EquipSpell อย่างน้อย 1 ใบ (ใช้กับ ReturnEquipFromGraveyard)</summary>
+    /// <summary>ตรวจสอบว่าสุสานผู้เล่นมีการ์ด EquipSpell อย่างน้อย 1 ใบ (ใช้กับ ReturnEquipFromGraveyard แบบเดิม)</summary>
     public bool HasEquipInPlayerGraveyard() => HasEquipInGraveyard(true);
+
+    /// <summary>ตรวจสอบว่าสุสานผู้เล่นมีการ์ดตาม filter หรือไม่ (ใช้กับ ReturnEquipFromGraveyard)</summary>
+    public bool HasMatchingCardInPlayerGraveyard(EffectCardTypeFilter filter)
+    {
+        return HasMatchingCardInGraveyard(true, ResolveReturnFromGraveyardFilter(filter));
+    }
 
     /// <summary>จำนวนการ์ดที่เหลือในเด็คบอท</summary>
     public int GetEnemyDeckCount() => enemyDeckList.Count;
@@ -8124,9 +8131,46 @@ public class BattleManager : MonoBehaviour
         return graveyard.Any(card => card != null && card.type == CardType.EquipSpell);
     }
 
+    bool HasMatchingCardInGraveyard(bool isPlayer, EffectCardTypeFilter filter)
+    {
+        var graveyard = isPlayer ? playerGraveyard : enemyGraveyard;
+        return graveyard.Any(card => IsCardMatchingReturnTypeFilter(card, filter));
+    }
+
+    EffectCardTypeFilter ResolveReturnFromGraveyardFilter(CardEffect effect)
+    {
+        return ResolveReturnFromGraveyardFilter(effect.targetCardTypeFilter);
+    }
+
+    EffectCardTypeFilter ResolveReturnFromGraveyardFilter(EffectCardTypeFilter filter)
+    {
+        // backward compatibility: ค่า Any เดิมตีความเป็น EquipSpell
+        return filter == EffectCardTypeFilter.Any ? EffectCardTypeFilter.EquipSpell : filter;
+    }
+
+    bool IsCardMatchingReturnTypeFilter(CardData card, EffectCardTypeFilter filter)
+    {
+        if (card == null) return false;
+
+        switch (filter)
+        {
+            case EffectCardTypeFilter.Monster:
+                return card.type == CardType.Monster;
+            case EffectCardTypeFilter.Spell:
+                return card.type == CardType.Spell;
+            case EffectCardTypeFilter.EquipSpell:
+                return card.type == CardType.EquipSpell;
+            case EffectCardTypeFilter.Token:
+                return card.type == CardType.Token;
+            default:
+                return false;
+        }
+    }
+
     IEnumerator ApplyReturnEquipFromGraveyard(BattleCardUI sourceCard, CardEffect effect, bool isPlayer)
     {
         Debug.Log($"🎯 ApplyReturnEquipFromGraveyard: source={sourceCard?.GetData()?.cardName ?? "Unknown"}, player={isPlayer}");
+        EffectCardTypeFilter resolvedFilter = ResolveReturnFromGraveyardFilter(effect);
 
         if (effect.targetType != TargetType.Self)
         {
@@ -8134,34 +8178,34 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        if (!HasEquipInGraveyard(isPlayer))
+        if (!HasMatchingCardInGraveyard(isPlayer, resolvedFilter))
         {
-            Debug.Log($"⚠️ ไม่มี Equip Spell ในสุสานให้ดึงกลับ ({(isPlayer ? "Player" : "Enemy")})");
+            Debug.Log($"⚠️ ไม่มีการ์ดที่ตรง filter ({resolvedFilter}) ในสุสานให้ดึงกลับ ({(isPlayer ? "Player" : "Enemy")})");
             yield break;
         }
 
         if (isPlayer)
         {
             Debug.Log($"👤 Player turn - opening graveyard selection UI");
-            yield return StartCoroutine(PlayerChooseEquipFromGraveyard(isPlayer: true));
+            yield return StartCoroutine(PlayerChooseEquipFromGraveyard(isPlayer: true, typeFilter: resolvedFilter));
         }
         else
         {
             Debug.Log($"🤖 Bot turn - auto-selecting first equip");
-            yield return StartCoroutine(ReturnFirstEquipFromGraveyard(isPlayer: false));
+            yield return StartCoroutine(ReturnFirstEquipFromGraveyard(isPlayer: false, typeFilter: resolvedFilter));
         }
 
         Debug.Log($"✅✅✅ ApplyReturnEquipFromGraveyard COMPLETELY DONE - Control returns to caller ✅✅✅");
     }
 
-    IEnumerator ReturnFirstEquipFromGraveyard(bool isPlayer)
+    IEnumerator ReturnFirstEquipFromGraveyard(bool isPlayer, EffectCardTypeFilter typeFilter)
     {
         var graveyard = isPlayer ? playerGraveyard : enemyGraveyard;
-        var equipCard = graveyard.FirstOrDefault(card => card != null && card.type == CardType.EquipSpell);
+        var equipCard = graveyard.FirstOrDefault(card => IsCardMatchingReturnTypeFilter(card, typeFilter));
         
         if (equipCard == null)
         {
-            Debug.Log("⚠️ ReturnFirstEquipFromGraveyard: no Equip Spell found");
+            Debug.Log($"⚠️ ReturnFirstEquipFromGraveyard: no card found with filter {typeFilter}");
             yield break;
         }
 
@@ -8199,12 +8243,12 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"✅ ReturnFirstEquipFromGraveyard completed for {(isPlayer ? "Player" : "Bot")}");
     }
 
-    IEnumerator PlayerChooseEquipFromGraveyard(bool isPlayer)
+    IEnumerator PlayerChooseEquipFromGraveyard(bool isPlayer, EffectCardTypeFilter typeFilter)
     {
         var graveyard = isPlayer ? playerGraveyard : enemyGraveyard;
-        if (!HasEquipInGraveyard(isPlayer)) yield break;
+        if (!HasMatchingCardInGraveyard(isPlayer, typeFilter)) yield break;
         List<CardData> equipCards = graveyard
-            .Where(card => card != null && card.type == CardType.EquipSpell)
+            .Where(card => IsCardMatchingReturnTypeFilter(card, typeFilter))
             .ToList();
         if (equipCards.Count == 0) yield break;
 
@@ -8220,6 +8264,7 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"🪦 Opening graveyard selection for {(isPlayer ? "Player" : "Enemy")} - equips={equipCards.Count}, total={graveyard.Count}");
 
         isChoosingGraveyardEquip = true;
+        graveyardReturnTypeFilter = typeFilter;
         graveyardEquipConfirmed = false;
         selectedGraveyardEquip = null;
 
@@ -8239,7 +8284,7 @@ public class BattleManager : MonoBehaviour
 
         if (selectedGraveyardEquip != null)
         {
-            if (selectedGraveyardEquip.type != CardType.EquipSpell || !graveyard.Contains(selectedGraveyardEquip))
+            if (!IsCardMatchingReturnTypeFilter(selectedGraveyardEquip, typeFilter) || !graveyard.Contains(selectedGraveyardEquip))
             {
                 Debug.LogWarning($"⚠️ ReturnEquipFromGraveyard: invalid selected card ({selectedGraveyardEquip.cardName})");
                 yield break;
@@ -9068,7 +9113,7 @@ public class BattleManager : MonoBehaviour
                     if (pointerData.button == PointerEventData.InputButton.Right)
                     {
                         Debug.Log($"📍 Right-click on {cardData.cardName}, type={cardData.type}");
-                        if (cardData.type == CardType.EquipSpell)
+                        if (IsCardMatchingReturnTypeFilter(cardData, graveyardReturnTypeFilter))
                         {
                             if (isChoosingGraveyardEquip)
                             {
@@ -9082,7 +9127,7 @@ public class BattleManager : MonoBehaviour
                         }
                         else
                         {
-                            Debug.LogWarning($"⚠️ Card ไม่ใช่ EquipSpell: {cardData.type}");
+                            Debug.LogWarning($"⚠️ Card type ไม่ตรง filter ที่กำลังเลือก: {cardData.type} (filter={graveyardReturnTypeFilter})");
                         }
                     }
                     else if (pointerData.button == PointerEventData.InputButton.Left)
@@ -9109,9 +9154,9 @@ public class BattleManager : MonoBehaviour
             Debug.LogWarning($"⚠️ OnGraveyardEquipSelected: invalid state (choosing={isChoosingGraveyardEquip}, card={cardData})");
             return;
         }
-        if (cardData.type != CardType.EquipSpell)
+        if (!IsCardMatchingReturnTypeFilter(cardData, graveyardReturnTypeFilter))
         {
-            Debug.LogWarning($"⚠️ OnGraveyardEquipSelected: not an EquipSpell! type={cardData.type}");
+            Debug.LogWarning($"⚠️ OnGraveyardEquipSelected: card type ไม่ตรง filter! type={cardData.type}, filter={graveyardReturnTypeFilter}");
             return;
         }
 
@@ -9747,6 +9792,13 @@ public class BattleManager : MonoBehaviour
     {
         if (attacker == null || blocker == null) return false;
         if (attacker.GetData() == null || blocker.GetData() == null) return false;
+
+        CardData attackerData = attacker.GetData();
+        if (attackerData.type == CardType.Monster && attackerData.mainCategory == MainCategory.General)
+        {
+            // มอนสเตอร์หมวด General โดนกันได้เสมอ ไม่ต้องเช็คชนิด Equip
+            return true;
+        }
 
         if (attacker.GetModifiedSubCategory() == blocker.GetModifiedSubCategory())
         {

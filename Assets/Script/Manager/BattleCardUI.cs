@@ -1983,9 +1983,9 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         switch (effect.targetType)
         {
             case TargetType.Self:
-                // ReturnEquipFromGraveyard ต้องมี EquipSpell ในสุสานของผู้เล่น
+                // ReturnEquipFromGraveyard ต้องมีการ์ดในสุสานที่ตรง targetCardTypeFilter
                 if (effect.action == ActionType.ReturnEquipFromGraveyard)
-                    return bm.HasEquipInPlayerGraveyard();
+                    return bm.HasMatchingCardInPlayerGraveyard(effect.targetCardTypeFilter);
                 return true; // Self effects อื่นๆ ใช้ได้เสมอ
 
             case TargetType.EnemyMonster:

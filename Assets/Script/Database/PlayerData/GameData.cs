@@ -24,6 +24,7 @@ public class GameData
 
     // 2. PlayerCardInventory
     public List<PlayerCardInventoryItem> cardInventory;
+    public List<string> starterCardGrantedIds;
 
     // 3. Decks
     public List<DeckData> decks;
@@ -43,6 +44,7 @@ public class GameData
 
     // 🔥 Flag เพื่อกันการเสกการ์ดซ้ำ
     public bool hasInitializedCards = false;
+    public int starterGrantDataVersion = 0;
 
     public bool isNewGameStarted = false;
     // Daily Login
@@ -61,6 +63,7 @@ public class GameData
         selectedStory = new PlayerSelectedStory();
 
         cardInventory = new List<PlayerCardInventoryItem>();
+        starterCardGrantedIds = new List<string>();
         decks = new List<DeckData>();
 
         statusPostTest = new PlayerPostTest();
@@ -73,6 +76,7 @@ public class GameData
         claimedQuizRewardRuleIDs = new List<int>();
 
         hasInitializedCards = false; // 🔥 ยังไม่เสกการ์ด
+        starterGrantDataVersion = 0;
         isNewGameStarted = false;
         // Daily Login
         dailyLoginData = new PlayerDailyLogin();

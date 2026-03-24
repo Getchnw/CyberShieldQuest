@@ -4,6 +4,11 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("Starter Cards")]
+    [SerializeField] private int starterCardQuantity = 3;
+    [SerializeField] private List<string> starterGeneralCardPrefixes = new List<string> { "M_Gen", "S_Gen", "E_Gen" };
+    private const int StarterGrantDataVersion = 3;
+
     // สร้าง "ตัวแปรกลาง" ให้ทุกคนในเกมเรียกใช้ได้ง่ายๆ
     public static GameManager Instance { get; private set; }
 
@@ -56,6 +61,7 @@ public class GameManager : MonoBehaviour
         CurrentGameData = new GameData();
         CurrentGameData.profile.level = 1;
         CurrentGameData.profile.experience = 0;
+        EnsureStarterCardsForAllPlayers();
 
         // 🔥 เสกการ์ดให้ผู้เล่นตอนเริ่มเกมใหม่
         // Dev_AddAllCards();
@@ -75,9 +81,16 @@ public class GameManager : MonoBehaviour
         // ถ้าโหลดสำเร็จ (ข้อมูลที่ได้มาไม่เป็น null) ให้ส่งค่า true กลับไป
         if (CurrentGameData != null)
         {
+            bool hasGrantedNewStarterCards = EnsureStarterCardsForAllPlayers();
+
             if (CurrentGameData.profile.level <= 0)
             {
                 CurrentGameData.profile.level = 1;
+            }
+
+            if (hasGrantedNewStarterCards)
+            {
+                SaveSystem.SaveGameData(CurrentGameData);
             }
 
             Debug.Log("Game data loaded successfully.");
@@ -89,6 +102,108 @@ public class GameManager : MonoBehaviour
             Debug.LogError("Failed to load game data from file.");
             return false;
         }
+    }
+
+    private bool EnsureStarterCardsForAllPlayers()
+    {
+        if (CurrentGameData == null) return false;
+
+        if (CurrentGameData.cardInventory == null)
+        {
+            CurrentGameData.cardInventory = new List<PlayerCardInventoryItem>();
+        }
+
+        if (CurrentGameData.starterCardGrantedIds == null)
+        {
+            CurrentGameData.starterCardGrantedIds = new List<string>();
+        }
+
+        // กันเคสค่าใน Inspector ยังเป็น 1 จากค่าเก่าที่ถูก serialize ไว้
+        if (starterCardQuantity < 3) starterCardQuantity = 3;
+
+        CardData[] allCards = Resources.LoadAll<CardData>("GameContent/Cards");
+        if (allCards == null || allCards.Length == 0)
+        {
+            Debug.LogWarning("Starter card sync skipped: no cards found at Resources/GameContent/Cards.");
+            return false;
+        }
+
+        int grantedCount = 0;
+        int topUpCount = 0;
+        foreach (CardData card in allCards)
+        {
+            if (card == null || string.IsNullOrEmpty(card.card_id)) continue;
+            if (!IsGeneralStarterCardId(card.card_id)) continue;
+
+            PlayerCardInventoryItem existing = CurrentGameData.cardInventory.FirstOrDefault(x => x.card_id == card.card_id);
+            bool alreadyGranted = CurrentGameData.starterCardGrantedIds.Contains(card.card_id);
+
+            if (!alreadyGranted)
+            {
+                if (existing != null)
+                {
+                    existing.quantity += starterCardQuantity;
+                }
+                else
+                {
+                    CurrentGameData.cardInventory.Add(new PlayerCardInventoryItem(card.card_id, starterCardQuantity));
+                }
+
+                CurrentGameData.starterCardGrantedIds.Add(card.card_id);
+                grantedCount++;
+            }
+            else
+            {
+                // รองรับเซฟเก่าที่เคยได้ไม่ครบ 3 ใบ/การ migrate กติกาเดิม
+                if (CurrentGameData.starterGrantDataVersion < StarterGrantDataVersion)
+                {
+                    int currentQty = existing != null ? existing.quantity : 0;
+                    int missingQty = starterCardQuantity - currentQty;
+                    if (missingQty > 0)
+                    {
+                        if (existing != null)
+                        {
+                            existing.quantity += missingQty;
+                        }
+                        else
+                        {
+                            CurrentGameData.cardInventory.Add(new PlayerCardInventoryItem(card.card_id, missingQty));
+                        }
+                        topUpCount++;
+                    }
+                }
+            }
+        }
+
+        if (CurrentGameData.starterGrantDataVersion < StarterGrantDataVersion)
+        {
+            CurrentGameData.starterGrantDataVersion = StarterGrantDataVersion;
+        }
+
+        if (grantedCount > 0 || topUpCount > 0)
+        {
+            Debug.Log($"Starter card sync: granted {grantedCount} general cards and topped up {topUpCount} cards to qty {starterCardQuantity}.");
+            OnInventoryChanged?.Invoke();
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsGeneralStarterCardId(string cardId)
+    {
+        if (string.IsNullOrEmpty(cardId) || starterGeneralCardPrefixes == null || starterGeneralCardPrefixes.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (string prefix in starterGeneralCardPrefixes)
+        {
+            if (string.IsNullOrEmpty(prefix)) continue;
+            if (cardId.StartsWith(prefix)) return true;
+        }
+
+        return false;
     }
 
     // เราสามารถเพิ่มเมธอดสำหรับเซฟเกมระหว่างเล่นได้ด้วย
