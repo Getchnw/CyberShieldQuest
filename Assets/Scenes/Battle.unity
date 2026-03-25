@@ -3013,7 +3013,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1676976937}
+    m_TransformParent: {fileID: 970388973}
     m_Modifications:
     - target: {fileID: 908583450810255095, guid: 0fdb4e6a131be9f48acfe1fa9feef6b2, type: 3}
       propertyPath: m_SizeDelta.x
@@ -3053,11 +3053,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1642753863071615573, guid: 0fdb4e6a131be9f48acfe1fa9feef6b2, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 1920
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1642753863071615573, guid: 0fdb4e6a131be9f48acfe1fa9feef6b2, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 1080
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1642753863071615573, guid: 0fdb4e6a131be9f48acfe1fa9feef6b2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3089,11 +3089,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1642753863071615573, guid: 0fdb4e6a131be9f48acfe1fa9feef6b2, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -32
+      value: 5.472046
       objectReference: {fileID: 0}
     - target: {fileID: 1642753863071615573, guid: 0fdb4e6a131be9f48acfe1fa9feef6b2, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 25
+      value: -5.3234863
       objectReference: {fileID: 0}
     - target: {fileID: 1642753863071615573, guid: 0fdb4e6a131be9f48acfe1fa9feef6b2, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -7148,6 +7148,7 @@ RectTransform:
   - {fileID: 1676976937}
   - {fileID: 1040722248}
   - {fileID: 1876769726}
+  - {fileID: 473862800}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -11474,6 +11475,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebc2768725954f44c84ee9ce2c2c6590, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  starterCardQuantity: 3
+  starterGeneralCardPrefixes:
+  - M_Gen
+  - S_Gen
+  - E_Gen
   experienceCurve:
     serializedVersion: 2
     m_Curve: []
@@ -12618,7 +12624,6 @@ Transform:
   - {fileID: 1761326745}
   - {fileID: 360778281}
   - {fileID: 16773636}
-  - {fileID: 473862800}
   m_Father: {fileID: 970388973}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1679072893
