@@ -1586,8 +1586,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
+      - m_Target: {fileID: 1322065260379500566}
+        m_TargetAssemblyTypeName: SettingMenu, Assembly-CSharp
         m_MethodName: Use_SFX_Click_Button
         m_Mode: 1
         m_Arguments:

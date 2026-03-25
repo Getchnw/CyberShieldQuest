@@ -9,35 +9,61 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private GameObject recheckPanel;
     [SerializeField] private Button recheckNewgameButton;
 
-    private void Start()
-    {
-        bool hasSaveFile = SaveSystem.SaveFileExists();
-        GameObject.Find("ContinuousButton").GetComponent<Button>().interactable = hasSaveFile;
-    }
+    [SerializeField] private Button continuousButton; // ประกาศตัวแปรนี้แล้วลากปุ่มจาก Inspector มาใส่
 
     private void Awake()
     {
-        AudioManger = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManger>();
+        // แนะนำให้หา Audio ผ่าน Tag ใน Awake เพื่อความเร็ว
+        GameObject audioObj = GameObject.FindGameObjectWithTag("Audio");
+        if (audioObj != null)
+        {
+            AudioManger = audioObj.GetComponent<AudioManger>();
+        }
     }
 
-    public async void Use_SFX_Click_Button()
+    private void Start()
     {
-        AudioManger.PlaySfx(AudioManger.buttonClick);
-        await Task.Delay(300);
+        RefreshMenuButtons();
     }
 
-    public void NewGame()
+    // แยก Method ออกมาเพื่อให้เรียกใช้ซ้ำได้ (เช่น หลังจากลบเซฟ)
+    public void RefreshMenuButtons()
     {
-        Use_SFX_Click_Button();
+        bool hasSave = SaveSystem.SaveFileExists();
 
-        if (hasSaveFile())
+        if (continuousButton != null)
+        {
+            continuousButton.interactable = hasSave;
+        }
+        else
+        {
+            // ถ้าไม่ได้ลากใส่ Inspector ให้ลองหาด้วยชื่อ (ไม่แนะนำแต่ใส่ไว้กันพลาด)
+            GameObject btnObj = GameObject.Find("ContinuousButton");
+            if (btnObj != null)
+            {
+                btnObj.GetComponent<Button>().interactable = hasSave;
+            }
+        }
+    }
+
+    public async Task Use_SFX_Click_Button()
+    {
+        if (AudioManger != null)
+        {
+            AudioManger.PlaySfx(AudioManger.buttonClick);
+        }
+        await Task.Delay(300); // รอ 0.3 วินาทีเพื่อให้เสียงเล่นจบ
+    }
+
+    public async void NewGame()
+    {
+        await Use_SFX_Click_Button();
+
+        if (SaveSystem.SaveFileExists())
         {
             recheckPanel.SetActive(true);
             recheckNewgameButton.onClick.RemoveAllListeners();
-            recheckNewgameButton.onClick.AddListener(() =>
-            {
-                ConfirmNewGame();
-            });
+            recheckNewgameButton.onClick.AddListener(() => ConfirmNewGame());
         }
         else
         {
@@ -45,40 +71,36 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    private bool hasSaveFile()
+    private async void ConfirmNewGame()
     {
-        return SaveSystem.SaveFileExists();
-    }
+        await Use_SFX_Click_Button();
 
-    private void ConfirmNewGame()
-    {
+        // ลบข้อมูลเก่าก่อนเริ่มเกมใหม่ (สำคัญมาก)
+        SaveSystem.DeleteSaveData();
+
         GameManager.Instance.CreateNewGame();
         SceneManager.LoadScene("Home");
     }
 
-    // แก้ชื่อให้ถูกต้องเป็น ContinuousGame จะดีกว่าครับ
-    public void ContinuousGame()
+    public async void ContinuousGame()
     {
-        Use_SFX_Click_Button();
+        await Use_SFX_Click_Button();
 
-        // สั่งให้ GameManager โหลดข้อมูลจากไฟล์
-        // เมธอด LoadGame() จะคืนค่า true ถ้าโหลดสำเร็จ
         if (GameManager.Instance.LoadGame())
         {
-            // ถ้าโหลดสำเร็จ ก็ไปฉาก Home ได้เลย
             SceneManager.LoadScene("Home");
         }
         else
         {
-            // ถ้าโหลดไม่สำเร็จ (อาจจะไฟล์เสีย) ก็แสดงข้อความเตือน
             Debug.LogError("Failed to load save data!");
-            // อาจจะทำ UI แจ้งเตือนผู้เล่นตรงนี้ก็ได้
+            RefreshMenuButtons(); // รีเฟรชปุ่มอีกรอบเผื่อไฟล์เสีย
         }
     }
-    public void QuitGame()
+
+    public async void QuitGame()
     {
-        Use_SFX_Click_Button();
-        Debug.Log("Quit GAme");
+        await Use_SFX_Click_Button();
+        Debug.Log("Quit Game");
         Application.Quit();
     }
 }

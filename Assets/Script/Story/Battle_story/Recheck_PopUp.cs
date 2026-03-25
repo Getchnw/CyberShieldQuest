@@ -13,11 +13,12 @@ public class Recheck_PopUp : MonoBehaviour
     public Button No;
     public Button close;
 
+
     void Start()
     {
         if (Yes != null)
         {
-            Yes.onClick.RemoveAllListeners();
+            // Yes.onClick.RemoveAllListeners();
             Yes.onClick.AddListener(OpenStoryDetail);
         }
         if (No != null)
@@ -44,7 +45,7 @@ public class Recheck_PopUp : MonoBehaviour
     public void OpenStoryDetail()
     {
         Close();
-        Panel_detailPopup.gameObject.SetActive(true);
-        detailPopup.gameObject.SetActive(true);
+        // Panel_detailPopup.gameObject.SetActive(true);
+        // detailPopup.gameObject.SetActive(true);
     }
 }

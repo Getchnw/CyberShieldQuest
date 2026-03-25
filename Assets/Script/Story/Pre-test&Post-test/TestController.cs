@@ -299,6 +299,7 @@ public class TestController : MonoBehaviour
         }
         else if (currentTestMode == TestMode.PostTest)
         {
+
             recheck_Popup.Open();
             GameManager.Instance.SavePreTest_PostTest(false, storyId, correctAnswersCount, calculatedMaxScore, answerList);
         }

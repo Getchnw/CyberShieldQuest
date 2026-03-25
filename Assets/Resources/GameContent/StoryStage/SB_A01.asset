@@ -31,21 +31,21 @@ MonoBehaviour:
     category: 0
     cardType: 0
     subCategory: 0
-  - type: 0
+  - type: 3
     description: Win battle
     description_th: "\u0E0A\u0E19\u0E30\u0E01\u0E32\u0E23\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49"
-    intValue: 0
+    intValue: 12
     floatValue: 0
     category: 0
     cardType: 0
     subCategory: 0
-  - type: 0
+  - type: 10
     description: Win battle
     description_th: "\u0E0A\u0E19\u0E30\u0E01\u0E32\u0E23\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49"
-    intValue: 0
+    intValue: 3
     floatValue: 0
     category: 0
-    cardType: 0
+    cardType: 1
     subCategory: 0
   requiredChapters: 
   botDecks: 00000000

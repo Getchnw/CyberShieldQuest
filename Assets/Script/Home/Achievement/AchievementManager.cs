@@ -1,11 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 
 public class AchievementManager : MonoBehaviour
 {
     public static AchievementManager Instance;
     public List<AchievementData> allAchievements;
+    public TextMeshProUGUI goldText; // อ้างอิง UI เงินเพื่ออัพเดตเมื่อรับรางวัล
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -25,6 +27,7 @@ public class AchievementManager : MonoBehaviour
 
         // 1. เช็ค Story Master (ดาวเต็มทุกบท)
         bool isStoryComplete = CheckAllStoriesFullStars();
+        Debug.Log($"ตรวจสอบ Story Master: {(isStoryComplete ? "ผ่าน" : "ไม่ผ่าน")}");
         if (isStoryComplete) UnlockAchievement(AchievementType.StoryMaster);
 
         // 2. เช็ค Stage Master (ดาวเต็มทุกด่าน)
@@ -52,7 +55,7 @@ public class AchievementManager : MonoBehaviour
         {
             // หาเซฟของบทนั้นๆ
             var progress = userProgress.Find(p => p.chapter_id == story.chapter_id);
-
+            Debug.Log($"ตรวจสอบบท {story.chapter_id}: ได้ดาว {progress?.stars_earned ?? 0} / 3");
             // ถ้ายังไม่เล่น หรือ ได้ดาวไม่เต็ม 3 -> ถือว่ายังไม่ผ่านเงื่อนไข
             if (progress == null || progress.stars_earned < 3)
                 return false;
@@ -127,6 +130,15 @@ public class AchievementManager : MonoBehaviour
             // 3. บันทึกสถานะ
             userAchieve.isClaimed = true;
             GameManager.Instance.SaveCurrentGame();
+        }
+    }
+
+    // Update UI Gold
+    public void UpdateUIGold()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.CurrentGameData != null && goldText != null)
+        {
+            goldText.text = $"{GameManager.Instance.CurrentGameData.profile.gold}";
         }
     }
 }

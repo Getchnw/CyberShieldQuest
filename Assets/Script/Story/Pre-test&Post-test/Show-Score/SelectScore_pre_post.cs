@@ -47,6 +47,11 @@ public class SelectScore_pre_post : MonoBehaviour
         LoadPosttestScore();
     }
 
+    // void Update()
+    // {
+    //     LoadAll();
+    // }
+
     private void UpdateMatchingSlots(List<Qustion_Answer> matchingList, List<GameObject> uiSlots,
      List<TextMeshProUGUI> uiQuestions, List<TextMeshProUGUI> uiAnswers) // เปลี่ยนชื่อ Parameter ให้สั้นลงจะได้ไม่งง
     {

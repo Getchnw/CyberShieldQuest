@@ -27,13 +27,14 @@ public class AchievementItemUI : MonoBehaviour
 
     void RefreshUI()
     {
-        // 1. ใส่ข้อมูลพื้นฐาน
+
+        // 1. คำนวณความคืบหน้า (เพื่อทำ Slider)
+        CalculateProgress();
+
+        // 2. ใส่ข้อมูลพื้นฐาน
         titleText.text = staticData.title;
         descText.text = LanguageBridge.Get(staticData.description);
         iconImage.sprite = staticData.icon;
-
-        // 2. คำนวณความคืบหน้า (เพื่อทำ Slider)
-        CalculateProgress();
 
         // 3. จัดการปุ่มรับรางวัล
         if (saveData.isClaimed)
@@ -49,6 +50,7 @@ public class AchievementItemUI : MonoBehaviour
             rewardText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                 ? "<color=green>Claim</color>"
                                 : "<color=green>รับรางวัล</color>";
+            claimButton.onClick.AddListener(OnClaimClicked);
         }
         else // ยังทำไม่เสร็จ
         {
@@ -75,6 +77,7 @@ public class AchievementItemUI : MonoBehaviour
                 max = db.GetAllStoryChapters().Count * 3;
                 // ปัจจุบัน: ผลรวมดาวที่ผู้เล่นทำได้ใน Story
                 current = gameData.chapterProgress.Sum(x => x.stars_earned);
+
                 break;
 
             case AchievementType.StageMaster:
@@ -98,6 +101,12 @@ public class AchievementItemUI : MonoBehaviour
         progressSlider.maxValue = max;
         progressSlider.value = current;
         progressText.text = $"{current} / {max}";
+
+        // บอก AchievementManager ให้เช็คเงื่อนไขการปลดล็อค (ถ้าคืบหน้าพอ)
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.CheckAchievements();
+        }
     }
 
     public void OnClaimClicked()
@@ -109,5 +118,6 @@ public class AchievementItemUI : MonoBehaviour
         // (ต้องดึงข้อมูลใหม่จาก Save เพราะสถานะเปลี่ยนแล้ว)
         var newSaveData = GameManager.Instance.CurrentGameData.achievements.Find(x => x.achievementID == staticData.id);
         Setup(staticData, newSaveData);
+        AchievementManager.Instance.UpdateUIGold();
     }
 }

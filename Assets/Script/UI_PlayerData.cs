@@ -13,6 +13,10 @@ public class UI_PlayerData : MonoBehaviour
     {
         LoadAndDisplayPlayerData();
     }
+    void Update()
+    {
+        UpdateUI(GameManager.Instance.CurrentGameData);
+    }
 
     private void OnEnable()
     {
@@ -43,10 +47,10 @@ public class UI_PlayerData : MonoBehaviour
     {
         if (playerNameText != null)
             playerNameText.text = $"{gameData.profile.playerName}";
-        
+
         if (levelText != null)
             levelText.text = $"LV.{gameData.profile.level}";
-        
+
         if (goldText != null)
             goldText.text = $"{gameData.profile.gold}";
     }

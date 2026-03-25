@@ -6010,7 +6010,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PopUp: {fileID: 1880578085}
-  Panel_detailPopup: {fileID: 0}
+  Panel_detailPopup: {fileID: 196994728}
   detailPopup: {fileID: 196994732}
   Yes: {fileID: 1515343040}
   No: {fileID: 1424797893}

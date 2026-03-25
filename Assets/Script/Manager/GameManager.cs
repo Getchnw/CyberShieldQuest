@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     public event System.Action<int> OnExperienceChanged;
     public event System.Action<int> OnLevelChanged;
     public event System.Action OnInventoryChanged; // 🔥 เตือนเมื่อ inventory เปลี่ยน
+    public event System.Action OnPostTestCompleted;
     [Header("Leveling System")]
     [Tooltip("กราฟกำหนดค่า EXP ที่ต้องใช้ในแต่ละเลเวล (แกน X=Level, แกน Y=Exp Required)")]
     public AnimationCurve experienceCurve;
@@ -46,12 +47,7 @@ public class GameManager : MonoBehaviour
     // Ensure we load existing save or create a new one when the GameManager starts
     private void Start()
     {
-        // Try to load saved data; if none exists create a new one
-        bool loaded = LoadGame();
-        if (!loaded)
-        {
-            CreateNewGame();
-        }
+        LoadGame();
     }
 
     // เมธอดสำหรับ "เริ่มเกมใหม่"
@@ -291,7 +287,6 @@ public class GameManager : MonoBehaviour
         // (Optional) ส่ง Event บอก UI ให้อัปเดต
         OnGoldChanged?.Invoke(CurrentGameData.profile.gold);
     }
-
     /// เพิ่มการ์ดเข้าคลัง
     public void AddCardToInventory(string cardID, int quantity = 1)
     {
@@ -315,7 +310,7 @@ public class GameManager : MonoBehaviour
         }
 
         Debug.Log($"Added card {cardID} (Qty: {quantity}) to inventory.");
-        
+
         // 🔥 แจ้งเตือน UI ที่ฟังว่า inventory เปลี่ยน
         OnInventoryChanged?.Invoke();
     }
@@ -572,6 +567,7 @@ public class GameManager : MonoBehaviour
                     Qustion_Answers = new List<Qustion_Answer>(answersList)
                 });
                 SaveStatusPreTest_PostTest(isPreOrPost, story_id);
+                OnPostTestCompleted?.Invoke();
             }
             SaveCurrentGame();
         }
@@ -611,7 +607,7 @@ public class GameManager : MonoBehaviour
             {
                 if (stageProgress.bestTurns == 0 || stats.turnsPlayed < stageProgress.bestTurns)
                     stageProgress.bestTurns = stats.turnsPlayed;
-                
+
                 if (stats.totalDamageDealt > stageProgress.highestDamage)
                     stageProgress.highestDamage = stats.totalDamageDealt;
             }
@@ -637,18 +633,18 @@ public class GameManager : MonoBehaviour
 
         SaveCurrentGame(); // บันทึกทันที
     }
-    
+
     /// <summary>
     /// เช็คว่าด่านนี้ผ่านแล้วหรือยัง
     /// </summary>
     public bool IsStageCleared(string stageID)
     {
         if (CurrentGameData == null) return false;
-        
+
         var stage = CurrentGameData.stageProgress.FirstOrDefault(s => s.stageID == stageID);
         return stage != null && stage.isCompleted;
     }
-    
+
     /// <summary>
     /// ดึงข้อมูลความคืบหน้าของ Stage (สำหรับแสดง UI หรือ debug)
     /// </summary>
@@ -666,7 +662,7 @@ public class GameManager : MonoBehaviour
         if (CurrentGameData == null) return 0;
         return CurrentGameData.stageProgress.Sum(s => s.starsEarned);
     }
-    
+
     // คลิกขวาที่ชื่อสคริปต์ใน Inspector -> เลือก "DEV: Add 5000 Gold"
     [ContextMenu("DEV: Add 5000 Gold")]
     public void Dev_AddGold()
@@ -698,13 +694,13 @@ public class GameManager : MonoBehaviour
         // (ใช้ FirstOrDefault จำเป็นต้องมี using System.Linq; ด้านบนไฟล์)
         var item = CurrentGameData.cardInventory.FirstOrDefault(x => x.card_id == cardID);
         int result = item != null ? item.quantity : 0;
-        
+
         // Debug log to see what's returned for crafted cards
         if (cardID.Contains("Fire") || cardID.Contains("Ice"))
         {
             Debug.Log($"📊 GetCardAmount({cardID}): {result} (Total inventory items: {CurrentGameData.cardInventory.Count})");
         }
-        
+
         // ถ้าเจอ -> ส่งจำนวนกลับไป (item.quantity)
         // ถ้าไม่เจอ -> ส่ง 0 กลับไป
         return result;

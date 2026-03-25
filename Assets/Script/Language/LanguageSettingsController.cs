@@ -7,6 +7,7 @@ public class LanguageSettingsController : MonoBehaviour
 {
     public GameObject ThaiButton;
     public GameObject EnglishButton;
+    private int currentID;
 
     // ทำงานทุกครั้งที่หน้า Settings ถูกเปิดขึ้นมา (SetActive(true))
     private void OnEnable()
@@ -14,13 +15,12 @@ public class LanguageSettingsController : MonoBehaviour
         // เช็คจาก GameManager ว่าตอนนี้ตั้งค่าอะไรไว้
         if (LocalizationSettings.SelectedLocale.Identifier.Code == "th")
         {
-            GameManager.Instance.CurrentGameData.isTranstale = false;
+            currentID = 1;
         }
         else
         {
-            GameManager.Instance.CurrentGameData.isTranstale = true;
+            currentID = 0;
         }
-        int currentID = GameManager.Instance.CurrentGameData.isTranstale ? 0 : 1;
         UpdateButtonVisuals(currentID);
     }
 

@@ -25,97 +25,53 @@ public class UI_ChapterSelect : MonoBehaviour
     private List<GameObject> instantiatedPages = new List<GameObject>();
     private int currentPageIndex = 0;
 
-    // private void OnEnable()
-    // {
-    //     // Subscribe to data changes so we refresh chapter locks when returning from quiz
-    //     if (GameManager.Instance != null)
-    //     {
-    //         GameManager.Instance.OnDataLoaded += RefreshChapterLocks;
-    //         Debug.Log("Subscribed to OnDataLoaded");
-    //     }
-    //     else
-    //     {
-    //         Debug.LogWarning("GameManager.Instance is null in OnEnable");
-    //     }
-    // }
-
-    // private void OnDisable()
-    // {
-    //     // Clean up subscription
-    //     if (GameManager.Instance != null)
-    //     {
-    //         GameManager.Instance.OnDataLoaded -= RefreshChapterLocks;
-    //         Debug.Log("Unsubscribed from OnDataLoaded");
-    //     }
-    // }
-
-    /// <summary>
-    /// Refreshes the lock/unlock status of all chapter buttons based on current progress
-    /// This is called when returning from a quiz so locks update immediately
-    /// </summary>
-    // private void RefreshChapterLocks()
-    // {
-
-    //     if (GameManager.Instance == null || GameManager.Instance.CurrentGameData == null) 
-    //     {
-    //         return;
-    //     }
-    //     var chapterProgress = GameManager.Instance.CurrentGameData.chapterProgress ?? new List<PlayerChapterProgress>();
-    //     var chapters = GameContentDatabase.Instance.GetChaptersByStoryID(
-    //         GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId);
-
-    //     if (chapters == null || chapters.Count == 0) 
-    //     {
-    //         Debug.LogWarning("⚠️ No chapters found");
-    //         return;
-    //     }
-
-    //     Debug.Log($"✅ Updating lock status for {chapters.Count} chapters");
-
-    //     // Update each chapter button's lock status based on previous chapter completion
-    //     int buttonCount = 0;
-    //     foreach (GameObject page in instantiatedPages)
-    //     {
-    //         Button[] buttonsInPage = page.GetComponentsInChildren<Button>();
-    //         foreach (Button btn in buttonsInPage)
-    //         {
-    //             if (buttonCount >= chapters.Count) break;
-
-    //             bool isUnlocked = false;
-    //             Transform lockTransform = btn.transform.Find("Lock");
-    //             Image LockImage = null;
-    //             if (lockTransform != null) LockImage = lockTransform.GetComponent<Image>();
-    //             if (buttonCount == 0)
-    //             {
-    //                 isUnlocked = true;
-    //                 LockImage.gameObject.SetActive(!isUnlocked);
-    //             }
-    //             else
-    //             {
-    //                 ChapterData previousChapter = chapters[buttonCount - 1];
-    //                 PlayerChapterProgress previousProgress = chapterProgress.Find(
-    //                     p => p.chapter_id == previousChapter.chapter_id);
-    //                 if (previousProgress != null && previousProgress.is_completed)
-    //                 {
-    //                     isUnlocked = true;
-    //                     LockImage.gameObject.SetActive(!isUnlocked);
-    //                 }
-    //             }
-
-    //             btn.interactable = isUnlocked;
-    //             // Transform comingSoon = btn.transform.Find("ComingSoon");
-    //             // if (comingSoon != null)
-    //             //     comingSoon.gameObject.SetActive(!isUnlocked);
-
-    //             Debug.Log($"  Chapter {buttonCount}: isUnlocked={isUnlocked}");
-    //             buttonCount++;
-    //         }
-    //     }
-    // }
-
     IEnumerator Start()
     {
-        // 1. ล้างปุ่มเก่า
+        // // 1. ล้างปุ่มเก่า
+        // foreach (Transform child in buttonContainer)
+        // {
+        //     Destroy(child.gameObject);
+        // }
+        // instantiatedPages.Clear();
+
+        // PopulateChapterList();
+
+        // // รอให้จบเฟรมนี้ก่อน เพื่อให้ GridLayoutGroup มีเวลาทำงานจัดเรียงการ์ด
+        // yield return new WaitForEndOfFrame();
+
+        // foreach (GameObject page in instantiatedPages)
+        // {
+        //     page.SetActive(false);
+        // }
+
+        // SetupPagination();
+
+        // รอให้จบเฟรมนี้ก่อน เพื่อให้ GridLayoutGroup มีเวลาทำงานจัดเรียงการ์ด
+
+        // Fix: เรียก RefreshUI() ใน Start() เพื่อให้แน่ใจว่า UI ถูกสร้างและจัดเรียงอย่างถูกต้องตั้งแต่แรก
+        yield return new WaitForEndOfFrame();
+        RefreshUI();
+    }
+
+    private void OnEnable()
+    {
+        if (GameManager.Instance != null)
+        {
+            // เมื่อได้รับสัญญาณจาก GameManager ให้รันฟังก์ชัน Refresh
+            GameManager.Instance.OnPostTestCompleted += RefreshUI;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnPostTestCompleted -= RefreshUI;
+        }
+    }
+
+    void RefreshUI()
+    {
         foreach (Transform child in buttonContainer)
         {
             Destroy(child.gameObject);
@@ -123,9 +79,6 @@ public class UI_ChapterSelect : MonoBehaviour
         instantiatedPages.Clear();
 
         PopulateChapterList();
-
-        // รอให้จบเฟรมนี้ก่อน เพื่อให้ GridLayoutGroup มีเวลาทำงานจัดเรียงการ์ด
-        yield return new WaitForEndOfFrame();
 
         foreach (GameObject page in instantiatedPages)
         {
