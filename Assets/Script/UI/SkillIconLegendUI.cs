@@ -29,7 +29,7 @@ public class SkillIconLegendUI : MonoBehaviour
     [Header("Panel Style")]
     public Vector2 panelSize = new Vector2(900f, 620f);
     public Vector2 panelAnchoredPosition = Vector2.zero;
-    public Color panelBackgroundColor = new Color(0.03f, 0.04f, 0.06f, 0.95f);
+    public Color panelBackgroundColor = new Color(0.01f, 0.015f, 0.025f, 0.98f);
     public Color headerBackgroundColor = new Color(0.15f, 0.18f, 0.24f, 0.95f);
     public Color rowBackgroundColor = new Color(0.11f, 0.12f, 0.16f, 0.9f);
     public Color scrollBackgroundColor = new Color(0.09f, 0.1f, 0.13f, 0.9f);
