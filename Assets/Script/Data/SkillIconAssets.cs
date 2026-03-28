@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 // ScriptableObject สำหรับเก็บ Skill Icon Sprites ไว้ที่เดียว
 // ทั้ง BattleCardUI และ CardUISlot จะ reference จากที่นี่
@@ -48,6 +49,11 @@ public class SkillIconAssets : ScriptableObject
             if (_instance == null)
             {
                 _instance = Resources.Load<SkillIconAssets>("SkillIconAssets");
+                if (_instance == null)
+                {
+                    // Fallback for editor/runtime cases where asset is loaded but not under Resources.
+                    _instance = Resources.FindObjectsOfTypeAll<SkillIconAssets>().FirstOrDefault();
+                }
                 if (_instance == null)
                 {
                     Debug.LogError("SkillIconAssets not found in Resources folder! Create one via Assets > Create > Game > Skill Icon Assets and move to Resources folder.");

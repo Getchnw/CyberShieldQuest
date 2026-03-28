@@ -175,6 +175,10 @@ public class BattleManager : MonoBehaviour
     [Range(56f, 260f)] public float skillToastMinHeight = 72f;
     [Range(80f, 520f)] public float skillToastMaxHeight = 260f;
 
+    [Header("--- Skill Legend Position (Battle Scene) ---")]
+    public Vector2 skillLegendButtonPosition = new Vector2(-22f, -20f);
+    public Vector2 skillLegendPanelPosition = Vector2.zero;
+
     [Header("--- Card Detail View ---")]
     public CardDetailView cardDetailView;
 
@@ -506,6 +510,13 @@ public class BattleManager : MonoBehaviour
     void Start()
     {
         state = BattleState.START;
+        SkillIconLegendUI skillLegend = SkillIconLegendUI.EnsureInScene("BattleSkillLegendUI");
+        if (skillLegend != null)
+        {
+            skillLegend.buttonAnchoredPosition = skillLegendButtonPosition;
+            skillLegend.panelAnchoredPosition = skillLegendPanelPosition;
+            skillLegend.RefreshLayoutAndStyle();
+        }
 
         EnsureHandRevealReferences();
 

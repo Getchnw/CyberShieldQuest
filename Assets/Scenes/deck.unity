@@ -5407,7 +5407,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1906240709}
   m_Direction: 0
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.9496969
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -8160,7 +8160,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.050303087, y: 0.952}
   m_AnchorMax: {x: 0.9496063, y: 0.952}
-  m_AnchoredPosition: {x: -29.64387, y: 41.774338}
+  m_AnchoredPosition: {x: -29.643858, y: 41.774334}
   m_SizeDelta: {x: 28.973, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1365120178
@@ -10323,6 +10323,8 @@ MonoBehaviour:
   costStatText: {fileID: 165824874}
   detailPopup: {fileID: 1523498226}
   cardPrefab: {fileID: 2077113337728995661, guid: 7f659e043346f3849b867d6cdf284f4d, type: 3}
+  skillLegendButtonPosition: {x: -720, y: -95}
+  skillLegendPanelPosition: {x: 0, y: 0}
 --- !u!4 &1810443796
 Transform:
   m_ObjectHideFlags: 0

@@ -6607,6 +6607,8 @@ MonoBehaviour:
   skillToastWidth: 620
   skillToastMinHeight: 72
   skillToastMaxHeight: 260
+  skillLegendButtonPosition: {x: -10, y: -380}
+  skillLegendPanelPosition: {x: 0, y: 0}
   cardDetailView: {fileID: 1876769727}
   sacrificeConfirmPanel: {fileID: 1040722247}
   sacrificeMessageText: {fileID: 1287721092}
@@ -7219,6 +7221,74 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!1 &975627495
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 975627497}
+  - component: {fileID: 975627496}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &975627496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975627495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dea55bcb14161d84ab0c3f09b6236a56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  createButtonAtRuntime: 1
+  buttonLabel: i
+  panelTitle: Skill Icon Guide
+  startHidden: 1
+  targetCanvas: {fileID: 0}
+  helpButton: {fileID: 0}
+  panelRoot: {fileID: 0}
+  buttonSize: {x: 56, y: 56}
+  buttonAnchoredPosition: {x: -22, y: -20}
+  buttonBackgroundColor: {r: 0.08, g: 0.1, b: 0.14, a: 0.92}
+  buttonOutlineColor: {r: 0.45, g: 0.78, b: 1, a: 0.65}
+  buttonLabelColor: {r: 1, g: 1, b: 1, a: 1}
+  buttonLabelFontSize: 34
+  panelSize: {x: 900, y: 620}
+  panelAnchoredPosition: {x: 0, y: 0}
+  panelBackgroundColor: {r: 0.03, g: 0.04, b: 0.06, a: 0.95}
+  headerBackgroundColor: {r: 0.15, g: 0.18, b: 0.24, a: 0.95}
+  rowBackgroundColor: {r: 0.11, g: 0.12, b: 0.16, a: 0.9}
+  scrollBackgroundColor: {r: 0.09, g: 0.1, b: 0.13, a: 0.9}
+  titleColor: {r: 1, g: 1, b: 1, a: 1}
+  bodyTextColor: {r: 1, g: 1, b: 1, a: 1}
+  titleFontSize: 34
+  bodyFontSize: 21
+  iconSize: 40
+--- !u!4 &975627497
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975627495}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 97.350395, y: -9.8228245, z: 89.999985}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &995401932
 GameObject:
   m_ObjectHideFlags: 0
@@ -16760,3 +16830,4 @@ SceneRoots:
   - {fileID: 818290864}
   - {fileID: 1118784913}
   - {fileID: 1831064998918270028}
+  - {fileID: 975627497}

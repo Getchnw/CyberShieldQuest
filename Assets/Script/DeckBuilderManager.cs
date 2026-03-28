@@ -25,6 +25,10 @@ public class DeckBuilderManager : MonoBehaviour
     public CardDetailView detailPopup;
     public GameObject cardPrefab;
 
+    [Header("Skill Legend Position (Deck Scene)")]
+    public Vector2 skillLegendButtonPosition = new Vector2(-22f, -20f);
+    public Vector2 skillLegendPanelPosition = Vector2.zero;
+
     // ข้อมูล (ดึงจาก GameDataManager)
     private List<CardData> allCardsLibrary = new List<CardData>(); 
     private int currentDeckIndex = 0; 
@@ -32,6 +36,13 @@ public class DeckBuilderManager : MonoBehaviour
     void Start()
     {
         Debug.Log("🔵 DeckBuilderManager: Start() called");
+        SkillIconLegendUI skillLegend = SkillIconLegendUI.EnsureInScene("DeckSkillLegendUI");
+        if (skillLegend != null)
+        {
+            skillLegend.buttonAnchoredPosition = skillLegendButtonPosition;
+            skillLegend.panelAnchoredPosition = skillLegendPanelPosition;
+            skillLegend.RefreshLayoutAndStyle();
+        }
         
         if (searchInput != null) searchInput.onValueChanged.AddListener(delegate { RefreshLeftPanel(); });
         if (filterDropdown != null) filterDropdown.onValueChanged.AddListener(delegate { RefreshLeftPanel(); });
