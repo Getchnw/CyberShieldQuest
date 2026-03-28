@@ -336,9 +336,9 @@ MonoBehaviour:
   iconOnDeploy: {fileID: 21300000, guid: f628835546ae52c48b093cd1c96aba4c, type: 3}
   iconOnStrike: {fileID: 21300000, guid: af28f0b45488e7343ab238462f835932, type: 3}
   iconOnStrikeHit: {fileID: 21300000, guid: 266e892a738eeb44f959b61576be5387, type: 3}
-  iconOnIntercept: {fileID: 0}
-  iconOnDestroyed: {fileID: 0}
-  iconOnTurnEnd: {fileID: 0}
+  iconOnIntercept: {fileID: 21300000, guid: fe548f5138ea5ff459f886a5690f25eb, type: 3}
+  iconOnDestroyed: {fileID: 21300000, guid: ef79093d12c3d4941bf36615c7ef6c8e, type: 3}
+  iconOnTurnEnd: {fileID: 21300000, guid: 72e412b719d748842b607b7addfddf92, type: 3}
   iconContinuous: {fileID: 21300000, guid: f91eda59289dff54893d715f0f97dece, type: 3}
   iconDestroy: {fileID: 21300000, guid: 7831f5fddff55734fb636f3ea45a3ab8, type: 3}
   iconDisableAttack: {fileID: 21300000, guid: b719b9ceabddd144690a35a6f77d2246, type: 3}
