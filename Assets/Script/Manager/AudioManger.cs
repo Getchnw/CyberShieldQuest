@@ -5,15 +5,15 @@ using UnityEngine;
 public class AudioManger : MonoBehaviour
 {
     // คลิเสียงเพลงและเสียงเอฟเฟค
-    [Header ("Audio Sources")]
+    [Header("Audio Sources")]
     [SerializeField] AudioSource musicSource;
     [SerializeField] AudioSource sfxSource;
 
     // คลิเสียง
-    [Header ("Audio Clips")]
+    [Header("Audio Clips")]
     public AudioClip background;
     public AudioClip buttonClick;
-    
+
 
     public static AudioManger instance;
 
@@ -41,7 +41,7 @@ public class AudioManger : MonoBehaviour
         sfxSource.PlayOneShot(clip);
     }
 
-   
+
 
 
     // เอาไว้ใช้ในตัวที่ต้องการจะเรียกเสียง
@@ -53,6 +53,6 @@ public class AudioManger : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }

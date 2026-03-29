@@ -5,21 +5,21 @@ using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
-    AudioManger AudioManger;
+    // AudioManger AudioManger;
     [SerializeField] private GameObject recheckPanel;
     [SerializeField] private Button recheckNewgameButton;
 
     [SerializeField] private Button continuousButton; // ประกาศตัวแปรนี้แล้วลากปุ่มจาก Inspector มาใส่
 
-    private void Awake()
-    {
-        // แนะนำให้หา Audio ผ่าน Tag ใน Awake เพื่อความเร็ว
-        GameObject audioObj = GameObject.FindGameObjectWithTag("Audio");
-        if (audioObj != null)
-        {
-            AudioManger = audioObj.GetComponent<AudioManger>();
-        }
-    }
+    // private void Awake()
+    // {
+    //     // แนะนำให้หา Audio ผ่าน Tag ใน Awake เพื่อความเร็ว
+    //     GameObject audioObj = GameObject.FindGameObjectWithTag("Audio");
+    //     if (audioObj != null)
+    //     {
+    //         AudioManger = audioObj.GetComponent<AudioManger>();
+    //     }
+    // }
 
     private void Start()
     {
@@ -48,9 +48,10 @@ public class MainMenu : MonoBehaviour
 
     public async Task Use_SFX_Click_Button()
     {
-        if (AudioManger != null)
+        if (AudioManager.Instance != null)
         {
-            AudioManger.PlaySfx(AudioManger.buttonClick);
+            // AudioManger.PlaySfx(AudioManger.buttonClick);
+            AudioManager.Instance.PlaySFX("ButtonClick");
         }
         await Task.Delay(300); // รอ 0.3 วินาทีเพื่อให้เสียงเล่นจบ
     }

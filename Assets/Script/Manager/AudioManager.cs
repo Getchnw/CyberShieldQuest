@@ -27,10 +27,17 @@ public class AudioManager : MonoBehaviour
 
     [Header("Sound Clips Library")]
     // public AudioClip bgmBattle; // เพลงมันส์ๆ
-    public AudioClip sfxCardHover; // เสียงรูดการ์ด (ฟึ่บ)
-    public AudioClip sfxCardSelect; // เสียงคลิกการ์ด (ปิ๊ง)
-    public AudioClip sfxAttack; // เสียงเลเซอร์/ระเบิด (ตู้ม)
-    public AudioClip sfxDamage; // เสียงโดนตี (อึก!)
+    public AudioClip sfxButtonClick; // เสียงคลิกปุ่ม
+    public AudioClip sfxCardHover; // เสียงรูดการ์ด 
+    public AudioClip sfxCardSelect; // เสียงคลิกการ์ด 
+    public AudioClip sfxAttack; // เสียงเลเซอร์/ระเบิด 
+    public AudioClip sfxDefend; // เสียงป้องกัน 
+    public AudioClip sfxDropCard;//เสียงลงการ์ด
+    public AudioClip sfxDrawCard;//เสียงจั่วการ์ด
+    public AudioClip sfxHeal;//เสียงฟื้นพลัง
+    public AudioClip sfxLow_Hp;
+    public AudioClip sfxUseSpell;
+
 
     void Awake()
     {
@@ -115,14 +122,49 @@ public class AudioManager : MonoBehaviour
     //     bgmSource.Play();
     // }
 
+
+
+    /// <summary>
+    /// How to use
+    /// Example:
+    ///     AudioManager.Instance.PlaySFX("ButtonClick");
+    ///     AudioManager.Instance.PlaySFX("CardHover");
+    ///     AudioManager.Instance.PlaySFX("Attack");
+    /// </summary>
+
     public void PlaySFX(string soundName)
     {
         switch (soundName)
         {
+            case "ButtonClick": sfxSource.PlayOneShot(sfxButtonClick); break;
             case "CardHover": sfxSource.PlayOneShot(sfxCardHover); break;
             case "CardSelect": sfxSource.PlayOneShot(sfxCardSelect); break;
             case "Attack": sfxSource.PlayOneShot(sfxAttack); break;
-            case "Damage": sfxSource.PlayOneShot(sfxDamage); break;
+            case "Defend": sfxSource.PlayOneShot(sfxDefend); break;
+            case "DropCard": sfxSource.PlayOneShot(sfxDropCard); break;
+            case "DrawCard": sfxSource.PlayOneShot(sfxDrawCard); break;
+            case "Heal": sfxSource.PlayOneShot(sfxHeal); break;
+            case "Low_Hp_loop":
+                PlayLoopSFX(sfxLow_Hp);
+                break;
+            case "Stop_Loop":
+                StopSFX();
+                break;
+            case "UseSpell": sfxSource.PlayOneShot(sfxUseSpell); break;
         }
+    }
+
+    public void PlayLoopSFX(AudioClip clip)
+    {
+        sfxSource.clip = clip;
+        sfxSource.loop = true; // เปิดโหมดวนลูป
+        sfxSource.Play();
+    }
+
+    // ฟังก์ชันสำหรับหยุดเสียง Loop
+    public void StopSFX()
+    {
+        sfxSource.Stop();
+        sfxSource.loop = false; // ปิดโหมดวนลูปเพื่อไม่ให้กระทบเสียงอื่น
     }
 }
