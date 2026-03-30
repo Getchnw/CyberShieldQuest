@@ -217,6 +217,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1234994811}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &21205046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1459,6 +1471,18 @@ MonoBehaviour:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 3
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1234994811}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -3511,6 +3535,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebc2768725954f44c84ee9ce2c2c6590, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  starterCardQuantity: 3
+  starterGeneralCardPrefixes:
+  - M_Gen
+  - S_Gen
+  - E_Gen
   experienceCurve:
     serializedVersion: 2
     m_Curve: []
@@ -3852,6 +3881,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50ab7c59df90e05439e8c8627844cfce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stageButton: {fileID: 0}
 --- !u!1 &1250867112
 GameObject:
   m_ObjectHideFlags: 0
@@ -4539,6 +4569,18 @@ MonoBehaviour:
           m_StringArgument: Home
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1234994811}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1606838970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5199,6 +5241,18 @@ MonoBehaviour:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 2
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1234994811}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0

@@ -29,6 +29,7 @@ public class LanguageSettingsController : MonoBehaviour
         // สั่งให้ Manager ตัวจริงทำงาน
         LanguageManager.Instance.SetLanguage(localeID);
         UpdateButtonVisuals(localeID);
+        AudioManager.Instance.PlaySFX("ButtonClick");
     }
 
     void UpdateButtonVisuals(int selectedID)

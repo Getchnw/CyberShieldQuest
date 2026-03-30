@@ -2267,6 +2267,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1273281404}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &281347467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3625,6 +3637,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 1273281404}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &552131266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3882,6 +3906,18 @@ MonoBehaviour:
       - m_Target: {fileID: 1241568297}
         m_TargetAssemblyTypeName: GuidedTutorialController, Assembly-CSharp
         m_MethodName: StartTutorial
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1273281404}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5355,6 +5391,18 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1273281404}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -7227,6 +7275,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allAchievements: []
+  goldText: {fileID: 0}
 --- !u!4 &1181568848
 Transform:
   m_ObjectHideFlags: 0
@@ -8107,6 +8156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50ab7c59df90e05439e8c8627844cfce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stageButton: {fileID: 733320830}
 --- !u!1 &1278935476
 GameObject:
   m_ObjectHideFlags: 0
@@ -8722,6 +8772,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1273281404}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1306600612
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8847,6 +8909,18 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1273281404}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -9099,6 +9173,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebc2768725954f44c84ee9ce2c2c6590, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  starterCardQuantity: 3
+  starterGeneralCardPrefixes:
+  - M_Gen
+  - S_Gen
+  - E_Gen
   experienceCurve:
     serializedVersion: 2
     m_Curve: []
@@ -13089,7 +13168,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1901178303}
-  - component: {fileID: 1901178302}
   - component: {fileID: 1901178301}
   - component: {fileID: 1901178300}
   m_Layer: 5
@@ -13098,7 +13176,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &1901178300
 AudioSource:
   m_ObjectHideFlags: 0
@@ -13291,22 +13369,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &1901178302
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1901178299}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e21d87c3a26e8954da3ed2bd82890620, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  musicSource: {fileID: 1278935477}
-  sfxSource: {fileID: 1955191156}
-  background: {fileID: 8300000, guid: 9ae43c9c533769e40ad94157dace7733, type: 3}
-  buttonClick: {fileID: 8300000, guid: 09fbff66f86776d46804d55149b4027e, type: 3}
 --- !u!224 &1901178303
 RectTransform:
   m_ObjectHideFlags: 0
@@ -14701,6 +14763,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1273281404}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2127403100
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15681,7 +15755,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3785490995892381778, guid: 0d3bd18a8e14b0f4bb48522bb8f0830e, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3785490995892381778, guid: 0d3bd18a8e14b0f4bb48522bb8f0830e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3785490995892381778, guid: 0d3bd18a8e14b0f4bb48522bb8f0830e, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -15694,7 +15772,7 @@ PrefabInstance:
     - target: {fileID: 3785490995892381778, guid: 0d3bd18a8e14b0f4bb48522bb8f0830e, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1273281404}
     - target: {fileID: 3785490995892381778, guid: 0d3bd18a8e14b0f4bb48522bb8f0830e, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[3].m_Target
       value: 
@@ -15704,8 +15782,24 @@ PrefabInstance:
       value: SetActive
       objectReference: {fileID: 0}
     - target: {fileID: 3785490995892381778, guid: 0d3bd18a8e14b0f4bb48522bb8f0830e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
+      value: Use_SFX_Click_Button
+      objectReference: {fileID: 0}
+    - target: {fileID: 3785490995892381778, guid: 0d3bd18a8e14b0f4bb48522bb8f0830e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
+      value: ControlHome, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3785490995892381778, guid: 0d3bd18a8e14b0f4bb48522bb8f0830e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Arguments.m_BoolArgument
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3785490995892381778, guid: 0d3bd18a8e14b0f4bb48522bb8f0830e, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[3].m_Arguments.m_BoolArgument
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3785490995892381778, guid: 0d3bd18a8e14b0f4bb48522bb8f0830e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

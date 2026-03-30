@@ -400,6 +400,7 @@ public class StageManager : MonoBehaviour
 
         if (detailPopup != null)
         {
+            AudioManager.Instance.PlaySFX("ButtonClick");
             detailPopup.Open(stage);
         }
         else

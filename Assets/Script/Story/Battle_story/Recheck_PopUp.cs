@@ -35,15 +35,18 @@ public class Recheck_PopUp : MonoBehaviour
 
     public void Open()
     {
+        AudioManager.Instance.PlaySFX("ButtonClick");
         PopUp.gameObject.SetActive(true);
     }
     public void Close()
     {
+        AudioManager.Instance.PlaySFX("ButtonClick");
         PopUp.gameObject.SetActive(false);
     }
 
     public void OpenStoryDetail()
     {
+        AudioManager.Instance.PlaySFX("ButtonClick");
         Close();
         // Panel_detailPopup.gameObject.SetActive(true);
         // detailPopup.gameObject.SetActive(true);

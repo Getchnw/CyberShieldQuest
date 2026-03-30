@@ -194,6 +194,7 @@ public class DailyLoginController : MonoBehaviour
         if (!canClaimToday) return;
 
         GiveReward(streakDayToClaim);
+        AudioManager.Instance.PlaySFX("ButtonClick");
 
         // บันทึกข้อมูล
         var data = GameManager.Instance.CurrentGameData.dailyLoginData;

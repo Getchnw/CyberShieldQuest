@@ -422,6 +422,7 @@ public class TestController : MonoBehaviour
 
         if (currentQuestionIndex < allQuestions.Count - 1)
         {
+            AudioManager.Instance.PlaySFX("ButtonClick");
             // สั่งให้ Delay แล้วค่อยไปหน้าถัดไป (Index + 1)
             StartCoroutine(LoadNextQuestionWithDelay(currentQuestionIndex + 1));
         }
@@ -433,6 +434,7 @@ public class TestController : MonoBehaviour
 
         if (currentQuestionIndex > 0)
         {
+            AudioManager.Instance.PlaySFX("ButtonClick");
             // สั่งให้ Delay แล้วค่อยย้อนกลับ (Index - 1)
             StartCoroutine(LoadNextQuestionWithDelay(currentQuestionIndex - 1));
         }
@@ -441,7 +443,7 @@ public class TestController : MonoBehaviour
     void OnSubmitClicked()
     {
         if (isLoadingNextQuestion) return;
-
+        AudioManager.Instance.PlaySFX("ButtonClick");
         // สั่งให้ Delay แล้วค่อยจบเกม (isFinishing = true)
         StartCoroutine(LoadNextQuestionWithDelay(0, true));
     }

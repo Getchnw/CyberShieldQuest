@@ -85,6 +85,7 @@ public class QuestItemUI : MonoBehaviour
 
     public void GotoQuest(string Namescene)
     {
+        AudioManager.Instance.PlaySFX("ButtonClick");
         SceneManager.LoadScene(Namescene);
     }
 }

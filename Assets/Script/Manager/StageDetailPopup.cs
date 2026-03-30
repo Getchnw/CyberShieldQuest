@@ -86,7 +86,7 @@ public class StageDetailPopup : MonoBehaviour
                 {
                     TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
                     ? $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
-                    : $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
+                    : $"<color=green>Use the entire deck as its type {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
                 }
             }
             else
@@ -95,7 +95,7 @@ public class StageDetailPopup : MonoBehaviour
                 {
                     TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
                     ? $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
-                    : $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
+                    : $"<color=red>Use the entire deck as its type {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
                 }
             }
 
@@ -356,6 +356,7 @@ public class StageDetailPopup : MonoBehaviour
 
     public void Close()
     {
+        AudioManager.Instance.PlaySFX("ButtonClick");
         gameObject.SetActive(false);
     }
 
@@ -411,7 +412,7 @@ public class StageDetailPopup : MonoBehaviour
             Debug.LogError("❌ ไม่พบ Scene 'Battle' ใน Build Settings! ไปที่ File > Build Settings แล้วกด Add Open Scenes หรือเพิ่ม Assets/Scenes/Battle.unity");
             return;
         }
-
+        AudioManager.Instance.PlaySFX("ButtonClick");
         // โหลดฉากแบบ async เพื่อไม่ให้ค้าง
         Debug.Log("🟡 กำลังโหลด Battle Scene (async)...");
         BattleManager.SetBattleReturnScene(SceneManager.GetActiveScene().name);

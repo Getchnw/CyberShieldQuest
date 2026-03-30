@@ -148,6 +148,7 @@ public class UI_QuizController : MonoBehaviour
             //answerButtons[selectedIndex].GetComponent<Outline>().effectColor = Color.red;
         }
         currentQuestionIndex++;
+        AudioManager.Instance.PlaySFX("ButtonClick");
 
         // Delay
         StartCoroutine(LoadNextQuestionWithDelay(currentQuestionIndex));

@@ -1857,7 +1857,19 @@ MonoBehaviour:
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_AlphaFadeSpeed: 0.15
 --- !u!224 &334666523
 RectTransform:
@@ -2608,6 +2620,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50ab7c59df90e05439e8c8627844cfce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stageButton: {fileID: 0}
 --- !u!4 &455225842
 Transform:
   m_ObjectHideFlags: 0
@@ -3350,6 +3363,18 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: collection
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 455225841}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &573453263
@@ -7604,6 +7629,18 @@ MonoBehaviour:
           m_StringArgument: Home
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 455225841}
+        m_TargetAssemblyTypeName: ControlHome, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1222624560
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8160,7 +8197,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.050303087, y: 0.952}
   m_AnchorMax: {x: 0.9496063, y: 0.952}
-  m_AnchoredPosition: {x: -29.643858, y: 41.774334}
+  m_AnchoredPosition: {x: -29.643856, y: 41.774345}
   m_SizeDelta: {x: 28.973, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1365120178

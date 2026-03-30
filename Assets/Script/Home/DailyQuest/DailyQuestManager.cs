@@ -176,6 +176,7 @@ public class DailyQuestManager : MonoBehaviour
             Debug.Log($"ได้รับเงิน {def.rewardGold} Gold!");
             // Update Ui
             UpdateUI();
+            AudioManager.Instance.PlaySFX("ButtonClick");
             // 4. อัปเดตสถานะว่ารับแล้ว
             savedQ.isClaimed = true;
 

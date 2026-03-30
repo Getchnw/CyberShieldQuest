@@ -87,10 +87,12 @@ public class GuidedTutorialController : MonoBehaviour
         {
             currentIndex++;
             UpdatePageDisplay();
+            AudioManager.Instance.PlaySFX("ButtonClick");
         }
         else
         {
             // ถ้าอยู่หน้าสุดท้ายแล้วกด Next -> จบการสอน
+            AudioManager.Instance.PlaySFX("ButtonClick");
             CompleteTutorial();
         }
     }
@@ -102,6 +104,7 @@ public class GuidedTutorialController : MonoBehaviour
         {
             currentIndex--;
             UpdatePageDisplay();
+            AudioManager.Instance.PlaySFX("ButtonClick");
         }
     }
 

@@ -107,6 +107,7 @@ public class CollectionDetailView : MonoBehaviour
         {
             craftButton.onClick.AddListener(() =>
             {
+                AudioManager.Instance.PlaySFX("ButtonClick");
                 Debug.Log($"[Craft Button] Clicked - Card: {currentCard.cardName}");
                 onCraftAction?.Invoke(currentCard);
             });
@@ -130,6 +131,7 @@ public class CollectionDetailView : MonoBehaviour
         {
             dismantleButton.onClick.AddListener(() =>
             {
+                AudioManager.Instance.PlaySFX("ButtonClick");
                 Debug.Log($"[Dismantle Button] Clicked - Card: {currentCard.cardName}");
                 onDismantleAction?.Invoke(currentCard);
             });

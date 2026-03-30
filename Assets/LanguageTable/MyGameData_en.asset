@@ -4842,6 +4842,95 @@ MonoBehaviour:
     m_Localized: CANCEL
     m_Metadata:
       m_Items: []
+  - m_Id: 16848029049118720
+    m_Localized: True
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029049118721
+    m_Localized: False
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029065895936
+    m_Localized: ''' OR ''1''=''1 --'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753546
+    m_Localized: Draw 2 cards.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753547
+    m_Localized: Vulnerability scanning identifies system structures, enabling the
+      timely implementation of appropriate defenses.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753545
+    m_Localized: A background process that monitors new function calls to prevent
+      potential intrusions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753544
+    m_Localized: '[Deploy] When this card enters the field, look at the top 3 cards
+      of your opponent''s deck. Choose 1 Monster card and send it to the Graveyard.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753543
+    m_Localized: '[Cont.] Your opponent cannot look at your hand.
+
+      [Cont.]
+      Opponent''s [A01: IDOR] Monsters cannot activate "Strike Hit" abilities.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753542
+    m_Localized: Mastering basic Input/Output scripts is the first step toward total
+      system control.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753541
+    m_Localized: Achieving High Availability through redundant pathways to ensure
+      seamless failover during primary system failure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753540
+    m_Localized: Legacy operating systems, built for stability and specialized tasks,
+      often possess armor that modern software simply cannot pierce.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753539
+    m_Localized: '[Deploy] Draw 1 card.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753538
+    m_Localized: System recovery via Backup & Restore allows for the restoration
+      of resources lost during a cyber attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753537
+    m_Localized: Return 1 Monster from your Graveyard to your hand.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029170753536
+    m_Localized: High-speed data packets transmitted across the network ensure the
+      system has sufficient resources for subsequent command processing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029112033280
+    m_Localized: "A Rainbow Table is a massive database of precomputed hashes. It\u2019s
+      designed to crack simple passwords that were hashed without a 'Salt'."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848029086867456
+    m_Localized: Plaintext storage saves passwords as raw text in the database, allowing
+      anyone with access to read them immediately.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16848028906512384
+    m_Localized: Climbing the privilege ladder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16944959531999232
+    m_Localized: Are you Sure ?
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

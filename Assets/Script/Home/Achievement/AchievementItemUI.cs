@@ -118,6 +118,7 @@ public class AchievementItemUI : MonoBehaviour
         // (ต้องดึงข้อมูลใหม่จาก Save เพราะสถานะเปลี่ยนแล้ว)
         var newSaveData = GameManager.Instance.CurrentGameData.achievements.Find(x => x.achievementID == staticData.id);
         Setup(staticData, newSaveData);
+        AudioManager.Instance.PlaySFX("ButtonClick");
         AchievementManager.Instance.UpdateUIGold();
     }
 }

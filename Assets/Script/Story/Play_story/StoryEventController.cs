@@ -227,12 +227,14 @@ public class StoryEventController : MonoBehaviour
     public void ToggleLogWindow()
     {
         bool isActive = logWindowPanel.activeSelf;
+        AudioManager.Instance.PlaySFX("ButtonClick");
         logWindowPanel.SetActive(!isActive);
     }
 
     // (ฟังก์ชันนี้จะถูกเรียกโดย nextButton) "คลิกไปเรื่อยๆ"
     void OnNextLineClicked()
     {
+        AudioManager.Instance.PlaySFX("ButtonClick");
         // กรณีที่ 1: กำลังพิมพ์อยู่ -> ให้หยุดพิมพ์แล้วแสดงข้อความทั้งหมดทันที
         if (isTyping)
         {

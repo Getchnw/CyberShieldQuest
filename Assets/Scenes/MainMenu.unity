@@ -308,7 +308,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 333442554}
-  - component: {fileID: 333442555}
   - component: {fileID: 333442557}
   - component: {fileID: 333442556}
   - component: {fileID: 333442558}
@@ -341,22 +340,6 @@ RectTransform:
   m_AnchoredPosition: {x: 959.91956, y: 540.0452}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &333442555
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 333442553}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e21d87c3a26e8954da3ed2bd82890620, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  musicSource: {fileID: 1934745004}
-  sfxSource: {fileID: 1036654721}
-  background: {fileID: 8300000, guid: 9ae43c9c533769e40ad94157dace7733, type: 3}
-  buttonClick: {fileID: 8300000, guid: 09fbff66f86776d46804d55149b4027e, type: 3}
 --- !u!82 &333442556
 AudioSource:
   m_ObjectHideFlags: 0
@@ -573,10 +556,16 @@ MonoBehaviour:
     bgmClip: {fileID: 8300000, guid: f658503912b79ad4eafad7c2e8f022b1, type: 3}
   - sceneName: Home
     bgmClip: {fileID: 8300000, guid: b6062104bbe2be34e9e3aafe3c200112, type: 3}
+  sfxButtonClick: {fileID: 8300000, guid: 09fbff66f86776d46804d55149b4027e, type: 3}
   sfxCardHover: {fileID: 8300000, guid: 32004b59dbac25647ab82178ebed3859, type: 3}
   sfxCardSelect: {fileID: 8300000, guid: 09fbff66f86776d46804d55149b4027e, type: 3}
-  sfxAttack: {fileID: 0}
-  sfxDamage: {fileID: 0}
+  sfxAttack: {fileID: 8300000, guid: 1c3c3e57aa313994681500607991db4a, type: 3}
+  sfxDefend: {fileID: 8300000, guid: 2a1faef17e10d9046b13caba13c135e1, type: 3}
+  sfxDropCard: {fileID: 8300000, guid: d23f4cfab60d7114fb94a72538cb159a, type: 3}
+  sfxDrawCard: {fileID: 8300000, guid: 27ff548af6e5a6b47a9213654518cf47, type: 3}
+  sfxHeal: {fileID: 8300000, guid: ff7afb35d133ef24a903e4645df65e4c, type: 3}
+  sfxLow_Hp: {fileID: 8300000, guid: 6f8cf43d89fb6e7438719659e880a18d, type: 3}
+  sfxUseSpell: {fileID: 8300000, guid: 65d40a053c2104c4b8008b23d7e2323c, type: 3}
 --- !u!1 &360203882
 GameObject:
   m_ObjectHideFlags: 0
@@ -1626,6 +1615,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebc2768725954f44c84ee9ce2c2c6590, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  starterCardQuantity: 3
+  starterGeneralCardPrefixes:
+  - M_Gen
+  - S_Gen
+  - E_Gen
   experienceCurve:
     serializedVersion: 2
     m_Curve:

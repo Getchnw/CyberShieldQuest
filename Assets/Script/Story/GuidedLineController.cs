@@ -126,6 +126,7 @@ public class GuidedLineController : MonoBehaviour
         if (currentIndex < tutorialPages.Count - 1)
         {
             currentIndex++;
+            AudioManager.Instance.PlaySFX("ButtonClick");
             UpdatePageDisplay();
         }
         else
@@ -139,6 +140,7 @@ public class GuidedLineController : MonoBehaviour
         if (currentIndex > 0)
         {
             currentIndex--;
+            AudioManager.Instance.PlaySFX("ButtonClick");
             UpdatePageDisplay();
         }
     }

@@ -73,7 +73,7 @@ public class LocalizationScanner : EditorWindow
     [MenuItem("Tools/Localization/Scan All Content (Full)")]
     public static void ScanAllContent()
     {
-        var collection = LocalizationEditorSettings.GetStringTableCollection("MyGameTable");
+        var collection = LocalizationEditorSettings.GetStringTableCollection("MyGameData");
         if (collection == null) return;
         var thTable = collection.GetTable("th") as StringTable;
 
@@ -161,6 +161,7 @@ public class LocalizationScanner : EditorWindow
         //--- 7. Card ---
         ScanSO<CardData>(collection, thTable, (data) => {
             // ข้อความสกิลการ์ด
+            Debug.Log($"Scanning Card: {data.card_id}");
             AddKey(collection, thTable, data.abilityText);
             AddKey(collection, thTable, data.flavorText);
         });

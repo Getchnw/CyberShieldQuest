@@ -37,7 +37,10 @@ public class AudioManager : MonoBehaviour
     public AudioClip sfxHeal;//เสียงฟื้นพลัง
     public AudioClip sfxLow_Hp;
     public AudioClip sfxUseSpell;
-
+    public AudioClip sfxFilpCard;
+    public AudioClip sfxRevealCommon;
+    public AudioClip sfxRevealEpic;
+    public AudioClip sfxRevealLegendary;
 
     void Awake()
     {
@@ -151,6 +154,10 @@ public class AudioManager : MonoBehaviour
                 StopSFX();
                 break;
             case "UseSpell": sfxSource.PlayOneShot(sfxUseSpell); break;
+            case "FlipCard": sfxSource.PlayOneShot(sfxFilpCard); break;
+            case "RevealCommon": sfxSource.PlayOneShot(sfxRevealCommon); break;
+            case "RevealEpic": sfxSource.PlayOneShot(sfxRevealEpic); break;
+            case "RevealLegendary": sfxSource.PlayOneShot(sfxRevealLegendary); break;
         }
     }
 

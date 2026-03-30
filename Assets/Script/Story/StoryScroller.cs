@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class StoryScroller : MonoBehaviour
 {
-[Header("Components")]
+    [Header("Components")]
     [SerializeField] private ScrollRect scrollRect;
     [SerializeField] private Button leftButton;
     [SerializeField] private Button rightButton;
@@ -11,7 +11,7 @@ public class StoryScroller : MonoBehaviour
     [Header("Scroll Settings")]
     [Tooltip("จำนวน Story ทั้งหมดที่มี")]
     [SerializeField] private int totalStoryItems;
-    
+
     [Tooltip("ความเร็วในการเลื่อน (ยิ่งมากยิ่งเร็ว)")]
     [SerializeField] private float scrollSpeed = 50f;
 
@@ -22,8 +22,8 @@ public class StoryScroller : MonoBehaviour
     void Start()
     {
         // ปิดการลากด้วยเมาส์หรือนิ้ว (ถ้าอยากให้ควบคุมด้วยปุ่มเท่านั้น)
-        scrollRect.inertia = false; 
-        
+        scrollRect.inertia = false;
+
         // อัปเดตสถานะปุ่มตอนเริ่ม
         UpdateArrowButtons();
     }
@@ -34,8 +34,8 @@ public class StoryScroller : MonoBehaviour
         if (isScrolling)
         {
             scrollRect.horizontalNormalizedPosition = Mathf.Lerp(
-                scrollRect.horizontalNormalizedPosition, 
-                targetNormalizedPos, 
+                scrollRect.horizontalNormalizedPosition,
+                targetNormalizedPos,
                 Time.deltaTime * scrollSpeed
             );
 
@@ -77,7 +77,7 @@ public class StoryScroller : MonoBehaviour
         // (มี totalStoryItems - 1 "ขั้น" ในการเลื่อน)
         targetNormalizedPos = (float)currentItemIndex / (float)(totalStoryItems - 1);
         isScrolling = true;
-        
+
         // อัปเดตสถานะปุ่ม
         UpdateArrowButtons();
     }
@@ -87,8 +87,8 @@ public class StoryScroller : MonoBehaviour
     {
         if (totalStoryItems <= 1)
         {
-            if(rightButton != null) rightButton.gameObject.SetActive(false);
-            if(leftButton != null) leftButton.gameObject.SetActive(false);
+            if (rightButton != null) rightButton.gameObject.SetActive(false);
+            if (leftButton != null) leftButton.gameObject.SetActive(false);
         }
         if (leftButton != null)
         {
@@ -103,10 +103,18 @@ public class StoryScroller : MonoBehaviour
         }
     }
 
-    public void LoadSence (string Namescene) {
+    public void useClickSFX()
+    {
+        AudioManager.Instance.PlaySFX("ButtonClick");
+    }
+    public void LoadSence(string Namescene)
+    {
+        // AudioManager.Instance.PlaySFX("ButtonClick");
         UnityEngine.SceneManagement.SceneManager.LoadScene(Namescene);
     }
 
-    
+
+
+
 
 }

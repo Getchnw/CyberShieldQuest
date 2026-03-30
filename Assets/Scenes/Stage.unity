@@ -1585,6 +1585,7 @@ MonoBehaviour:
   - {fileID: 798275506}
   statusText: {fileID: 0}
   completedBadge: {fileID: 0}
+  TypeDeckText_StoryBattle: {fileID: 0}
   startButton: {fileID: 2028044153}
   closeButton: {fileID: 848623662}
 --- !u!1 &748627451
@@ -1972,6 +1973,8 @@ MonoBehaviour:
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
+    isStoryBattle: 0
+    YessButton_Recheck: {fileID: 0}
   - stageName: Sector A-02
     stageName_th: "\u0E14\u0E48\u0E32\u0E19 A02"
     stageID: ' L1_A02'
@@ -2017,6 +2020,8 @@ MonoBehaviour:
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
+    isStoryBattle: 0
+    YessButton_Recheck: {fileID: 0}
   - stageName: Sector A-03
     stageName_th: "\u0E14\u0E48\u0E32\u0E19 A03"
     stageID: ' L1_A03'
@@ -2062,6 +2067,8 @@ MonoBehaviour:
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
+    isStoryBattle: 0
+    YessButton_Recheck: {fileID: 0}
   - stageName: Sector mix1
     stageName_th: "\u0E14\u0E48\u0E32\u0E19\u0E23\u0E27\u0E21\u0E40\u0E14\u0E47\u0E04
       1"
@@ -2109,6 +2116,8 @@ MonoBehaviour:
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
+    isStoryBattle: 0
+    YessButton_Recheck: {fileID: 0}
   - stageName: Sector mix2
     stageName_th: "\u0E14\u0E48\u0E32\u0E19\u0E23\u0E27\u0E21\u0E40\u0E14\u0E47\u0E04
       2"
@@ -2156,6 +2165,8 @@ MonoBehaviour:
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
+    isStoryBattle: 0
+    YessButton_Recheck: {fileID: 0}
   - stageName: Boss
     stageName_th: "\u0E1A\u0E2D\u0E2A"
     stageID: L3_boss
@@ -2201,6 +2212,8 @@ MonoBehaviour:
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
+    isStoryBattle: 0
+    YessButton_Recheck: {fileID: 0}
   - stageName: Secret Boss
     stageName_th: "\u0E1A\u0E2D\u0E2A\u0E25\u0E31\u0E1A"
     stageID: L3_boss
@@ -2247,6 +2260,8 @@ MonoBehaviour:
     isSecretBoss: 1
     durationMinutes: 30
     countdownText: {fileID: 1806599168}
+    isStoryBattle: 0
+    YessButton_Recheck: {fileID: 0}
   detailPopup: {fileID: 667100746}
 --- !u!4 &808785846
 Transform:
@@ -2397,12 +2412,40 @@ PrefabInstance:
       value: backtohome
       objectReference: {fileID: 0}
     - target: {fileID: 2625687747827760772, guid: 59865f9ba3fec414384598595107dd56, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2625687747827760772, guid: 59865f9ba3fec414384598595107dd56, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2625687747827760772, guid: 59865f9ba3fec414384598595107dd56, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1753854545}
     - target: {fileID: 2625687747827760772, guid: 59865f9ba3fec414384598595107dd56, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 1753854545}
+    - target: {fileID: 2625687747827760772, guid: 59865f9ba3fec414384598595107dd56, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2625687747827760772, guid: 59865f9ba3fec414384598595107dd56, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: LoadSence
+      objectReference: {fileID: 0}
+    - target: {fileID: 2625687747827760772, guid: 59865f9ba3fec414384598595107dd56, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: Use_SFX_Click_Button
+      objectReference: {fileID: 0}
+    - target: {fileID: 2625687747827760772, guid: 59865f9ba3fec414384598595107dd56, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: ControlHome, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 2625687747827760772, guid: 59865f9ba3fec414384598595107dd56, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 2769618633232039854, guid: 59865f9ba3fec414384598595107dd56, type: 3}
       propertyPath: m_Pivot.x
@@ -2537,6 +2580,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebc2768725954f44c84ee9ce2c2c6590, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  starterCardQuantity: 3
+  starterGeneralCardPrefixes:
+  - M_Gen
+  - S_Gen
+  - E_Gen
   experienceCurve:
     serializedVersion: 2
     m_Curve: []
@@ -3435,6 +3483,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50ab7c59df90e05439e8c8627844cfce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stageButton: {fileID: 0}
 --- !u!4 &1753854546
 Transform:
   m_ObjectHideFlags: 0

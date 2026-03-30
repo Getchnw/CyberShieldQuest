@@ -533,6 +533,7 @@ public class UI_ChapterSelect : MonoBehaviour
         {
             // ซ่อนหน้าปัจจุบัน
             instantiatedPages[currentPageIndex].SetActive(false);
+            AudioManager.Instance.PlaySFX("ButtonClick");
             // เลื่อนไปหน้าถัดไป
             currentPageIndex++;
             // แสดงหน้าใหม่
@@ -548,6 +549,7 @@ public class UI_ChapterSelect : MonoBehaviour
         {
             // ซ่อนหน้าปัจจุบัน
             instantiatedPages[currentPageIndex].SetActive(false);
+            AudioManager.Instance.PlaySFX("ButtonClick");
             // ย้อนกลับ
             currentPageIndex--;
             // แสดงหน้าใหม่
@@ -562,7 +564,7 @@ public class UI_ChapterSelect : MonoBehaviour
         Debug.Log($"เลือก Chapter ID: {chapterId}");
         // (คุณอาจจะฝาก Chapter ID ไว้กับ GameManager อีกที)
         GameManager.Instance.SaveSelectedChapter(chapterId);
-
+        AudioManager.Instance.PlaySFX("ButtonClick");
         // (แล้วโหลด Scene ถัดไป เช่น Scene เนื้อเรื่อง หรือ Scene ต่อสู้)
         SceneManager.LoadScene("Template_StoryScene");
     }
