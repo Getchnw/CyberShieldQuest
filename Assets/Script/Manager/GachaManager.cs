@@ -171,10 +171,11 @@ public class GachaManager : MonoBehaviour
         if (pullOneButton != null) pullOneButton.gameObject.SetActive(isUnlocked);
         if (pullTenButton != null) pullTenButton.gameObject.SetActive(isUnlocked);
 
+
+
         // อัปเดตข้อความ
         if (currentBannerNameText != null)
         {
-
             currentBannerNameText.text = LocalizationSettings.SelectedLocale.Identifier.Code == "en"
                                         ? $"Banner: {currentTargetCategory}"
                                         : $"ตู้: {currentTargetCategory}";
@@ -260,6 +261,7 @@ public class GachaManager : MonoBehaviour
 
         if (currentGold >= costPerPull)
         {
+            AudioManager.Instance.PlaySFX("ButtonClick");
             GameManager.Instance.DecreaseGold(costPerPull);
             CardData pulledCard = RandomCard(currentTargetCategory);
             GameManager.Instance.AddCardToInventory(pulledCard.card_id, 1);
@@ -301,6 +303,7 @@ public class GachaManager : MonoBehaviour
 
         if (currentGold >= totalCost)
         {
+            AudioManager.Instance.PlaySFX("ButtonClick");
             GameManager.Instance.DecreaseGold(totalCost);
             List<CardData> pulledList = new List<CardData>();
             for (int i = 0; i < 10; i++)
@@ -521,6 +524,8 @@ public class GachaManager : MonoBehaviour
             RefreshCloseButtonState();
             yield break;
         }
+
+        AudioManager.Instance.PlaySFX("FlipCard");
         item.revealed = true;
         ClearFacedownAura(item);
 
@@ -576,6 +581,7 @@ public class GachaManager : MonoBehaviour
     void OnClickRevealAll()
     {
         if (isRevealAllInProgress) return;
+        AudioManager.Instance.PlaySFX("ButtonClick");
         StartCoroutine(RevealAllRoutine());
     }
 
@@ -596,7 +602,8 @@ public class GachaManager : MonoBehaviour
         foreach (var item in pendingItems)
         {
             if (item != null && !item.revealed)
-                yield return StartCoroutine(RevealCardRoutine(item, true));
+                AudioManager.Instance.PlaySFX("FlipCard");
+            yield return StartCoroutine(RevealCardRoutine(item, true));
 
             if (revealAllCardInterval > 0f)
                 yield return new WaitForSeconds(revealAllCardInterval);
@@ -633,17 +640,24 @@ public class GachaManager : MonoBehaviour
 
         if (item.card.rarity == Rarity.Epic)
         {
+
             yield return StartCoroutine(PlayScreenFlash(new Color(0.78f, 0.35f, 1f, 1f), epicFlashAlpha, flashDuration));
             yield return StartCoroutine(ShakeTransform(item.root.transform, epicShakeDuration, epicShakeDistance));
         }
         else if (item.card.rarity == Rarity.Legendary)
         {
+
             yield return StartCoroutine(PlayScreenFlash(new Color(1f, 0.84f, 0.2f, 1f), legendaryFlashAlpha, flashDuration * 1.2f));
             yield return StartCoroutine(ShakeTransform(item.root.transform, legendaryShakeDuration, legendaryShakeDistance));
             if (resultGrid != null)
             {
                 yield return StartCoroutine(ShakeTransform(resultGrid, legendaryShakeDuration * 0.9f, legendaryShakeDistance * 0.7f));
             }
+        }
+        else
+        {
+            // 🔥 เพิ่มตรงนี้: เสียงสำหรับการ์ดทั่วไป (Common/Rare)
+            AudioManager.Instance.PlaySFX("RevealCommon");
         }
 
         GameObject glowObj = new GameObject("RarityGlow", typeof(RectTransform), typeof(Image));
@@ -903,6 +917,8 @@ public class GachaManager : MonoBehaviour
             RefreshCloseButtonState();
             return;
         }
+
+        AudioManager.Instance.PlaySFX("ButtonClick");
 
         foreach (var item in currentPullItems)
             ClearFacedownAura(item);

@@ -116,6 +116,7 @@ public class SkillIconLegendUI : MonoBehaviour
         if (panelRoot == null) return;
         bool nextState = !panelRoot.activeSelf;
         panelRoot.SetActive(nextState);
+        AudioManager.Instance.PlaySFX("ButtonClick");
         if (nextState)
         {
             iconProvider = ResolveIconProvider();
