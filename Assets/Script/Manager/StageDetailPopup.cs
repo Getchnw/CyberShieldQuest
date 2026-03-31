@@ -70,36 +70,6 @@ public class StageDetailPopup : MonoBehaviour
         {
             Debug.LogError("❌ startButton ไม่ได้ reference ใน Inspector!");
         }
-
-        if (currentStageData.isStoryBattle)
-        {
-            Debug.Log("🔵 กำลังตั้งค่าเงื่อนไข Deck สำหรับ Story Battle...");
-            // เช็คประเภทเด็ค
-            // ตรงประเภท เปิดให้กดเริ่มเกมได้
-            bool ischeckDeck = CheckDeck(GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId);
-            startButton.interactable = ischeckDeck;
-
-            if (ischeckDeck)
-            {
-                // ตรงประเภท
-                if (TypeDeckText_StoryBattle != null)
-                {
-                    TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
-                    ? $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
-                    : $"<color=green>Use the entire deck as its type {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
-                }
-            }
-            else
-            {
-                if (TypeDeckText_StoryBattle != null)
-                {
-                    TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
-                    ? $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
-                    : $"<color=red>Use the entire deck as its type {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
-                }
-            }
-
-        }
     }
 
     private bool CheckDeck(string StoryId)
@@ -171,34 +141,78 @@ public class StageDetailPopup : MonoBehaviour
 
         currentStageData = data;
 
-        if (currentStageData.isStoryBattle)
-        {
-            Debug.Log("🔵 กำลังตั้งค่าเงื่อนไข Deck สำหรับ Story Battle...");
-            // เช็คประเภทเด็ค
-            // ตรงประเภท เปิดให้กดเริ่มเกมได้
-            bool ischeckDeck = CheckDeck(GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId);
-            startButton.interactable = ischeckDeck;
+        // if (currentStageData.isStoryBattle)
+        // {
+        //     Debug.Log("🔵 กำลังตั้งค่าเงื่อนไข Deck สำหรับ Story Battle...");
+        //     // เช็คประเภทเด็ค
+        //     // ตรงประเภท เปิดให้กดเริ่มเกมได้
+        //     bool ischeckDeck = CheckDeck(GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId);
+        //     startButton.interactable = ischeckDeck;
 
-            if (ischeckDeck)
+        //     if (ischeckDeck)
+        //     {
+        //         // ตรงประเภท
+        //         if (TypeDeckText_StoryBattle != null)
+        //         {
+        //             TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
+        //             ? $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
+        //             : $"<color=green>Use the entire deck as its type {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
+        //         }
+        //     }
+        //     else
+        //     {
+        //         if (TypeDeckText_StoryBattle != null)
+        //         {
+        //             TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
+        //             ? $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
+        //             : $"<color=red>Use the entire deck as its type {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
+        //         }
+        //     }
+
+        // }
+
+        // --- ส่วนการเช็ค Deck (เพิ่มเงื่อนไข 5 ใบที่นี่) ---
+        bool isDeckValid = false;
+        string errorMessage = "";
+
+        var gameData = GameManager.Instance.CurrentGameData;
+        int selectedIndex = PlayerPrefs.GetInt("SelectedDeckIndex", 0);
+
+        if (gameData != null && gameData.decks != null && selectedIndex < gameData.decks.Count)
+        {
+            DeckData currentDeck = gameData.decks[selectedIndex];
+            int cardCount = currentDeck.card_ids_in_deck.Count;
+
+            if (currentStageData.isStoryBattle)
             {
-                // ตรงประเภท
-                if (TypeDeckText_StoryBattle != null)
-                {
-                    TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
-                    ? $"<color=green>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
-                    : $"<color=green>Use the entire deck as its type {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
-                }
+                // ถ้าเป็น Story Battle: เช็คทั้ง "ประเภท" และ "จำนวนต้อง >= 5"
+                bool isCorrectType = CheckDeck(gameData.selectedStory.lastSelectedStoryId);
+                isDeckValid = isCorrectType && cardCount >= 5;
+
+                if (!isCorrectType)
+                    errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
+                        $"<color=red>ต้องใช้การ์ดประเภท {gameData.selectedStory.lastSelectedStoryId} ทั้งเด็ค</color>" :
+                        $"<color=red>All cards must be {gameData.selectedStory.lastSelectedStoryId} type</color>";
+                else if (cardCount < 5)
+                    errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
+                        "<color=red>ต้องมีการ์ดอย่างน้อย 5 ใบในเด็ค</color>" :
+                        "<color=red>Need at least 5 cards in deck</color>";
+                else
+                    errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
+                        $"<color=green>เด็คพร้อมสำหรับ Story Battle ({gameData.selectedStory.lastSelectedStoryId})</color>" :
+                        $"<color=green>Deck ready for Story Battle</color>";
             }
             else
             {
-                if (TypeDeckText_StoryBattle != null)
-                {
-                    TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th"
-                    ? $"<color=red>ใช้ทั้งเด็คเป็นประเภท {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>"
-                    : $"<color=red>Use the entire deck as its type {GameManager.Instance.CurrentGameData.selectedStory.lastSelectedStoryId}</color>";
-                }
+                // ถ้าเป็นด่านปกติ: เช็คแค่จำนวน >= 5
+                isDeckValid = cardCount >= 5;
+                errorMessage = isDeckValid
+                ? (LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "<color=green>เด็คพร้อมใช้งาน</color>" : "<color=green>Deck is ready</color>")
+                : (LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "<color=red>ต้องมีการ์ดอย่างน้อย 5 ใบ</color>" : "<color=red>Need at least 5 cards</color>");
             }
 
+            if (TypeDeckText_StoryBattle != null) TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? $"เงื่อนไขการเล่น:\n{errorMessage}" : $"Play Conditions:\n{errorMessage}";
+            if (startButton != null) startButton.interactable = isDeckValid;
         }
 
         // 1. อัปเดตข้อความต่างๆ
@@ -412,7 +426,7 @@ public class StageDetailPopup : MonoBehaviour
             Debug.LogError("❌ ไม่พบ Scene 'Battle' ใน Build Settings! ไปที่ File > Build Settings แล้วกด Add Open Scenes หรือเพิ่ม Assets/Scenes/Battle.unity");
             return;
         }
-        AudioManager.Instance.PlaySFX("ButtonClick");
+        // AudioManager.Instance.PlaySFX("ButtonClick");
         // โหลดฉากแบบ async เพื่อไม่ให้ค้าง
         Debug.Log("🟡 กำลังโหลด Battle Scene (async)...");
         BattleManager.SetBattleReturnScene(SceneManager.GetActiveScene().name);
