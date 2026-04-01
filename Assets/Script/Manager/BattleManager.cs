@@ -513,9 +513,12 @@ public class BattleManager : MonoBehaviour
         SkillIconLegendUI skillLegend = SkillIconLegendUI.EnsureInScene("BattleSkillLegendUI");
         if (skillLegend != null)
         {
+            skillLegend.targetContainerName = "BattleArea";
             skillLegend.buttonAnchoredPosition = skillLegendButtonPosition;
             skillLegend.panelAnchoredPosition = skillLegendPanelPosition;
+            skillLegend.buttonAnchoredPosition = new Vector2(916f, 186f);
             skillLegend.RefreshLayoutAndStyle();
+
         }
 
         EnsureHandRevealReferences();
@@ -530,7 +533,7 @@ public class BattleManager : MonoBehaviour
         SetupLogPanelAppearance();
         SetupSkillToastUI();
         UpdateLogText();
-        
+
         // 👁️ เปิด raycasts บน enemyHandArea เพื่อให้การ์ดที่ reveal คลิกได้
         if (enemyHandArea != null)
         {
@@ -539,7 +542,7 @@ public class BattleManager : MonoBehaviour
             cg.blocksRaycasts = true;
             Debug.Log("✅ Set enemyHandArea.CanvasGroup.blocksRaycasts = true");
         }
-        
+
         StartCoroutine(SetupBattle());
     }
 
@@ -1130,7 +1133,7 @@ public class BattleManager : MonoBehaviour
             // 🔥 Get ONLY direct children (not nested)
             var cardsInHand = handArea.GetComponentsInChildren<BattleCardUI>(includeInactive: false)
                 .Where(c => c.transform.parent == handArea).ToArray();
-            
+
             if (cardsInHand.Length == 0)
             {
                 Debug.Log("⚠️ ไม่มีการ์ดในมือ");
@@ -1162,7 +1165,7 @@ public class BattleManager : MonoBehaviour
                 foreach (var card in cardsInHand)
                 {
                     if (card == null || card.gameObject == null) continue;
-                    
+
                     if (card.transform.parent != handArea)
                         card.transform.SetParent(handArea, false);
 
@@ -1229,7 +1232,7 @@ public class BattleManager : MonoBehaviour
             foreach (var card in cardsInHand)
             {
                 if (card == null || card.gameObject == null) continue;
-                
+
                 if (card.transform.parent != handArea)
                     card.transform.SetParent(handArea, false);
 
@@ -1275,7 +1278,7 @@ public class BattleManager : MonoBehaviour
             // 🔥 Get ONLY direct children (not nested)
             var cards = enemyHandArea.GetComponentsInChildren<BattleCardUI>(includeInactive: false)
                 .Where(c => c.transform.parent == enemyHandArea).ToArray();
-            
+
             if (cards.Length == 0)
             {
                 Debug.Log("🎴 ArrangeEnemyHand: No cards to arrange");
@@ -1306,7 +1309,7 @@ public class BattleManager : MonoBehaviour
                 foreach (var card in cards)
                 {
                     if (card == null || card.gameObject == null) continue;
-                    
+
                     if (card.transform.parent != enemyHandArea)
                         card.transform.SetParent(enemyHandArea, false);
 
@@ -2154,7 +2157,7 @@ public class BattleManager : MonoBehaviour
         {
             Destroy(spellCard.gameObject);
         }
-        
+
         if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
         Debug.Log($"🔵 BOT SPELL: Calling UpdateUI()...");
         UpdateUI();
@@ -3872,7 +3875,7 @@ public class BattleManager : MonoBehaviour
                         ui.SetFrameVisible(true); // แสดงกรอบ
                         ui.ShowCardInfo(); // 🔥 แสดงค่า Cost และ ATK
                         cg.blocksRaycasts = true; // 🔥 อนุญาตให้คลิกการ์ดที่ถูก reveal
-                        
+
                         // บันทึกการ์ดที่ reveal เพื่อจัดที่ออกมือ
                         revealedEnemyCards[cardData.card_id] = cardData;
                         AddBattleLog($"👁️ [RevealHand] Enemy drew: {cardData.cardName}");
@@ -6296,7 +6299,7 @@ public class BattleManager : MonoBehaviour
     IEnumerator PlayerChooseDiscard(int count)
     {
         Debug.Log($"[PlayerChooseDiscard] ✅ STARTS");
-        
+
         if (forceDiscardPanel == null)
         {
             Debug.LogError("❌ CRITICAL: forceDiscardPanel is NULL! Cannot show UI!");
@@ -6313,11 +6316,11 @@ public class BattleManager : MonoBehaviour
         // เปิด Panel
         forceDiscardPanel.SetActive(true);
         yield return null; // รอให้ Panel activate
-        
+
         Debug.Log($"[PlayerChooseDiscard] Panel activated: {forceDiscardPanel.activeSelf}");
 
         // ตั้งค่า UI
-        if (forceDiscardTitleText) 
+        if (forceDiscardTitleText)
         {
             forceDiscardTitleText.text = $"Choose {count} card(s) to discard";
             Debug.Log($"[PlayerChooseDiscard] Title set");
@@ -6327,7 +6330,7 @@ public class BattleManager : MonoBehaviour
         // สร้างการ์ดจากมือผู้เล่น
         PopulateForceDiscardPanel();
         yield return null; // รอให้ cards spawn
-        
+
         Debug.Log($"[PlayerChooseDiscard] Cards populated: {forceDiscardListRoot.childCount} cards");
 
         // เชื่อมต่อปุ่มยืนยัน
@@ -6346,25 +6349,25 @@ public class BattleManager : MonoBehaviour
         float startTime = Time.time;
         float timeout = 300f; // 5 minutes timeout
         int loopCount = 0;
-        
+
         Debug.Log($"[PlayerChooseDiscard] ⏳ WAITING FOR PLAYER - Will wait up to {timeout}s (or Click Confirm button)");
 
         while (!discardConfirmed)
         {
             loopCount++;
             float elapsed = Time.time - startTime;
-            
+
             if (loopCount % 300 == 0) // Log every ~5 seconds
             {
                 Debug.Log($"[PlayerChooseDiscard] STILL WAITING... {elapsed:F1}s (discardConfirmed={discardConfirmed}, selected={selectedCardsToDiscard.Count}/{requiredDiscardCount})");
             }
-            
+
             if (elapsed > timeout)
             {
                 Debug.LogError($"❌ TIMEOUT after {elapsed:F1}s: Player didn't confirm discard!");
                 break;
             }
-            
+
             yield return null;
         }
 
@@ -6386,7 +6389,7 @@ public class BattleManager : MonoBehaviour
         isChoosingDiscard = false;
         selectedCardsToDiscard.Clear();
         discardConfirmed = false;
-        
+
         Debug.Log($"✅ [PlayerChooseDiscard] COMPLETE - Ready to continue game");
     }
 
@@ -6398,7 +6401,7 @@ public class BattleManager : MonoBehaviour
         {
             int randomIndex = Random.Range(0, enemyHandArea.childCount);
             var card = enemyHandArea.GetChild(randomIndex).GetComponent<BattleCardUI>();
-            
+
             if (card != null && card.GetData() != null)
             {
                 Debug.Log($"🗑️ Enemy discarded: {card.GetData().cardName}");
@@ -6410,7 +6413,7 @@ public class BattleManager : MonoBehaviour
 
     void PopulateForceDiscardPanel()
     {
-        if (forceDiscardListRoot == null) 
+        if (forceDiscardListRoot == null)
         {
             Debug.LogError("❌ forceDiscardListRoot is NULL!");
             return;
@@ -6433,7 +6436,7 @@ public class BattleManager : MonoBehaviour
 
             GameObject cardCopy = Instantiate(cardPrefab, forceDiscardListRoot);
             BattleCardUI cardUI = cardCopy.GetComponent<BattleCardUI>();
-            
+
             if (cardUI != null)
             {
                 cardUI.Setup(originalCard.GetData());
@@ -6442,27 +6445,27 @@ public class BattleManager : MonoBehaviour
                 // เพิ่ม button เพื่อเลือก/ยกเลิก
                 Button btn = cardCopy.GetComponent<Button>();
                 if (btn == null) btn = cardCopy.AddComponent<Button>();
-                
+
                 btn.onClick.RemoveAllListeners();
                 btn.onClick.AddListener(() => OnForceDiscardCardClick(cardUI));
-                
+
                 Debug.Log($"  - Card Created: {originalCard.GetData().cardName} (clickable: {btn.interactable})");
             }
         }
-        
+
         Debug.Log($"[PopulateForceDiscardPanel] Done - {forceDiscardListRoot.childCount} cards ready");
     }
 
     public void OnForceDiscardCardClick(BattleCardUI cardUI)
     {
-        if (!isChoosingDiscard) 
+        if (!isChoosingDiscard)
         {
             Debug.LogWarning("❌ OnForceDiscardCardClick called but not choosing!");
             return;
         }
 
         BattleCardUI originalCard = cardUI.GetReferenceCard();
-        if (originalCard == null) 
+        if (originalCard == null)
         {
             Debug.LogError("❌ No reference card!");
             return;
@@ -6508,12 +6511,12 @@ public class BattleManager : MonoBehaviour
         {
             bool canConfirm = (selectedCardsToDiscard.Count == requiredDiscardCount);
             forceDiscardConfirmButton.interactable = canConfirm;
-            
+
             // ปิด raycast ด้วยเมื่อยังไม่ครบ
             CanvasGroup canvasGroup = forceDiscardConfirmButton.GetComponent<CanvasGroup>();
             if (canvasGroup == null) canvasGroup = forceDiscardConfirmButton.gameObject.AddComponent<CanvasGroup>();
             canvasGroup.blocksRaycasts = canConfirm;
-            
+
             Debug.Log($"[UpdateForceDiscardCountUI] {selectedCardsToDiscard.Count}/{requiredDiscardCount} - Button: {(canConfirm ? "🟢 ACTIVE" : "🔴 DISABLED")}");
         }
     }
@@ -6521,13 +6524,13 @@ public class BattleManager : MonoBehaviour
     public void OnForceDiscardConfirm()
     {
         Debug.Log($"[OnForceDiscardConfirm] Called! isChoosingDiscard: {isChoosingDiscard}");
-        
-        if (!isChoosingDiscard) 
+
+        if (!isChoosingDiscard)
         {
             Debug.LogWarning("⚠️ Not in discard phase!");
             return;
         }
-        
+
         if (selectedCardsToDiscard.Count != requiredDiscardCount)
         {
             Debug.LogError($"❌ SELECTION ERROR: Need {requiredDiscardCount} but selected {selectedCardsToDiscard.Count}!");
@@ -6581,7 +6584,7 @@ public class BattleManager : MonoBehaviour
             {
                 // ผู้เล่น = รอเลือก
                 Debug.Log("👤 ZeroStats: ผู้เล่นเลือกเป้าหมาย");
-                
+
                 // Highlight เป้าหมายที่เลือกได้
                 foreach (var t in targets)
                 {
@@ -7094,7 +7097,7 @@ public class BattleManager : MonoBehaviour
                 // เก็บตำแหน่งเดิมและเจ้าของดั้งเดิม
                 Transform originalSlot = target.transform.parent;
                 bool originalOwner = IsCardOwnedByPlayer(target);
-                
+
                 // ควบคุมการ์ด
                 target.isControlled = true;
                 target.controlledTurnsRemaining = (duration == 0) ? -1 : duration;
@@ -7130,7 +7133,7 @@ public class BattleManager : MonoBehaviour
         if (card == null || !card.isControlled) return;
 
         Transform originalSlot = card.originalEquipSlot;
-        
+
         if (originalSlot == null)
         {
             Debug.LogWarning($"⚠️ ReturnControlledEquip: {(card.GetData() != null ? card.GetData().cardName : "Unknown")} - originalSlot เป็น null");
@@ -8213,7 +8216,7 @@ public class BattleManager : MonoBehaviour
     {
         var graveyard = isPlayer ? playerGraveyard : enemyGraveyard;
         var equipCard = graveyard.FirstOrDefault(card => IsCardMatchingReturnTypeFilter(card, typeFilter));
-        
+
         if (equipCard == null)
         {
             Debug.Log($"⚠️ ReturnFirstEquipFromGraveyard: no card found with filter {typeFilter}");
@@ -8222,34 +8225,34 @@ public class BattleManager : MonoBehaviour
 
         Debug.Log($"🪦 Bot auto-selecting: {equipCard.cardName}");
         Debug.Log($"📊 Graveyard before removal: {graveyard.Count} cards");
-        
+
         // 🔥 ทำสำเนา CardData ก่อนลบออกจาก graveyard
         CardData cardDataCopy = equipCard;
         graveyard.Remove(equipCard);
         UpdateGraveyardCountUI();
-        
+
         Debug.Log($"📊 Graveyard after removal: {graveyard.Count} cards");
         Debug.Log($"➕ Adding {cardDataCopy.cardName} to {(isPlayer ? "Player" : "Enemy")} hand");
-        
+
         // 🔥 ใช้สำเนา ไม่ใช้ original
         cardAdditionComplete = false;
         AddCardToHandFromData(cardDataCopy, isPlayer);
-        
+
         // 🔥 รอจนกว่าการเพิ่มการ์ดจะสิ้นสุด (max 5 seconds timeout)
         float timeout = Time.time + 5f;
         while (!cardAdditionComplete && Time.time < timeout)
         {
             yield return null;
         }
-        
+
         if (Time.time >= timeout)
         {
             Debug.LogError("❌ TIMEOUT: AddCardToHandFromData ไม่จบใน 5 วินาที!");
             cardAdditionComplete = true;
         }
-        
+
         AddBattleLog($"{(isPlayer ? "Player" : "Bot")} returned {cardDataCopy.cardName} from graveyard");
-        
+
         yield return new WaitForEndOfFrame();
         Debug.Log($"✅ ReturnFirstEquipFromGraveyard completed for {(isPlayer ? "Player" : "Bot")}");
     }
@@ -8303,32 +8306,32 @@ public class BattleManager : MonoBehaviour
 
             Debug.Log($"✅ Player confirmed: {selectedGraveyardEquip.cardName}");
             Debug.Log($"📊 Graveyard before removal: {graveyard.Count} cards");
-            
+
             // 🔥 ทำสำเนา CardData ก่อนลบออกจาก graveyard
             CardData cardDataCopy = selectedGraveyardEquip;
             graveyard.Remove(selectedGraveyardEquip);
             UpdateGraveyardCountUI();
-            
+
             Debug.Log($"📊 Graveyard after removal: {graveyard.Count} cards");
             Debug.Log($"➕ Adding {cardDataCopy.cardName} to {(isPlayer ? "Player" : "Enemy")} hand");
-            
+
             // 🔥 ใช้สำเนา ไม่ใช้ original
             cardAdditionComplete = false;
             AddCardToHandFromData(cardDataCopy, isPlayer);
-            
+
             // 🔥 รอจนกว่าการเพิ่มการ์ดจะสิ้นสุด (max 5 seconds timeout)
             float timeout = Time.time + 5f;
             while (!cardAdditionComplete && Time.time < timeout)
             {
                 yield return null;
             }
-            
+
             if (Time.time >= timeout)
             {
                 Debug.LogError("❌ TIMEOUT: AddCardToHandFromData ไม่จบใน 5 วินาที!");
                 cardAdditionComplete = true;
             }
-            
+
             AddBattleLog($"{(isPlayer ? "Player" : "Bot")} returned {cardDataCopy.cardName} from graveyard");
         }
         else
@@ -8400,7 +8403,7 @@ public class BattleManager : MonoBehaviour
         }
 
         Debug.Log($"📍 Before Arrange: {(isPlayer ? "Player" : "Enemy")} hand has {targetHand.childCount} cards");
-        
+
         try
         {
             if (isPlayer)
@@ -8424,7 +8427,7 @@ public class BattleManager : MonoBehaviour
             }
 
             Debug.Log($"✅ {cardData.cardName} successfully added! Hand now has {targetHand.childCount} children");
-            
+
             // 🔥 ตรวจสอบว่า card ยังคงเป็น child ของ targetHand หรือเปล่า
             if (ui.transform.parent != targetHand)
             {
@@ -9117,9 +9120,9 @@ public class BattleManager : MonoBehaviour
                 entry.callback.AddListener((data) =>
                 {
                     PointerEventData pointerData = (PointerEventData)data;
-                    
+
                     Debug.Log($"🎯 GraveyardEquip EventTrigger: button={pointerData.button}, cardType={cardData.type}, isChoosingGraveyardEquip={isChoosingGraveyardEquip}");
-                    
+
                     // 🔥 Right-click: เลือกการ์ด, Left-click: ดูรายละเอียด
                     if (pointerData.button == PointerEventData.InputButton.Right)
                     {
@@ -9917,8 +9920,8 @@ public class BattleManager : MonoBehaviour
                     var data = card.GetData();
                     foreach (var effect in data.effects)
                     {
-                        if (effect.trigger == EffectTrigger.Continuous && 
-                            effect.action == ActionType.RevealHand && 
+                        if (effect.trigger == EffectTrigger.Continuous &&
+                            effect.action == ActionType.RevealHand &&
                             effect.targetType == TargetType.EnemyHand)
                         {
                             if (IsEffectSuppressedByOpponentContinuousAura(card, effect, EffectTrigger.Continuous, sourceIsPlayer: true))
@@ -9945,8 +9948,8 @@ public class BattleManager : MonoBehaviour
                     var data = card.GetData();
                     foreach (var effect in data.effects)
                     {
-                        if (effect.trigger == EffectTrigger.Continuous && 
-                            effect.action == ActionType.RevealHand && 
+                        if (effect.trigger == EffectTrigger.Continuous &&
+                            effect.action == ActionType.RevealHand &&
                             effect.targetType == TargetType.EnemyHand)
                         {
                             if (IsEffectSuppressedByOpponentContinuousAura(card, effect, EffectTrigger.Continuous, sourceIsPlayer: true))
@@ -9968,7 +9971,7 @@ public class BattleManager : MonoBehaviour
     /// <summary>เช็คว่าการ์ดเป็นการ์ดที่ reveal จากการ์ด RevealHand หรือไม่</summary>
     public bool IsCardRevealed(CardData cardData)
     {
-        if (cardData == null) 
+        if (cardData == null)
         {
             return false;
         }
@@ -10024,10 +10027,10 @@ public class BattleManager : MonoBehaviour
         {
             CardData attackerData = currentAttackerBot.GetData();
             int attackerATK = currentAttackerBot.GetModifiedATK(isPlayerAttack: false);
-            
+
             string infoText = $"<b>{attackerData.cardName}</b>\n";
             infoText += $"ATK: {attackerATK} | Type: {attackerData.type}\n";
-            
+
             // เพิ่มหมวดหมู่ด้วย
             if (attackerData.mainCategory != MainCategory.General)
             {
@@ -10038,7 +10041,7 @@ public class BattleManager : MonoBehaviour
                 }
                 infoText += "\n";
             }
-            
+
             infoText += "\n<i>โปรดเลือก:</i>";
 
             if (defenseChoiceAttackerInfoText)

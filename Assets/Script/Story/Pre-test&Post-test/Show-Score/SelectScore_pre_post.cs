@@ -365,7 +365,9 @@ public class SelectScore_pre_post : MonoBehaviour
             // 3. จัดการเรื่อง String (ตัดคำว่า Matching: ออก เพื่อให้เทียบกับ Database ได้)
             // ต้องทำให้ format เหมือนกับที่เก็บใน Database เป๊ะๆ
             string cleanQuestionText = currentQA.QustionText.Replace("Matching: ", "").Trim();
-
+            Debug.Log($"Cleaned Question Text for Matching: '{cleanQuestionText}'");
+            Debug.Log($"Current QA Question Text: '{currentQA.QustionText}'");
+            Debug.Log($"Current QA Answer Text: '{currentQA.AnswerText}'");
             // 4. ค้นหาว่าคำถามนี้ + คำตอบนี้ มี Description ไหม
             var targetDesc = allMatchingDescriptions.FirstOrDefault(desc =>
                 desc.Question_of_Matching == cleanQuestionText &&   // เทียบโจทย์ (ที่ตัดคำนำหน้าออกแล้ว)

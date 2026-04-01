@@ -3,6 +3,7 @@ using UnityEngine.Audio;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
+using System.Collections;
 
 public class SettingMenu : MonoBehaviour
 {
@@ -18,19 +19,35 @@ public class SettingMenu : MonoBehaviour
 
     private void Start()
     {
-        // ใช้ Instance จาก AudioManager โดยตรงจะปลอดภัยกว่าการหา Tag
-        audioManager = AudioManager.Instance;
+        // // ใช้ Instance จาก AudioManager โดยตรงจะปลอดภัยกว่าการหา Tag
+        // audioManager = AudioManager.Instance;
 
-        // โหลดค่าที่เคยเซฟไว้ (PlayerPrefs)
+        // // โหลดค่าที่เคยเซฟไว้ (PlayerPrefs)
+
+        // float savedVolume_Music = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
+        // float savedVolume_SFX = PlayerPrefs.GetFloat("SFXVolume", 0.5f);
+
+        // // ตั้งค่า Slider ให้ตรงกับค่าที่โหลดมา
+        // if (volume_Music_Slider != null) volume_Music_Slider.value = savedVolume_Music;
+        // if (volume_SFX_Slider != null) volume_SFX_Slider.value = savedVolume_SFX;
+
+        // // ตั้งค่า AudioMixer (ใช้เวลาเล็กน้อยเพื่อให้ Mixer พร้อมทำงาน)
+        // SetMusicVolume(savedVolume_Music);
+        // SetSFXVolume(savedVolume_SFX);
+
+        audioManager = AudioManager.Instance;
 
         float savedVolume_Music = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
         float savedVolume_SFX = PlayerPrefs.GetFloat("SFXVolume", 0.5f);
 
-        // ตั้งค่า Slider ให้ตรงกับค่าที่โหลดมา
-        if (volume_Music_Slider != null) volume_Music_Slider.value = savedVolume_Music;
-        if (volume_SFX_Slider != null) volume_SFX_Slider.value = savedVolume_SFX;
+        // ใช้ SetValueWithoutNotify เพื่อขยับ Slider โดยไม่ให้มันส่ง Event ซ้ำซ้อนไปกวน AudioMixer
+        if (volume_Music_Slider != null)
+            volume_Music_Slider.SetValueWithoutNotify(savedVolume_Music);
 
-        // ตั้งค่า AudioMixer (ใช้เวลาเล็กน้อยเพื่อให้ Mixer พร้อมทำงาน)
+        if (volume_SFX_Slider != null)
+            volume_SFX_Slider.SetValueWithoutNotify(savedVolume_SFX);
+
+        // แล้วค่อยสั่งอัปเดตเสียงเข้า Mixer แค่รอบเดียวพอ
         SetMusicVolume(savedVolume_Music);
         SetSFXVolume(savedVolume_SFX);
     }
@@ -69,22 +86,54 @@ public class SettingMenu : MonoBehaviour
         SetSFXVolume(volume_SFX_Slider.value);
     }
 
-    public async void Use_SFX_Click_Button()
+    // public async void Use_SFX_Click_Button()
+    // {
+    //     // แก้ไขการเรียกชื่อ AudioManager และชื่อฟังก์ชันให้ตรงกับใน Script
+    //     if (AudioManager.Instance != null)
+    //     {
+    //         // ใน AudioManager คุณใช้ switch-case ชื่อ "CardSelect" แทนเสียงคลิกทั่วไปได้
+    //         AudioManager.Instance.PlaySFX("CardSelect");
+    //     }
+    //     await Task.Delay(300);
+    // }
+    public void Use_SFX_Click_Button()
     {
-        // แก้ไขการเรียกชื่อ AudioManager และชื่อฟังก์ชันให้ตรงกับใน Script
+        // สั่งให้ไปเรียกตัวลูกน้องที่ชื่อต่อท้ายด้วย Routine
+        StartCoroutine(Use_SFX_Click_Button_Routine());
+    }
+
+    private IEnumerator Use_SFX_Click_Button_Routine()
+    {
         if (AudioManager.Instance != null)
         {
-            // ใน AudioManager คุณใช้ switch-case ชื่อ "CardSelect" แทนเสียงคลิกทั่วไปได้
-            AudioManager.Instance.PlaySFX("CardSelect");
+            AudioManager.Instance.PlaySFX("ButtonClick");
         }
-        await Task.Delay(300);
+
+        // ใช้ yield return new WaitForSeconds แทน Task.Delay
+        yield return new WaitForSeconds(0.3f);
     }
 
     public void QuitGame()
     {
-        Use_SFX_Click_Button();
+        // ให้ปุ่มเรียก StartCoroutine ตัวเดียวพอ
+        StartCoroutine(QuitGameRoutine());
+    }
+    private IEnumerator QuitGameRoutine()
+    {
+        // 1. เล่นเสียง
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX("CardSelect");
+        }
+
+        // 2. สั่งให้ระบบ "หยุดรอตรงนี้" 0.3 วินาที
+        yield return new WaitForSeconds(0.3f);
+
+        // 3. พอครบ 0.3 วินาทีปุ๊บ ค่อยเรียกคำสั่งเปลี่ยนฉาก
         SceneManager.LoadScene("MainMenu");
     }
 }
+
+
 
 

@@ -186,14 +186,22 @@ public class FillInBlankPanelUI : MonoBehaviour
 
         string result_en = string.Join("\n", questionData.sentences.Select(s =>
         string.IsNullOrEmpty(s.sentencePart2)
-        ? LanguageBridge.Get(s.sentencePart1) + " _____ "                       // ถ้าไม่มีส่วนหลัง
-        : LanguageBridge.Get(s.sentencePart1) + " _____ " + LanguageBridge.Get(s.sentencePart2)     // ถ้ามีส่วนหลัง
+        ? LanguageBridge.GetForceEnglish(s.sentencePart1) + " _____ "                       // ถ้าไม่มีส่วนหลัง
+        : LanguageBridge.GetForceEnglish(s.sentencePart1) + " _____ " + LanguageBridge.GetForceEnglish(s.sentencePart2)     // ถ้ามีส่วนหลัง
         ));
-
-        qa.QustionText = result_th;
-        qa.QustionText_th = result_th;
-        qa.QustionText_en = result_en;
-
+        // var s = questionData.sentences[0];
+        // Debug.Log("Non-translate Language Sentence part 1: " + s.sentencePart1);
+        // Debug.Log("Non-translate Language Sentence part 2: " + s.sentencePart2);
+        // Debug.Log("------------------------------");
+        // Debug.Log("translate Language Sentence part 1: " + LanguageBridge.GetForceEnglish(s.sentencePart1));
+        // Debug.Log("translate Language Sentence part 2: " + LanguageBridge.GetForceEnglish(s.sentencePart2));
+        // Debug.Log("------------------------------");
+        // qa.QustionText = result_th;
+        // Debug.Log("QustionText: " + qa.QustionText);
+        // qa.QustionText_th = result_th;
+        // Debug.Log("QustionText_th: " + qa.QustionText_th);
+        // qa.QustionText_en = result_en;
+        // Debug.Log("QustionText_en: " + qa.QustionText_en);
         // 2. รวบรวมคำตอบที่ผู้เล่นใส่ในช่องว่าง
         List<string> playerAnswers = new List<string>();
         foreach (var zone in spawnedDropZones)

@@ -351,7 +351,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -447,7 +447,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -566,6 +566,10 @@ MonoBehaviour:
   sfxHeal: {fileID: 8300000, guid: ff7afb35d133ef24a903e4645df65e4c, type: 3}
   sfxLow_Hp: {fileID: 8300000, guid: 6f8cf43d89fb6e7438719659e880a18d, type: 3}
   sfxUseSpell: {fileID: 8300000, guid: 65d40a053c2104c4b8008b23d7e2323c, type: 3}
+  sfxFilpCard: {fileID: 8300000, guid: b18cfcd92326456498588e1f4fc05d23, type: 3}
+  sfxRevealCommon: {fileID: 8300000, guid: a6a6f37788b300840b8d208d977e6fea, type: 3}
+  sfxRevealEpic: {fileID: 8300000, guid: 46fd167853eb7124c816c8fc8413c235, type: 3}
+  sfxRevealLegendary: {fileID: 8300000, guid: 5e462cbee84ad5c44b468585a098926c, type: 3}
 --- !u!1 &360203882
 GameObject:
   m_ObjectHideFlags: 0
@@ -1400,6 +1404,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1851972089}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
+        m_MethodName: Use_SFX_Click_Button
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &662448688
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1863,7 +1879,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -8891019427986730486, guid: a438700f352157a4cb9b0bc549caab77, type: 2}
   m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -3539,10 +3555,10 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -3797367503556628554, guid: a438700f352157a4cb9b0bc549caab77, type: 2}
   m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0.75
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -3667,10 +3683,10 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -3797367503556628554, guid: a438700f352157a4cb9b0bc549caab77, type: 2}
   m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0.75
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0

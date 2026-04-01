@@ -3151,6 +3151,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: RewardPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 2387369496551536449, guid: 0fdb4e6a131be9f48acfe1fa9feef6b2, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2753406079164763459, guid: 0fdb4e6a131be9f48acfe1fa9feef6b2, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -5440,6 +5444,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50ab7c59df90e05439e8c8627844cfce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stageButton: {fileID: 0}
 --- !u!4 &818290864
 Transform:
   m_ObjectHideFlags: 0
@@ -7254,11 +7259,13 @@ MonoBehaviour:
   buttonLabel: i
   panelTitle: Skill Icon Guide
   startHidden: 1
-  targetCanvas: {fileID: 0}
+  targetCanvas: {fileID: 970388976}
+  targetContainer: {fileID: 1676976937}
+  targetContainerName: BattleArea
   helpButton: {fileID: 0}
   panelRoot: {fileID: 0}
   buttonSize: {x: 56, y: 56}
-  buttonAnchoredPosition: {x: -22, y: -20}
+  buttonAnchoredPosition: {x: 916, y: 186}
   buttonBackgroundColor: {r: 0.08, g: 0.1, b: 0.14, a: 0.92}
   buttonOutlineColor: {r: 0.45, g: 0.78, b: 1, a: 0.65}
   buttonLabelColor: {r: 1, g: 1, b: 1, a: 1}

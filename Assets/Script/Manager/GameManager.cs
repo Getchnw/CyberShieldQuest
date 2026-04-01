@@ -47,18 +47,33 @@ public class GameManager : MonoBehaviour
     // Ensure we load existing save or create a new one when the GameManager starts
     private void Start()
     {
-        LoadGame();
+        // พยายามโหลดไฟล์
+        bool loaded = LoadGame();
+        if (!loaded)
+        {
+            // ถ้าไม่มีไฟล์ ให้สร้างข้อมูลเปล่าๆ ไว้ใน RAM "แต่ยังไม่ต้อง Save ลงเครื่อง"
+            // เพื่อให้ฉาก Home ไม่พัง (NullReference) แต่ปุ่ม Continuous ยังล็อกอยู่
+            InitializeNewGameData();
+            Debug.Log("No save found. Initialized temporary data in RAM.");
+        }
+    }
+
+    private void InitializeNewGameData()
+    {
+        CurrentGameData = new GameData();
+        CurrentGameData.profile.level = 1;
+        CurrentGameData.profile.experience = 0;
+        EnsureStarterCardsForAllPlayers();
+        // ไม่ต้องเรียก SaveSystem.SaveGameData(CurrentGameData); ที่นี่!
+        Debug.Log("Initialized empty data in RAM (No file created yet).");
     }
 
     // เมธอดสำหรับ "เริ่มเกมใหม่"
     public void CreateNewGame()
     {
         // สร้างข้อมูลผู้เล่นชุดใหม่ขึ้นมา (จาก Constructor ใน GameData.cs)
-        CurrentGameData = new GameData();
-        CurrentGameData.profile.level = 1;
-        CurrentGameData.profile.experience = 0;
-        EnsureStarterCardsForAllPlayers();
-
+        InitializeNewGameData();
+        Debug.Log("After InitializeNewGameData");
         // 🔥 เสกการ์ดให้ผู้เล่นตอนเริ่มเกมใหม่
         // Dev_AddAllCards();
 
@@ -95,7 +110,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Failed to load game data from file.");
+            Debug.Log("Failed to load game data from file.");
             return false;
         }
     }

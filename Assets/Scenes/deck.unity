@@ -811,8 +811,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 115151822}
-  - {fileID: 1222624558}
-  - {fileID: 573453261}
   - {fileID: 86012786}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -896,7 +894,7 @@ GameObject:
   - component: {fileID: 115151824}
   - component: {fileID: 115151823}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -926,6 +924,8 @@ RectTransform:
   - {fileID: 1193429460}
   - {fileID: 165824876}
   - {fileID: 1523498223}
+  - {fileID: 1222624558}
+  - {fileID: 573453261}
   m_Father: {fileID: 96249966}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3302,7 +3302,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 481480520}
-  m_Father: {fileID: 96249966}
+  m_Father: {fileID: 115151822}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -5432,7 +5432,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1906240709}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.9496969
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -7566,7 +7566,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 64982964}
-  m_Father: {fileID: 96249966}
+  m_Father: {fileID: 115151822}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -8197,7 +8197,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.050303087, y: 0.952}
   m_AnchorMax: {x: 0.9496063, y: 0.952}
-  m_AnchoredPosition: {x: -29.643856, y: 41.774345}
+  m_AnchoredPosition: {x: -29.643852, y: 41.774323}
   m_SizeDelta: {x: 28.973, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1365120178
@@ -11552,5 +11552,5 @@ SceneRoots:
   - {fileID: 1120303516}
   - {fileID: 651333177}
   - {fileID: 1810443796}
-  - {fileID: 1530760106}
   - {fileID: 455225842}
+  - {fileID: 1530760106}

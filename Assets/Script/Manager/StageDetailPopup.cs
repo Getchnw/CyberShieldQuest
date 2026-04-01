@@ -210,10 +210,17 @@ public class StageDetailPopup : MonoBehaviour
                 ? (LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "<color=green>เด็คพร้อมใช้งาน</color>" : "<color=green>Deck is ready</color>")
                 : (LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "<color=red>ต้องมีการ์ดอย่างน้อย 5 ใบ</color>" : "<color=red>Need at least 5 cards</color>");
             }
-
-            if (TypeDeckText_StoryBattle != null) TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? $"เงื่อนไขการเล่น:\n{errorMessage}" : $"Play Conditions:\n{errorMessage}";
-            if (startButton != null) startButton.interactable = isDeckValid;
         }
+        else
+        {
+            // 🚨 เข้าเคสนี้ถ้าผู้เล่นยังไม่มีเด็คเลย (ทำให้ข้อความไม่อัปเดตในตอนแรก)
+            isDeckValid = false;
+            errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
+                "<color=red>ต้องมีการ์ดอย่างน้อย 5 ใบในเด็ค</color>" :
+                "<color=red>Need at least 5 cards in deck</color>";
+        }
+        if (TypeDeckText_StoryBattle != null) TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? $"เงื่อนไขการเล่น:\n{errorMessage}" : $"Play Conditions:\n{errorMessage}";
+        if (startButton != null) startButton.interactable = isDeckValid;
 
         // 1. อัปเดตข้อความต่างๆ
         if (LocalizationSettings.SelectedLocale.Identifier.Code == "th")

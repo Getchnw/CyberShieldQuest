@@ -7,14 +7,14 @@ using UnityEngine.UI;
 public class DeckBuilderManager : MonoBehaviour
 {
     [Header("UI References")]
-    public Transform leftContent;  
-    public Transform rightContent; 
-    public TextMeshProUGUI countText; 
+    public Transform leftContent;
+    public Transform rightContent;
+    public TextMeshProUGUI countText;
     public TMP_Dropdown deckDropdown;
     public TMP_InputField newDeckInput;
 
     [Header("Search & Filter")]
-    public TMP_InputField searchInput; 
+    public TMP_InputField searchInput;
     public TMP_Dropdown filterDropdown;
 
     [Header("Statistics UI")]
@@ -30,8 +30,8 @@ public class DeckBuilderManager : MonoBehaviour
     public Vector2 skillLegendPanelPosition = Vector2.zero;
 
     // ข้อมูล (ดึงจาก GameDataManager)
-    private List<CardData> allCardsLibrary = new List<CardData>(); 
-    private int currentDeckIndex = 0; 
+    private List<CardData> allCardsLibrary = new List<CardData>();
+    private int currentDeckIndex = 0;
 
     void Start()
     {
@@ -39,38 +39,39 @@ public class DeckBuilderManager : MonoBehaviour
         SkillIconLegendUI skillLegend = SkillIconLegendUI.EnsureInScene("DeckSkillLegendUI");
         if (skillLegend != null)
         {
+            skillLegend.targetContainerName = "Background";
             skillLegend.buttonAnchoredPosition = skillLegendButtonPosition;
             skillLegend.panelAnchoredPosition = skillLegendPanelPosition;
             skillLegend.RefreshLayoutAndStyle();
         }
-        
+
         if (searchInput != null) searchInput.onValueChanged.AddListener(delegate { RefreshLeftPanel(); });
         if (filterDropdown != null) filterDropdown.onValueChanged.AddListener(delegate { RefreshLeftPanel(); });
 
-        LoadCardLibrary(); 
-        
+        LoadCardLibrary();
+
         // รอให้ GameManager โหลดเสร็จก่อน
         if (GameManager.Instance != null && GameManager.Instance.CurrentGameData != null)
         {
             Debug.Log("🟢 GameManager และ CurrentGameData พบแล้ว");
             var data = GameManager.Instance.CurrentGameData;
-            
+
             // ✅ Initialize สิ่งที่อาจเป็น null
             if (data.decks == null) data.decks = new List<DeckData>();
             if (data.cardInventory == null) data.cardInventory = new List<PlayerCardInventoryItem>();
-            
+
             Debug.Log($"🟢 CardInventory items: {data.cardInventory.Count}");
-            
+
             // ถ้าไม่มีเด็คเลย สร้างให้ 1 อัน
             if (data.decks.Count == 0)
             {
                 Debug.Log("🟢 Creating first deck...");
                 CreateNewDeck("First Deck");
             }
-            
+
             currentDeckIndex = PlayerPrefs.GetInt("SelectedDeckIndex", 0); // โหลดเด็คที่ผู้เล่นเลือกไว้ (ค่าเริ่มต้น 0)
             if (currentDeckIndex >= data.decks.Count) currentDeckIndex = 0; // ป้องกัน index ผิด
-            RefreshDropdown(); 
+            RefreshDropdown();
             RefreshUI();
             RefreshLeftPanel(); // เพิ่มเรียกใหม่
         }
@@ -83,7 +84,7 @@ public class DeckBuilderManager : MonoBehaviour
     void LoadCardLibrary()
     {
         CardData[] loaded = Resources.LoadAll<CardData>("GameContent/Cards");
-        
+
         if (loaded == null || loaded.Length == 0)
         {
             Debug.LogWarning("⚠️ No cards found at 'GameContent/Cards'. Trying alternative paths...");
@@ -95,7 +96,7 @@ public class DeckBuilderManager : MonoBehaviour
                 return;
             }
         }
-        
+
         allCardsLibrary = loaded.OrderBy(x => x.cost).ThenBy(x => x.card_id).ToList();
         Debug.Log($"✅ Loaded {allCardsLibrary.Count} cards from library");
     }
@@ -106,7 +107,7 @@ public class DeckBuilderManager : MonoBehaviour
     void RefreshLeftPanel()
     {
         Debug.Log("🔵 RefreshLeftPanel() called");
-        
+
         foreach (Transform child in leftContent) Destroy(child.gameObject);
 
         // ✅ เช็ค UI references
@@ -115,7 +116,7 @@ public class DeckBuilderManager : MonoBehaviour
             Debug.LogError("❌ leftContent is NULL!");
             return;
         }
-        
+
         if (cardPrefab == null)
         {
             Debug.LogError("❌ cardPrefab is NULL!");
@@ -131,17 +132,17 @@ public class DeckBuilderManager : MonoBehaviour
 
         string searchText = (searchInput != null) ? searchInput.text.ToLower() : "";
         int categoryIndex = (filterDropdown != null) ? filterDropdown.value : 0;
-        
+
         // ดึงข้อมูลจาก GameManager
         var data = GameManager.Instance.CurrentGameData;
-        
+
         // ✅ เช็ค null และ index validity
         if (data.decks == null || data.decks.Count == 0 || currentDeckIndex >= data.decks.Count)
         {
             Debug.LogError($"❌ Decks invalid: decks={data.decks}, count={data.decks?.Count ?? -1}, index={currentDeckIndex}");
             return;
         }
-            
+
         DeckData currentDeck = data.decks[currentDeckIndex];
 
         // ✅ เช็ค cardInventory null
@@ -170,7 +171,7 @@ public class DeckBuilderManager : MonoBehaviour
             }
 
             // 2. Filter & Search
-            bool matchName = string.IsNullOrEmpty(searchText) || 
+            bool matchName = string.IsNullOrEmpty(searchText) ||
                              card.cardName.ToLower().Contains(searchText) ||
                              card.abilityText.ToLower().Contains(searchText);
 
@@ -182,7 +183,7 @@ public class DeckBuilderManager : MonoBehaviour
             if (matchName && matchCategory)
             {
                 GameObject obj = Instantiate(cardPrefab, leftContent);
-                
+
                 // คำนวณจำนวนที่เหลือ (Owned - Used)
                 int usedInDeck = 0;
                 if (currentDeck != null)
@@ -192,7 +193,7 @@ public class DeckBuilderManager : MonoBehaviour
                 int remainAmount = ownedAmount - usedInDeck;
 
                 Button btn = obj.GetComponent<Button>();
-                if(remainAmount <= 0) btn.interactable = false;
+                if (remainAmount <= 0) btn.interactable = false;
 
                 obj.GetComponent<CardUISlot>().Setup(card, remainAmount, AddToDeck, ShowDetail);
                 displayedCards++;
@@ -203,7 +204,8 @@ public class DeckBuilderManager : MonoBehaviour
     }
 
     // --- จัดการ Deck (Create/Delete) ---
-    public void CreateNewDeckButton() {
+    public void CreateNewDeckButton()
+    {
         string name = newDeckInput.text;
         int count = GameManager.Instance.CurrentGameData.decks.Count;
         if (string.IsNullOrEmpty(name)) name = "Deck " + (count + 1);
@@ -211,11 +213,12 @@ public class DeckBuilderManager : MonoBehaviour
         newDeckInput.text = "";
     }
 
-    void CreateNewDeck(string name) {
+    void CreateNewDeck(string name)
+    {
         // สร้าง DeckData ใหม่ (ใช้ ID รันตามจำนวน)
         int newId = GameManager.Instance.CurrentGameData.decks.Count + 1;
         DeckData newDeck = new DeckData(newId, name);
-        
+
         GameManager.Instance.CurrentGameData.decks.Add(newDeck);
         GameManager.Instance.SaveCurrentGame(); // เซฟทันที
 
@@ -225,7 +228,8 @@ public class DeckBuilderManager : MonoBehaviour
         RefreshDropdown(); RefreshUI();
     }
 
-    public void DeleteCurrentDeck() {
+    public void DeleteCurrentDeck()
+    {
         var decks = GameManager.Instance.CurrentGameData.decks;
         if (decks.Count <= 1) return;
 
@@ -236,16 +240,18 @@ public class DeckBuilderManager : MonoBehaviour
         RefreshDropdown(); RefreshUI();
     }
 
-    public void OnDropdownChanged(int index) { 
-        currentDeckIndex = index; 
+    public void OnDropdownChanged(int index)
+    {
+        currentDeckIndex = index;
         PlayerPrefs.SetInt("SelectedDeckIndex", index);
         PlayerPrefs.Save();
         Debug.Log($"✅ บันทึกเด็คที่เลือก: index {index}");
-        RefreshUI(); 
+        RefreshUI();
     }
 
     // --- ย้ายการ์ด ---
-    void AddToDeck(CardData card) {
+    void AddToDeck(CardData card)
+    {
         var decks = GameManager.Instance.CurrentGameData.decks;
         DeckData current = decks[currentDeckIndex];
 
@@ -263,16 +269,18 @@ public class DeckBuilderManager : MonoBehaviour
         if (used >= owned) return; // ห้ามเกินจำนวนที่มีจริง
 
         current.card_ids_in_deck.Add(card.card_id);
-        
+
         GameManager.Instance.SaveCurrentGame();
         RefreshUI(); RefreshLeftPanel();
     }
 
-    void RemoveFromDeck(CardData card) {
+    void RemoveFromDeck(CardData card)
+    {
         var decks = GameManager.Instance.CurrentGameData.decks;
         DeckData current = decks[currentDeckIndex];
 
-        if (current.card_ids_in_deck.Contains(card.card_id)) {
+        if (current.card_ids_in_deck.Contains(card.card_id))
+        {
             current.card_ids_in_deck.Remove(card.card_id);
             GameManager.Instance.SaveCurrentGame();
             RefreshUI(); RefreshLeftPanel();
@@ -280,46 +288,50 @@ public class DeckBuilderManager : MonoBehaviour
     }
 
     // --- UI Update ---
-    void RefreshDropdown() {
+    void RefreshDropdown()
+    {
         if (deckDropdown == null) return;
-        
+
         deckDropdown.ClearOptions();
         List<string> names = new List<string>();
-        
+
         if (GameManager.Instance != null && GameManager.Instance.CurrentGameData != null)
         {
-            foreach (var deck in GameManager.Instance.CurrentGameData.decks) 
+            foreach (var deck in GameManager.Instance.CurrentGameData.decks)
                 names.Add(deck.deck_name);
         }
-        
+
         deckDropdown.AddOptions(names);
         if (names.Count > 0 && currentDeckIndex < names.Count)
             deckDropdown.value = currentDeckIndex;
     }
 
-    void RefreshUI() {
+    void RefreshUI()
+    {
         foreach (Transform child in rightContent) Destroy(child.gameObject);
-        
+
         // ✅ เช็ค null ก่อน
         if (GameManager.Instance == null || GameManager.Instance.CurrentGameData == null)
             return;
-            
+
         var decks = GameManager.Instance.CurrentGameData.decks;
-        if (decks == null || decks.Count == 0 || currentDeckIndex >= decks.Count) 
+        if (decks == null || decks.Count == 0 || currentDeckIndex >= decks.Count)
             return;
 
         DeckData current = decks[currentDeckIndex];
         List<CardData> cardsInDeck = new List<CardData>();
 
         // แปลง ID string -> CardData Object
-        foreach (string id in current.card_ids_in_deck) {
+        foreach (string id in current.card_ids_in_deck)
+        {
             CardData found = allCardsLibrary.Find(x => x.card_id == id);
             if (found != null) cardsInDeck.Add(found);
         }
-        
+
         cardsInDeck = cardsInDeck.OrderBy(x => x.cost).ToList();
 
-        foreach (var card in cardsInDeck) {
+        foreach (var card in cardsInDeck)
+        {
             GameObject obj = Instantiate(cardPrefab, rightContent);
             // ฝั่งขวาไม่ต้องโชว์จำนวน (-1)
             obj.GetComponent<CardUISlot>().Setup(card, -1, RemoveFromDeck, ShowDetail);
@@ -329,18 +341,22 @@ public class DeckBuilderManager : MonoBehaviour
         UpdateDeckStats(cardsInDeck);
     }
 
-    void UpdateDeckStats(List<CardData> deck) {
+    void UpdateDeckStats(List<CardData> deck)
+    {
         // (ฟังก์ชันเดิม ไม่ต้องแก้)
-        if (typeStatText != null) {
+        if (typeStatText != null)
+        {
             int mon = deck.Count(x => x.type == CardType.Monster);
             int spl = deck.Count(x => x.type == CardType.Spell);
             int eqp = deck.Count(x => x.type == CardType.EquipSpell);
             typeStatText.text = $"Monster {mon}   Spell {spl}   Equip  {eqp}";
         }
-        if (costStatText != null) {
+        if (costStatText != null)
+        {
             string s = "Cost: ";
             int max = deck.Count > 0 ? deck.Max(x => x.cost) : 0;
-            for (int i = 0; i <= max; i++) {
+            for (int i = 0; i <= max; i++)
+            {
                 int c = deck.Count(x => x.cost == i);
                 if (c > 0) s += $"[{i}]:{c} ";
             }

@@ -640,13 +640,13 @@ public class GachaManager : MonoBehaviour
 
         if (item.card.rarity == Rarity.Epic)
         {
-
+            AudioManager.Instance.PlaySFX("RevealEpic");
             yield return StartCoroutine(PlayScreenFlash(new Color(0.78f, 0.35f, 1f, 1f), epicFlashAlpha, flashDuration));
             yield return StartCoroutine(ShakeTransform(item.root.transform, epicShakeDuration, epicShakeDistance));
         }
         else if (item.card.rarity == Rarity.Legendary)
         {
-
+            AudioManager.Instance.PlaySFX("RevealLegendary");
             yield return StartCoroutine(PlayScreenFlash(new Color(1f, 0.84f, 0.2f, 1f), legendaryFlashAlpha, flashDuration * 1.2f));
             yield return StartCoroutine(ShakeTransform(item.root.transform, legendaryShakeDuration, legendaryShakeDistance));
             if (resultGrid != null)

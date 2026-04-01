@@ -215,7 +215,12 @@ public class StageManager : MonoBehaviour
         Debug.Log("🟢 StageManager Start() เริ่มทำงาน");
 
         // ซ่อน Popup ไว้ก่อนเสมอตอนเริ่ม
-        if (detailPopup != null) detailPopup.Close();
+        // if (detailPopup != null) detailPopup.Close();
+        if (detailPopup != null)
+        {
+            detailPopup.gameObject.SetActive(false);
+        }
+
 
         // อัปเดตสถานะด่าน (ล็อค/ปลดล็อค)
         foreach (var stage in allStages)

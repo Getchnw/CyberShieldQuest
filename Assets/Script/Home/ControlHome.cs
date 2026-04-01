@@ -29,9 +29,15 @@ public class ControlHome : MonoBehaviour
     //     AudioManger = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManger>();
     // }
 
-    public async void Use_SFX_Click_Button()
+    public void Use_SFX_Click_Button()
     {
-        AudioManager.Instance.PlaySFX("ButtonClick");
-        await Task.Delay(300);
+        if (AudioManager.Instance != null)
+        {
+            // สั่งเล่นเสียงตรงๆ ไปเลย ไม่ต้อง StartCoroutine
+            AudioManager.Instance.PlaySFX("ButtonClick");
+        }
     }
+
+
+
 }

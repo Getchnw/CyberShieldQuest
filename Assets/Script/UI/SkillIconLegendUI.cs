@@ -15,6 +15,10 @@ public class SkillIconLegendUI : MonoBehaviour
 
     [Header("Optional Manual References")]
     public Canvas targetCanvas;
+    //ที่จะสร้างปุ่ม
+    public Transform targetContainer;
+    // ชื่อtargetContainer
+    public string targetContainerName;
     public Button helpButton;
     public GameObject panelRoot;
 
@@ -89,6 +93,18 @@ public class SkillIconLegendUI : MonoBehaviour
             return;
         }
 
+        if (targetContainer == null)
+        {
+            Transform bgTransform = null;
+            // เช็คก่อนว่ามีการพิมพ์ชื่อลงไปใน Inspector จริงๆ ไม่ใช่ช่องว่าง
+            if (!string.IsNullOrEmpty(targetContainerName))
+            {
+                bgTransform = targetCanvas.transform.Find(targetContainerName);
+            }
+            // ถ้าเจอ Background ให้ยึดเกาะ Background แต่ถ้าไม่เจอให้เกาะ Canvas ปกติ
+            targetContainer = bgTransform != null ? bgTransform : targetCanvas.transform;
+        }
+
         if (createButtonAtRuntime)
         {
             EnsureRuntimeButton();
@@ -139,7 +155,7 @@ public class SkillIconLegendUI : MonoBehaviour
         if (helpButton != null) return;
 
         GameObject buttonObj = new GameObject("SkillLegendButton", typeof(RectTransform), typeof(Image), typeof(Button));
-        buttonObj.transform.SetParent(targetCanvas.transform, false);
+        buttonObj.transform.SetParent(targetContainer, false);
         buttonObj.transform.SetAsLastSibling();
 
         RectTransform rect = buttonObj.GetComponent<RectTransform>();
@@ -185,7 +201,7 @@ public class SkillIconLegendUI : MonoBehaviour
         if (panelRoot != null) return;
 
         GameObject panelObj = new GameObject("SkillLegendPanel", typeof(RectTransform), typeof(Image));
-        panelObj.transform.SetParent(targetCanvas.transform, false);
+        panelObj.transform.SetParent(targetContainer, false);
         panelObj.transform.SetAsLastSibling();
 
         panelRoot = panelObj;

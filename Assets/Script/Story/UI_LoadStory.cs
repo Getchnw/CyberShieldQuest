@@ -138,6 +138,7 @@ public class UI_LoadStory : MonoBehaviour
 
         // บันทึก Story ID ที่ผู้เล่นเลือก
         GameManager.Instance.SaveSelectedStory(storyId);
+        AudioManager.Instance.PlaySFX("ButtonClick");
 
         // (โค้ดไปหน้าเลือก Chapter ต่อไป...)
         LoadScene("Template_select_chapter_story");
