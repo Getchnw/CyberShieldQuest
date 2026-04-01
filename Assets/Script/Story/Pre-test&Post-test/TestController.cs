@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Collections;
 using System.Linq;
+using UnityEngine.Localization.Settings;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class TestController : MonoBehaviour
 {
@@ -56,6 +58,17 @@ public class TestController : MonoBehaviour
         btnPrev.onClick.AddListener(OnPrevClicked);
         btnNext.onClick.AddListener(OnNextClicked);
         btnSubmit.onClick.AddListener(OnSubmitClicked);
+
+        yield return LocalizationSettings.InitializationOperation;
+
+        // 🌟 --- [เพิ่มโค้ดส่วนนี้] แอบโหลดตารางภาษาอังกฤษเตรียมไว้ (กัน WebGL ค้าง) ---
+        var enLocale = LocalizationSettings.AvailableLocales.GetLocale("en");
+        if (enLocale != null)
+        {
+            var handle = LocalizationSettings.StringDatabase.GetTableAsync("MyGameData", enLocale);
+            yield return handle; // ไฟแดงรอจนกว่าเบราว์เซอร์จะโหลดตารางเสร็จ
+            Debug.Log("✅ โหลดตารางภาษาอังกฤษเตรียมพร้อมแล้ว!");
+        }
 
         // 1. รอให้ Database (Singleton) พร้อม
         yield return null; // รอ 1 เฟรม

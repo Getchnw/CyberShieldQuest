@@ -111,6 +111,10 @@ public class SelectScore_pre_post : MonoBehaviour
                 scoreText_TrueFalse.text = $"{trueFalse_pre.Sum(qa => qa.score)} / {trueFalse_pre.Count}";
                 scoreText_FillBlank.text = $"{fillBlank_pre.Sum(qa => qa.score)} / {fillBlank_pre.Count}";
                 scoreText_Matching.text = $"{matching_pre.Sum(qa => qa.score)} / {matching_pre.Count}";
+
+                // Debug.Log("Fill in Blank Questions:" + fillBlank_pre[0].QustionText_th);
+                // Debug.Log("Fill in Blank Questions:" + fillBlank_pre[0].QustionText_en);
+                // Debug.Log("Fill in Blank Answers:" + fillBlank_pre[0].AnswerText);
             }
             else
             {
