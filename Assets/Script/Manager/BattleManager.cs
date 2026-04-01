@@ -1921,7 +1921,7 @@ public class BattleManager : MonoBehaviour
         // แสดงกรอบเมื่อการ์ดหงายหน้า
         cardUI.SetFrameVisible(true);
 
-        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("DropCard");
 
         // บันทึก log พร้อมแสดง ATK/HP
         CardData playedCard = cardUI.GetData();
@@ -1958,6 +1958,7 @@ public class BattleManager : MonoBehaviour
         currentBattleStats.spellsCast++;
 
         AddBattleLog($"Player casts {cardUI.GetData().cardName}");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("UseSpell");
 
         // 🎇 ลงสนามการ์ดเวทย์ก่อน (แสดงให้เห็นบนสนาม)
         StartCoroutine(PlaySpellCardAnimation(cardUI, isPlayer: true));
@@ -2103,6 +2104,7 @@ public class BattleManager : MonoBehaviour
 
         Debug.Log($"🎇 บอทใช้เวทย์: {spellData.cardName}");
         AddBattleLog($"Bot casts {spellData.cardName}");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("UseSpell");
 
         // 🎇 ลงสนามการ์ดเวทย์ก่อน
         Canvas canvas = FindObjectOfType<Canvas>();
@@ -2158,7 +2160,6 @@ public class BattleManager : MonoBehaviour
             Destroy(spellCard.gameObject);
         }
 
-        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("CardSelect");
         Debug.Log($"🔵 BOT SPELL: Calling UpdateUI()...");
         UpdateUI();
         Debug.Log($"🔵 BOT SPELL: COMPLETELY FINISHED!");
@@ -2208,6 +2209,7 @@ public class BattleManager : MonoBehaviour
 
         int attackDamage = attacker.GetModifiedATK(isPlayerAttack: true); // 🔥 ใช้ ModifiedATK แทน
         AddBattleLog($"⚔️ ผู้เล่นโจมตี: {attacker.GetData().cardName} (ATK:{attackDamage}) [{attacker.attacksThisTurn}/{attacker.GetMaxAttacksPerTurn()}]");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Attack");
 
         StartCoroutine(ProcessPlayerAttack(attacker));
     }
@@ -2690,6 +2692,7 @@ public class BattleManager : MonoBehaviour
         }
 
         Debug.Log($"🤖 บอทลงการ์ด: {ui.GetData()?.cardName} (ห้ามตีเทิร์นนี้)");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("DropCard");
 
         TryResolveHealOnMonsterSummoned(ui);
 
@@ -2739,6 +2742,7 @@ public class BattleManager : MonoBehaviour
                     Vector3 targetPos = (playerSpot != null) ? playerSpot.position : Vector3.zero;
 
                     Debug.Log($"🚨 บอทใช้ {monster.GetData().cardName} โจมตี!");
+                    if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Attack");
 
                     // 🔥 ทริกเกอร์ OnStrike Effects (ก่อนเช็คการกัน)
                     yield return StartCoroutine(ResolveEffects(monster, EffectTrigger.OnStrike, isPlayer: false));
@@ -2828,6 +2832,7 @@ public class BattleManager : MonoBehaviour
                             TryResolveMarkedInterceptPunish(monster, forcedShield, attackerIsPlayer: false);
 
                             Debug.Log($"🛡️ {forcedShield.GetData().cardName} is forced to intercept bot's attack!");
+                            if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Block");
                             AddBattleLog($"🛡️ ผู้เล่นใช้ {forcedShield.GetData().cardName} กันการโจมตีจาก {monster.GetData().cardName} (บังคับกัน)");
 
                             // ประมวลผลการกัน
@@ -2882,6 +2887,7 @@ public class BattleManager : MonoBehaviour
                             Debug.LogWarning("⚠️ ใช้ takeDamageButton แทน defenseChoicePanel");
                             HighlightInterceptableShields(monster);
                             takeDamageButton.SetActive(true);
+                            if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Defend");
                             if (turnText) turnText.text = "DEFEND!";
                         }
 
@@ -3049,6 +3055,7 @@ public class BattleManager : MonoBehaviour
         TryResolveMarkedInterceptPunish(currentAttackerBot, myShield, attackerIsPlayer: false);
 
         Debug.Log($"🛡️ ตรวจสอบการกัน: โจมตี={attackerData.cardName} ({attackerData.subCategory}), โล่={shieldData.cardName} ({shieldData.subCategory})");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Block");
         AddBattleLog($"🛡️ ผู้เล่นใช้ {shieldData.cardName} กันการโจมตีจาก {attackerData.cardName}");
 
         // 📊 บันทึกสถิติ: การกันสำเร็จ
@@ -3263,7 +3270,8 @@ public class BattleManager : MonoBehaviour
                     Debug.Log($"ℹ️ InterceptHeal capped: Bot HP already full ({enemyCurrentHP}/{enemyMaxHP})");
                 }
             }
-
+if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
+            
             ShowDamagePopupString($"+{healAmount} HP", blocker.transform);
             Debug.Log($"💚 Intercept Heal: {blockerData.cardName} healed {healAmount} (from intercepted {attackerData.cardName})");
             UpdateUI();
@@ -3636,6 +3644,7 @@ public class BattleManager : MonoBehaviour
         currentBattleStats.cardsDrawn += n;
 
         AddBattleLog($"Player draws {n} card(s) | Deck: {deckList.Count}");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("DrawCard");
 
         Transform targetParent = parentOverride != null ? parentOverride : handArea;
 
@@ -3764,6 +3773,7 @@ public class BattleManager : MonoBehaviour
         }
 
         AddBattleLog($"Bot draws {n} card(s) | Deck: {enemyDeckList.Count}");
+        if (AudioManager.Instance) AudioManager.Instance.PlaySFX("DrawCard");
 
         // 👁️ เช็คว่าผู้เล่นมีสกิล [Cont.] RevealHand หรือไม่
         bool shouldRevealDrawnCard = HasPlayerContinuousRevealHandEffect();
@@ -5248,6 +5258,7 @@ public class BattleManager : MonoBehaviour
                 ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
                 Debug.Log($"💚 Heal Player: {healAmount} (HP: {hpBefore} -> {currentHP}/{maxHP})");
                 AddBattleLog($"Player healed {healAmount} HP ({hpBefore} -> {currentHP})");
+                if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
             }
             else // Bot heals itself
             {
@@ -5256,6 +5267,7 @@ public class BattleManager : MonoBehaviour
                 ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
                 Debug.Log($"💚 Heal Enemy: {healAmount} (HP: {hpBefore} -> {enemyCurrentHP}/{enemyMaxHP})");
                 AddBattleLog($"Enemy healed {healAmount} HP ({hpBefore} -> {enemyCurrentHP})");
+                if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
             }
         }
         else if (effect.targetType == TargetType.EnemyPlayer)
@@ -5266,6 +5278,7 @@ public class BattleManager : MonoBehaviour
                 ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
                 Debug.Log($"💚 Player heals Enemy: {healAmount}");
                 AddBattleLog($"Player healed Enemy {healAmount} HP");
+                if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
             }
             else // Bot heals player
             {
@@ -5273,6 +5286,7 @@ public class BattleManager : MonoBehaviour
                 ShowDamagePopupString($"+{healAmount} HP", sourceCard.transform);
                 Debug.Log($"💚 Enemy heals Player: {healAmount}");
                 AddBattleLog($"Enemy healed Player {healAmount} HP");
+                if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
             }
         }
 
@@ -7582,6 +7596,7 @@ public class BattleManager : MonoBehaviour
                 }
 
                 ShowDamagePopupString($"+{healAmount} HP", auraCard.transform);
+                if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
                 UpdateUI();
             }
         }
