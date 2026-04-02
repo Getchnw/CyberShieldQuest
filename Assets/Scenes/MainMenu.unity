@@ -547,23 +547,31 @@ MonoBehaviour:
   bgmSource: {fileID: 1934745004}
   bgmSource2: {fileID: 1885550347}
   sfxSource: {fileID: 1036654721}
+  audioMixer: {fileID: 24100000, guid: a438700f352157a4cb9b0bc549caab77, type: 2}
   sceneBgmList:
   - sceneName: MainMenu
     bgmClip: {fileID: 8300000, guid: b6062104bbe2be34e9e3aafe3c200112, type: 3}
+    musicVolume: 0
   - sceneName: Battle
     bgmClip: {fileID: 8300000, guid: f658503912b79ad4eafad7c2e8f022b1, type: 3}
+    musicVolume: 0
   - sceneName: Story
     bgmClip: {fileID: 8300000, guid: f658503912b79ad4eafad7c2e8f022b1, type: 3}
+    musicVolume: 0
   - sceneName: Home
     bgmClip: {fileID: 8300000, guid: b6062104bbe2be34e9e3aafe3c200112, type: 3}
+    musicVolume: 0
   sfxButtonClick: {fileID: 8300000, guid: 09fbff66f86776d46804d55149b4027e, type: 3}
   sfxCardHover: {fileID: 8300000, guid: 32004b59dbac25647ab82178ebed3859, type: 3}
   sfxCardSelect: {fileID: 8300000, guid: 09fbff66f86776d46804d55149b4027e, type: 3}
-  sfxAttack: {fileID: 8300000, guid: 1c3c3e57aa313994681500607991db4a, type: 3}
-  sfxDefend: {fileID: 8300000, guid: 2a1faef17e10d9046b13caba13c135e1, type: 3}
-  sfxDropCard: {fileID: 8300000, guid: d23f4cfab60d7114fb94a72538cb159a, type: 3}
+  sfxAttack: {fileID: 8300000, guid: 56b628b30efbe144aafa87d0d8f05d6e, type: 3}
+  sfxDefend: {fileID: 8300000, guid: 9ae0c66b9c4904a419f937e8fabfd407, type: 3}
+  sfxDropCard: {fileID: 8300000, guid: 7ad57e0e84f842e4aafa50f040f12fc2, type: 3}
   sfxDrawCard: {fileID: 8300000, guid: 27ff548af6e5a6b47a9213654518cf47, type: 3}
   sfxHeal: {fileID: 8300000, guid: ff7afb35d133ef24a903e4645df65e4c, type: 3}
+  sfxDamage: {fileID: 0}
+  sfxBlock: {fileID: 0}
+  sfxDenied: {fileID: 0}
   sfxLow_Hp: {fileID: 8300000, guid: 6f8cf43d89fb6e7438719659e880a18d, type: 3}
   sfxUseSpell: {fileID: 8300000, guid: 65d40a053c2104c4b8008b23d7e2323c, type: 3}
   sfxFilpCard: {fileID: 8300000, guid: b18cfcd92326456498588e1f4fc05d23, type: 3}
