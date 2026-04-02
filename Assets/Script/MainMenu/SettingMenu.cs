@@ -17,7 +17,7 @@ public class SettingMenu : MonoBehaviour
     [Header("Audio Settings")]
     public AudioMixer audioMixer;
 
-    private void Start()
+    private void OnEnable()
     {
         // // ใช้ Instance จาก AudioManager โดยตรงจะปลอดภัยกว่าการหา Tag
         // audioManager = AudioManager.Instance;

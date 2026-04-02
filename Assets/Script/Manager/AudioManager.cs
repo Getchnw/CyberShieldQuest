@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement; // ต้องเพิ่มอันนี้เพื่อจัดการ Scene
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Audio;
 
 public class AudioManager : MonoBehaviour
 {
@@ -11,6 +12,9 @@ public class AudioManager : MonoBehaviour
     public AudioSource bgmSource;
     public AudioSource bgmSource2;
     public AudioSource sfxSource;
+
+    [Header("Audio Setup")]
+    public AudioMixer audioMixer;
 
     private AudioSource activeSource;
 
@@ -61,10 +65,30 @@ public class AudioManager : MonoBehaviour
         activeSource = bgmSource;
     }
 
-    // void Start()
-    // {
-    //     PlayBGM(bgmBattle);
-    // }
+    private void Start()
+    {
+        // 🌟 2. โหลดเสียงตั้งแต่เฟรมแรกที่เกมเริ่ม
+        LoadInitialVolume();
+    }
+
+    private void LoadInitialVolume()
+    {
+        if (audioMixer == null) return;
+
+        // ดึงค่าที่เซฟไว้ (ถ้าไม่มีเคยเซฟไว้ จะใช้ 0.5 เป็นค่าเริ่มต้น)
+        float savedMusic = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
+        float savedSFX = PlayerPrefs.GetFloat("SFXVolume", 0.5f);
+
+        // แปลงเป็นหน่วยเดซิเบล (dB) สูตรเดียวกับที่คุณใช้ใน SettingMenu
+        float musicDB = Mathf.Log10(Mathf.Max(0.0001f, savedMusic)) * 20;
+        float sfxDB = Mathf.Log10(Mathf.Max(0.0001f, savedSFX)) * 20;
+
+        // สั่งอัปเดตเข้า Mixer ทันที
+        audioMixer.SetFloat("MusicVolume", musicDB);
+        audioMixer.SetFloat("SFXVolume", sfxDB);
+
+        Debug.Log("✅ [AudioManager] โหลดระดับเสียงเริ่มต้นเรียบร้อยแล้ว!");
+    }
 
     void OnEnable()
     {
