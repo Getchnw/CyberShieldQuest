@@ -196,11 +196,11 @@ public class FillInBlankPanelUI : MonoBehaviour
         // Debug.Log("translate Language Sentence part 1: " + LanguageBridge.GetForceEnglish(s.sentencePart1));
         // Debug.Log("translate Language Sentence part 2: " + LanguageBridge.GetForceEnglish(s.sentencePart2));
         // Debug.Log("------------------------------");
-        // qa.QustionText = result_th;
+        qa.QustionText = result_th;
         // Debug.Log("QustionText: " + qa.QustionText);
-        // qa.QustionText_th = result_th;
+        qa.QustionText_th = result_th;
         // Debug.Log("QustionText_th: " + qa.QustionText_th);
-        // qa.QustionText_en = result_en;
+        qa.QustionText_en = result_en;
         // Debug.Log("QustionText_en: " + qa.QustionText_en);
         // 2. รวบรวมคำตอบที่ผู้เล่นใส่ในช่องว่าง
         List<string> playerAnswers = new List<string>();
