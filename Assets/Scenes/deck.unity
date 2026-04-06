@@ -5431,7 +5431,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1906240710}
   m_HandleRect: {fileID: 1906240709}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -8197,7 +8197,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.050303087, y: 0.952}
   m_AnchorMax: {x: 0.9496063, y: 0.952}
-  m_AnchoredPosition: {x: -29.643852, y: 41.77448}
+  m_AnchoredPosition: {x: -29.643826, y: 41.77448}
   m_SizeDelta: {x: 28.973, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1365120178
@@ -8506,7 +8506,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1005382359}
   m_HandleRect: {fileID: 1005382358}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -9194,7 +9194,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -698.1199, y: -58.60608}
+  m_AnchoredPosition: {x: -698.1199, y: -58.606087}
   m_SizeDelta: {x: -1396.2, y: -228.97}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1523498224
@@ -9313,26 +9313,26 @@ MonoBehaviour:
   headerText: {fileID: 367066479}
   descriptionText: {fileID: 1343496277}
   pageTitles_Thai:
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
-  - "\u0E44\u0E01\u0E14\u0E4C\u0E44\u0E25\u0E19\u0E4C"
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
+  - Guideline
   pageDescriptions_Thai:
   - "\u0E2B\u0E19\u0E49\u0E32 Deck \u0E40\u0E1B\u0E47\u0E19\u0E2B\u0E19\u0E49\u0E32\u0E2A\u0E33\u0E2B\u0E23\u0E31\u0E1A\u0E41\u0E2A\u0E14\u0E07\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14\u0E17\u0E35\u0E48\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19\u0E21\u0E35
     \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23 Deck
