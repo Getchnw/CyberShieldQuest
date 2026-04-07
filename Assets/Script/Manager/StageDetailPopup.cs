@@ -227,14 +227,14 @@ public class StageDetailPopup : MonoBehaviour
         {
             titleText.text = data.stageName_th;
             levelText.text = $"เลเวล: {data.botLevel}";
-            deckInfoText.text = $"เด็คคู่ต่อสู้:\n{data.deckDescription_th}";
+            deckInfoText.text = BuildDeckInfoText(data.deckDescription_th, data.botDeckPreset, true);
 
         }
         else
         {
             titleText.text = data.stageName;
             levelText.text = $"Level: {data.botLevel}";
-            deckInfoText.text = $"Enemy Deck:\n{data.deckDescription}";
+            deckInfoText.text = BuildDeckInfoText(data.deckDescription, data.botDeckPreset, false);
         }
 
         // 2. อัปเดตรูปบอท (ถ้ามี)
@@ -395,6 +395,7 @@ public class StageDetailPopup : MonoBehaviour
         // บันทึก Stage ID ลงหน่วยความจำ (เผื่อระบบ Battle ต้องอ่าน ID นี้)
         Debug.Log($"✅ กำลังเริ่มด่าน: {currentStageData.stageID}");
         PlayerPrefs.SetString("CurrentStageID", currentStageData.stageID);
+        PlayerPrefs.SetString("CurrentBotDeckPresetId", currentStageData.botDeckPreset != null ? currentStageData.botDeckPreset.presetId : string.Empty);
 
         // บันทึก mission condition ของด่านนี้ เพื่อให้ Battle scene คำนวณผลรายข้อได้ถูกต้อง
         RuntimeStageConditionPayload payload = new RuntimeStageConditionPayload
@@ -438,5 +439,29 @@ public class StageDetailPopup : MonoBehaviour
         Debug.Log("🟡 กำลังโหลด Battle Scene (async)...");
         BattleManager.SetBattleReturnScene(SceneManager.GetActiveScene().name);
         SceneManager.LoadSceneAsync("Battle");
+    }
+
+    private string BuildDeckInfoText(string deckDescription, BotDeckPreset botDeckPreset, bool isThai)
+    {
+        string baseText = string.IsNullOrWhiteSpace(deckDescription)
+            ? (isThai ? "ไม่มีคำอธิบายเด็ค" : "No deck description")
+            : deckDescription;
+
+        if (botDeckPreset == null)
+            return baseText;
+
+        string presetName = string.IsNullOrWhiteSpace(botDeckPreset.displayName)
+            ? botDeckPreset.name
+            : botDeckPreset.displayName;
+
+        string presetLabel = isThai ? "ชุดเด็คที่ใช้" : "Deck preset";
+        string summary = botDeckPreset.GetSummary();
+
+        if (string.IsNullOrWhiteSpace(summary))
+        {
+            return $"{baseText}\n\n{presetLabel}: {presetName}";
+        }
+
+        return $"{baseText}\n\n{presetLabel}: {presetName}\n{summary}";
     }
 }

@@ -2816,6 +2816,7 @@ MonoBehaviour:
     requiredChapters: 
     requiredPrevStages: []
     botDecks: 00000000
+    botDeckPreset: {fileID: 11400000, guid: b35528111b50417494d2e5a93e812704, type: 2}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -2863,6 +2864,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L1_A01'
     botDecks: 01000000
+    botDeckPreset: {fileID: 11400000, guid: f7505979befa478db9b6ca535793e151, type: 2}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -2910,6 +2912,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L1_A02'
     botDecks: 02000000
+    botDeckPreset: {fileID: 11400000, guid: 465c9783e06e428a9824465b39da444c, type: 2}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -2959,6 +2962,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L1_A03'
     botDecks: 0000000001000000
+    botDeckPreset: {fileID: 11400000, guid: 7942bebaf4a64a17b824dfa1c376ca32, type: 2}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -3008,6 +3012,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L2_MIX1'
     botDecks: 0100000002000000
+    botDeckPreset: {fileID: 11400000, guid: 0438027e92d748018c01a9f9b075e19a, type: 2}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -3055,6 +3060,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L2_MIX2'
     botDecks: 000000000100000002000000
+    botDeckPreset: {fileID: 11400000, guid: 79c370a0fd78488ea827135d6bcb64ee, type: 2}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -3103,6 +3109,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L2_MIX2'
     botDecks: 000000000100000002000000
+    botDeckPreset: {fileID: 11400000, guid: 0d8176bdcafd41d393686d11a1c8b86a, type: 2}
     isSecretBoss: 1
     durationMinutes: 30
     countdownText: {fileID: 1806599168}

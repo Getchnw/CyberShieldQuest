@@ -19,6 +19,7 @@ public class StoryStage : ScriptableObject
     public List<int> requiredChapters;
     [Header("Battle Settings (ส่งไปฉากต่อสู้)")]
     public List<MainCategory> botDecks; // บอทจะใช้การ์ดหมวดไหนบ้าง
+    public BotDeckPreset botDeckPreset;
     [Header("Type of Stage Settings")]
     public bool isStoryBattle;
 }

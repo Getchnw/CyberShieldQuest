@@ -266,6 +266,7 @@ public class UI_ChapterSelect : MonoBehaviour
             stageData.starConditions = storyStage.starConditions;
             stageData.requiredChapters = storyStage.requiredChapters;
             stageData.botDecks = storyStage.botDecks;
+            stageData.botDeckPreset = storyStage.botDeckPreset;
             stageData.isStoryBattle = storyStage.isStoryBattle;
             stageData.YessButton_Recheck = YesButton_Recheck;
 

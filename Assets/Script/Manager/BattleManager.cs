@@ -581,8 +581,12 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        // สำเนาเด็คให้บอทใช้แยกกัน จะได้ไม่เสกการ์ดซ้ำไม่จำกัด
-        enemyDeckList = new List<CardData>(deckList);
+        // สร้างเด็คของบอทจาก preset ของด่าน ถ้ามี ไม่งั้นค่อย fallback ไปใช้เด็คเดิม
+        enemyDeckList = BuildEnemyDeckForCurrentStage();
+        if (enemyDeckList == null || enemyDeckList.Count == 0)
+        {
+            enemyDeckList = new List<CardData>(deckList);
+        }
         enemyDeckSnapshot = enemyDeckList.Where(card => card != null).ToList();
         ShuffleList(deckList);
         ShuffleList(enemyDeckList);
@@ -4264,6 +4268,37 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
             return enemyDeckList.Where(card => card != null && !string.IsNullOrEmpty(card.card_id)).ToList();
 
         return new List<CardData>();
+    }
+
+    private List<CardData> BuildEnemyDeckForCurrentStage()
+    {
+        string currentStageID = PlayerPrefs.GetString("CurrentStageID", "");
+        if (string.IsNullOrWhiteSpace(currentStageID) || GameContentDatabase.Instance == null)
+            return null;
+
+        string presetId = PlayerPrefs.GetString("CurrentBotDeckPresetId", "");
+        BotDeckPreset preset = null;
+
+        if (!string.IsNullOrWhiteSpace(presetId))
+        {
+            preset = GameContentDatabase.Instance.GetBotDeckPresetByID(presetId);
+        }
+
+        if (preset == null)
+        {
+            StoryStage storyStage = GameContentDatabase.Instance.GetStoryStageByID(currentStageID);
+            if (storyStage != null)
+            {
+                preset = storyStage.botDeckPreset;
+            }
+        }
+
+        if (preset == null || !preset.HasCards())
+            return null;
+
+        List<CardData> builtDeck = preset.BuildDeckCards();
+        Debug.Log($"🎴 Loaded bot deck preset: {(string.IsNullOrWhiteSpace(preset.displayName) ? preset.name : preset.displayName)} | Cards: {builtDeck.Count}");
+        return builtDeck;
     }
 
     private string BuildBattleResultDetailText(bool playerWin)

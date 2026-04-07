@@ -23,6 +23,7 @@ public class GameContentDatabase : MonoBehaviour
     [SerializeField] private List<RewardData> rewardDatabase = new List<RewardData>();
     // ข้อมูลด่าน
     //[SerializeField] private List<StageData> stageDatabase = new List<StageData>();
+    [SerializeField] private List<BotDeckPreset> botDeckPresetDatabase = new List<BotDeckPreset>();
     // ข้อมูล Quiz Pretest&PostTest
     [SerializeField] private List<MatchingQuestion> matchingQuestionsDatabase = new List<MatchingQuestion>();
     [SerializeField] private List<FillInBlankQuestion> fillInBlankQuestionsDatabase = new List<FillInBlankQuestion>();
@@ -653,6 +654,15 @@ public class GameContentDatabase : MonoBehaviour
                 StoryStageDatabase = new List<StoryStage>(loadStoryStageData);
             }
         }
+
+        if (botDeckPresetDatabase == null || botDeckPresetDatabase.Count == 0)
+        {
+            var loadBotDeckPresets = Resources.LoadAll<BotDeckPreset>("GameContent/BotDeckPresets");
+            if (loadBotDeckPresets != null && loadBotDeckPresets.Length > 0)
+            {
+                botDeckPresetDatabase = new List<BotDeckPreset>(loadBotDeckPresets);
+            }
+        }
     }
 
     public List<StoryStage> GetStoryStagesByStoryID(string storyId)
@@ -661,6 +671,22 @@ public class GameContentDatabase : MonoBehaviour
         return StoryStageDatabase
                 .Where(stage => stage.story != null && stage.story.story_id == storyId)
                 .ToList();
+    }
+
+    public StoryStage GetStoryStageByID(string stageId)
+    {
+        if (string.IsNullOrEmpty(stageId) || StoryStageDatabase == null || StoryStageDatabase.Count == 0)
+            return null;
+
+        return StoryStageDatabase.FirstOrDefault(stage => stage != null && stage.stageID == stageId);
+    }
+
+    public BotDeckPreset GetBotDeckPresetByID(string presetId)
+    {
+        if (string.IsNullOrEmpty(presetId) || botDeckPresetDatabase == null || botDeckPresetDatabase.Count == 0)
+            return null;
+
+        return botDeckPresetDatabase.FirstOrDefault(preset => preset != null && preset.presetId == presetId);
     }
 
     //ฟังก์ชันดึงข้อมูลตาม ID ต่างๆ

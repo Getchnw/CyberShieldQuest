@@ -49,4 +49,6 @@ MonoBehaviour:
     subCategory: 0
   requiredChapters: 
   botDecks: 01000000
+  botDeckPreset: {fileID: 11400000, guid: 633e23db1b2a4eaf9eaecf99f3c85077, type: 2}
   isStoryBattle: 1
+

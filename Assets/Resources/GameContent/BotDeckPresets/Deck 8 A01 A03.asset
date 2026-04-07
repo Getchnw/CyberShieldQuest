@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14dff0480d190fe4eb071b11f619060f, type: 3}
+  m_Name: Deck 8 A01 + A03
+  m_EditorClassIdentifier: 
+  presetId: BOT_MIX_08_A01_A03
+  displayName: Deck 8 A01 + A03
+  description: Mixed A01 and A03 cards
+  cardIds:
+  - E_A01_01
+  - E_A01_02
+  - E_A01_03
+  - E_A01_04
+  - E_A01_05
+  - E_A01_06
+  - E_A01_07
+  - E_A01_08
+  - E_A03_01
+  - E_A03_02
+  - E_A03_03
+  - E_A03_04
+  - M_A01_01
+  - M_A01_02
+  - M_A01_03
+  - M_A01_04
+  - M_A01_05
+  - M_A01_06
+  - M_A01_07
+  - M_A01_08
+  - M_A01_09
+  - M_A01_10
+  - M_A01_11
+  - M_A01_12
+  - M_A03_01
+  - M_A03_02
+  - M_A03_03
+  - M_A03_04
+  - M_A03_05
+  - M_A03_06
+  - M_A03_07
+  - S_A01_01
+  - S_A01_02
+  - S_A01_03
+  - S_A01_04
+  - S_A01_05
+  - S_A03_01
+  - S_A03_02
+  - T_001

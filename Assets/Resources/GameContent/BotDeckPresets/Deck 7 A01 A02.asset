@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14dff0480d190fe4eb071b11f619060f, type: 3}
+  m_Name: Deck 7 A01 + A02
+  m_EditorClassIdentifier: 
+  presetId: BOT_MIX_07_A01_A02
+  displayName: Deck 7 A01 + A02
+  description: Mixed A01 and A02 cards
+  cardIds:
+  - E_A01_01
+  - E_A01_02
+  - E_A01_03
+  - E_A01_04
+  - E_A01_05
+  - E_A01_06
+  - E_A01_07
+  - E_A01_08
+  - E_A02_01
+  - E_A02_02
+  - E_A02_03
+  - E_A02_04
+  - E_A02_05
+  - E_A02_06
+  - E_A02_07
+  - E_A02_08
+  - M_A01_01
+  - M_A01_02
+  - M_A01_03
+  - M_A01_04
+  - M_A01_05
+  - M_A01_06
+  - M_A01_07
+  - M_A01_08
+  - M_A01_09
+  - M_A01_10
+  - M_A01_11
+  - M_A01_12
+  - M_A02_01
+  - M_A02_02
+  - M_A02_03
+  - M_A02_04
+  - M_A02_05
+  - M_A02_06
+  - M_A02_07
+  - M_A02_08
+  - M_A02_09
+  - M_A02_10
+  - M_A02_11
+  - S_A01_01
+  - S_A01_02
+  - S_A01_03
+  - S_A01_04
+  - S_A01_05
+  - S_A02_01
+  - S_A02_02
+  - S_A02_03
+  - T_001

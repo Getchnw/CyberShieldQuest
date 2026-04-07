@@ -53,6 +53,7 @@ public class StageManager : MonoBehaviour
 
         [Header("Battle Settings (ส่งไปฉากต่อสู้)")]
         public List<MainCategory> botDecks; // บอทจะใช้การ์ดหมวดไหนบ้าง
+        public BotDeckPreset botDeckPreset;
 
         private Transform starsContainer; // Container สำหรับเก็บดาว
 
