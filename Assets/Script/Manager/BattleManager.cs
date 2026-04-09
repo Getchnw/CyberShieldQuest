@@ -248,6 +248,7 @@ public class BattleManager : MonoBehaviour
     private bool isEnding = false;
     private bool resultConfirmed = false;
     private bool isMulliganPhase = false;
+    private string battleEndReason = string.Empty;
 
     public bool IsMulliganPhase() => isMulliganPhase;
 
@@ -567,6 +568,8 @@ public class BattleManager : MonoBehaviour
 
     IEnumerator SetupBattle()
     {
+        battleEndReason = string.Empty;
+
         // 1. Load Deck จากเซฟ (ถ้าเป็นเกมจริง) หรือใช้ที่ตั้งไว้ใน Inspector เป็น fallback
         bool loadedFromSave = LoadPlayerDeckFromSave();
         if (!loadedFromSave)
@@ -587,9 +590,13 @@ public class BattleManager : MonoBehaviour
         {
             enemyDeckList = new List<CardData>(deckList);
         }
+        bool preserveEnemyDeckOrder = PlayerPrefs.GetInt("CurrentBotDeckPreserveOrder", 0) == 1;
         enemyDeckSnapshot = enemyDeckList.Where(card => card != null).ToList();
         ShuffleList(deckList);
-        ShuffleList(enemyDeckList);
+        if (!preserveEnemyDeckOrder)
+        {
+            ShuffleList(enemyDeckList);
+        }
 
         // 2. Setup Stats
         currentHP = maxHP;
@@ -709,7 +716,8 @@ public class BattleManager : MonoBehaviour
         if (deckList.Count < n)
         {
             Debug.LogWarning("⚠️ Deck empty while drawing (player)");
-            StartCoroutine(EndBattle(false));
+            AddBattleLog($"Player tried to draw {n} card(s) but deck has {deckList.Count} - LOSE");
+            EndBattleWithReason(false, "แพ้เพราะไม่มีการ์ดให้จั่ว");
             yield break;
         }
 
@@ -1525,15 +1533,6 @@ public class BattleManager : MonoBehaviour
     void StartPlayerTurn()
     {
         if (isEnding) return;
-
-        // เด็คหมดก่อนจั่ว -> แพ้ทันที
-        if (deckList.Count <= 0)
-        {
-            Debug.Log("⚠️ Deck empty (player) -> Lose");
-            AddBattleLog("Player deck empty - LOSE");
-            StartCoroutine(EndBattle(false));
-            return;
-        }
 
         state = BattleState.PLAYERTURN;
         turnCount++;
@@ -2443,14 +2442,6 @@ public class BattleManager : MonoBehaviour
         if (isEnding) yield break;
 
         AddBattleLog($"\n=== BOT TURN {turnCount} START === HP:{enemyCurrentHP}/{enemyMaxHP} | PP:{enemyCurrentPP}/{enemyMaxPP}");
-
-        // เด็คหมด -> ผู้เล่นชนะ
-        if (enemyDeckList.Count <= 0)
-        {
-            Debug.Log("⚠️ Deck empty (enemy) -> Win");
-            StartCoroutine(EndBattle(true));
-            yield break;
-        }
 
         state = BattleState.ENEMYTURN;
         if (turnText) turnText.text = "ENEMY TURN";
@@ -3640,7 +3631,7 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
         {
             Debug.LogWarning("⚠️ Deck empty while drawing (player)");
             AddBattleLog($"Player tried to draw {n} but only {deckList.Count} left - LOSE");
-            StartCoroutine(EndBattle(false));
+            EndBattleWithReason(false, "แพ้เพราะไม่มีการ์ดให้จั่ว");
             yield break;
         }
 
@@ -3772,7 +3763,7 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
         {
             Debug.LogWarning("⚠️ Deck empty while drawing (enemy)");
             AddBattleLog($"Bot tried to draw {n} but only {enemyDeckList.Count} left - BOT LOSE");
-            StartCoroutine(EndBattle(true));
+            EndBattleWithReason(true, "ชนะเพราะบอทไม่มีการ์ดให้จั่ว");
             yield break;
         }
 
@@ -3963,6 +3954,16 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
             AddBattleLog("Bot HP reaches 0 - WIN");
             StartCoroutine(EndBattle(true));
         }
+    }
+
+    private void EndBattleWithReason(bool playerWin, string reason)
+    {
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            battleEndReason = reason;
+        }
+
+        StartCoroutine(EndBattle(playerWin));
     }
 
     // DAILY QUEST UPDATE
@@ -4276,29 +4277,122 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
         if (string.IsNullOrWhiteSpace(currentStageID) || GameContentDatabase.Instance == null)
             return null;
 
-        string presetId = PlayerPrefs.GetString("CurrentBotDeckPresetId", "");
+        bool isStoryBattle = PlayerPrefs.GetInt("CurrentStageIsStoryBattle", 0) == 1;
         BotDeckPreset preset = null;
+        RuntimeBotDeckSnapshotPayload snapshot = LoadBotDeckSnapshot();
 
-        if (!string.IsNullOrWhiteSpace(presetId))
-        {
-            preset = GameContentDatabase.Instance.GetBotDeckPresetByID(presetId);
-        }
-
-        if (preset == null)
+        if (isStoryBattle)
         {
             StoryStage storyStage = GameContentDatabase.Instance.GetStoryStageByID(currentStageID);
             if (storyStage != null)
             {
-                preset = storyStage.botDeckPreset;
+                string stagePresetId = storyStage.botDeckPreset != null ? storyStage.botDeckPreset.presetId : string.Empty;
+                if (!string.IsNullOrWhiteSpace(stagePresetId))
+                {
+                    preset = GameContentDatabase.Instance.GetBotDeckPresetByID(stagePresetId);
+                }
+
+                if (preset == null)
+                {
+                    preset = storyStage.botDeckPreset;
+                }
             }
         }
 
+        if (preset == null)
+        {
+            string presetId = PlayerPrefs.GetString("CurrentBotDeckPresetId", "");
+            if (!string.IsNullOrWhiteSpace(presetId))
+            {
+                preset = GameContentDatabase.Instance.GetBotDeckPresetByID(presetId);
+            }
+        }
+
+        if (preset != null)
+        {
+            string presetId = string.IsNullOrWhiteSpace(preset.presetId) ? preset.name : preset.presetId;
+            PlayerPrefs.SetString("CurrentBotDeckPresetId", presetId);
+            PlayerPrefs.Save();
+        }
+
         if (preset == null || !preset.HasCards())
+        {
+            string currentPresetId = PlayerPrefs.GetString("CurrentBotDeckPresetId", "");
+            bool snapshotMatchesCurrentPreset = snapshot != null &&
+                                              !string.IsNullOrWhiteSpace(snapshot.presetId) &&
+                                              !string.IsNullOrWhiteSpace(currentPresetId) &&
+                                              snapshot.presetId == currentPresetId;
+
+            if (snapshotMatchesCurrentPreset && snapshot.cardIds != null && snapshot.cardIds.Count > 0)
+            {
+                List<CardData> snapshotDeck = BuildDeckFromCardIds(snapshot.cardIds);
+                if (snapshotDeck.Count > 0)
+                {
+                    string snapshotName = string.IsNullOrWhiteSpace(snapshot.presetId) ? "Snapshot" : snapshot.presetId;
+                    Debug.Log($"🎴 Loaded bot deck snapshot fallback: {snapshotName} | Cards: {snapshotDeck.Count}");
+                    Debug.Log($"🎴 Bot deck card_ids => {string.Join(", ", snapshotDeck.Where(card => card != null).Select(card => card.card_id))}");
+                    return snapshotDeck;
+                }
+            }
+
             return null;
+        }
 
         List<CardData> builtDeck = preset.BuildDeckCards();
-        Debug.Log($"🎴 Loaded bot deck preset: {(string.IsNullOrWhiteSpace(preset.displayName) ? preset.name : preset.displayName)} | Cards: {builtDeck.Count}");
+        string deckName = string.IsNullOrWhiteSpace(preset.displayName) ? preset.name : preset.displayName;
+        string joinedCardIds = string.Join(", ", builtDeck.Where(card => card != null).Select(card => card.card_id));
+        Debug.Log($"🎴 Loaded bot deck preset: {deckName} ({preset.presetId}) | Cards: {builtDeck.Count}");
+        Debug.Log($"🎴 Bot deck card_ids => {joinedCardIds}");
         return builtDeck;
+    }
+
+    private List<CardData> BuildDeckFromCardIds(IEnumerable<string> cardIds)
+    {
+        List<CardData> result = new List<CardData>();
+
+        if (cardIds == null || GameContentDatabase.Instance == null)
+            return result;
+
+        foreach (string cardId in cardIds)
+        {
+            if (string.IsNullOrWhiteSpace(cardId))
+                continue;
+
+            CardData card = GameContentDatabase.Instance.GetCardByID(cardId);
+            if (card != null)
+            {
+                result.Add(card);
+            }
+        }
+
+        return result;
+    }
+
+    [System.Serializable]
+    private class RuntimeBotDeckSnapshotPayload
+    {
+        public string presetId;
+        public bool useRandomAllCardsPool;
+        public int randomDeckSize;
+        public bool preserveOrder;
+        public List<string> cardIds = new List<string>();
+    }
+
+    private RuntimeBotDeckSnapshotPayload LoadBotDeckSnapshot()
+    {
+        string snapshotJson = PlayerPrefs.GetString("CurrentBotDeckSnapshotJson", "");
+        if (string.IsNullOrWhiteSpace(snapshotJson))
+            return null;
+
+        try
+        {
+            return JsonUtility.FromJson<RuntimeBotDeckSnapshotPayload>(snapshotJson);
+        }
+        catch
+        {
+            Debug.LogWarning("⚠️ Failed to parse CurrentBotDeckSnapshotJson, falling back to preset lookup.");
+            return null;
+        }
     }
 
     private string BuildBattleResultDetailText(bool playerWin)

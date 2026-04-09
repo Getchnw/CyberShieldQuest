@@ -16,23 +16,34 @@ MonoBehaviour:
   displayName: Deck 6 A03 + General
   description: Mixed A03 and General cards
   cardIds:
-  - E_A03_01
-  - E_A03_02
-  - E_A03_03
-  - E_A03_04
-  - E_Gen_01
-  - M_A03_01
-  - M_A03_02
   - M_A03_03
-  - M_A03_04
-  - M_A03_05
-  - M_A03_06
-  - M_A03_07
-  - M_Gen_01
-  - M_Gen_02
-  - M_Gen_03
-  - M_Gen_04
-  - S_A03_01
+  - M_A03_03
   - S_A03_02
-  - S_Gen_01
-  - S_Gen_02
+  - S_A03_02
+  - S_A03_02
+  - E_A03_01
+  - E_A03_01
+  - E_A03_01
+  - E_A03_04
+  - E_A03_04
+  - E_A03_04
+  - M_A03_01
+  - M_A03_01
+  - E_A03_03
+  - E_A03_03
+  - M_A03_05
+  - M_A03_05
+  - M_A03_07
+  - M_A03_07
+  - M_A03_04
+  - M_A03_04
+  - M_A03_02
+  - M_A03_02
+  - E_A03_02
+  - E_A03_02
+  - E_A03_02
+  - S_A03_01
+  - S_A03_01
+  - S_A03_01
+  - M_A03_06
+ 

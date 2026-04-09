@@ -655,13 +655,15 @@ public class GameContentDatabase : MonoBehaviour
             }
         }
 
-        if (botDeckPresetDatabase == null || botDeckPresetDatabase.Count == 0)
+        RefreshBotDeckPresetDatabase();
+    }
+
+    private void RefreshBotDeckPresetDatabase()
+    {
+        var loadBotDeckPresets = Resources.LoadAll<BotDeckPreset>("GameContent/BotDeckPresets");
+        if (loadBotDeckPresets != null && loadBotDeckPresets.Length > 0)
         {
-            var loadBotDeckPresets = Resources.LoadAll<BotDeckPreset>("GameContent/BotDeckPresets");
-            if (loadBotDeckPresets != null && loadBotDeckPresets.Length > 0)
-            {
-                botDeckPresetDatabase = new List<BotDeckPreset>(loadBotDeckPresets);
-            }
+            botDeckPresetDatabase = new List<BotDeckPreset>(loadBotDeckPresets);
         }
     }
 
@@ -683,8 +685,11 @@ public class GameContentDatabase : MonoBehaviour
 
     public BotDeckPreset GetBotDeckPresetByID(string presetId)
     {
-        if (string.IsNullOrEmpty(presetId) || botDeckPresetDatabase == null || botDeckPresetDatabase.Count == 0)
+        if (string.IsNullOrEmpty(presetId))
             return null;
+
+        // Always refresh from Resources so edited preset assets are reflected immediately.
+        RefreshBotDeckPresetDatabase();
 
         return botDeckPresetDatabase.FirstOrDefault(preset => preset != null && preset.presetId == presetId);
     }

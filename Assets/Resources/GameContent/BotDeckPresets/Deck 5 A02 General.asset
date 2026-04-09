@@ -16,32 +16,33 @@ MonoBehaviour:
   displayName: Deck 5 A02 + General
   description: Mixed A02 and General cards
   cardIds:
-  - E_A02_01
-  - E_A02_02
-  - E_A02_03
-  - E_A02_04
-  - E_A02_05
-  - E_A02_06
-  - E_A02_07
-  - E_A02_08
-  - E_Gen_01
-  - M_A02_01
-  - M_A02_02
-  - M_A02_03
-  - M_A02_04
-  - M_A02_05
-  - M_A02_06
-  - M_A02_07
-  - M_A02_08
-  - M_A02_09
-  - M_A02_10
-  - M_A02_11
-  - M_Gen_01
-  - M_Gen_02
-  - M_Gen_03
-  - M_Gen_04
+  - S_A02_01
   - S_A02_01
   - S_A02_02
+  - S_A02_02
+  - E_A02_03
+  - E_A02_01
+  - M_A03_02
+  - E_A02_06
+  - E_A02_07
+  - E_A02_07
+  - E_A02_07
+  - M_A02_05
+  - M_A02_05
+  - M_A02_05
+  - M_A02_06
+  - M_A02_06
+  - M_A02_06
   - S_A02_03
-  - S_Gen_01
-  - S_Gen_02
+  - S_A02_03
+  - E_A02_02
+  - E_A02_02
+  - E_A02_02
+  - M_A02_08
+  - M_A02_08
+  - M_A02_08
+  - E_A02_04
+  - M_A02_09
+  - M_A02_07
+  - M_A02_03
+  - M_A02_11

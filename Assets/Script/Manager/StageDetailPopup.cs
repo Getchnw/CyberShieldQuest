@@ -16,6 +16,16 @@ public class StageDetailPopup : MonoBehaviour
     }
 
     [System.Serializable]
+    private class RuntimeBotDeckSnapshotPayload
+    {
+        public string presetId;
+        public bool useRandomAllCardsPool;
+        public int randomDeckSize;
+        public bool preserveOrder;
+        public List<string> cardIds = new List<string>();
+    }
+
+    [System.Serializable]
     private class RuntimeStarConditionData
     {
         public StarCondition.ConditionType type;
@@ -140,6 +150,7 @@ public class StageDetailPopup : MonoBehaviour
         Debug.Log($"[POPUP] Open() ถูกเรียก สำหรับ {data.stageName}");
 
         currentStageData = data;
+        RefreshCurrentStageBotDeckPreset();
 
         // if (currentStageData.isStoryBattle)
         // {
@@ -375,6 +386,19 @@ public class StageDetailPopup : MonoBehaviour
         gameObject.SetActive(true);
     }
 
+    private void RefreshCurrentStageBotDeckPreset()
+    {
+        if (currentStageData == null || !currentStageData.isStoryBattle || string.IsNullOrWhiteSpace(currentStageData.stageID) || GameContentDatabase.Instance == null)
+            return;
+
+        StoryStage latestStage = GameContentDatabase.Instance.GetStoryStageByID(currentStageData.stageID);
+        if (latestStage == null)
+            return;
+
+        // Always pull latest preset reference from stage database so popup/battle reflect asset changes.
+        currentStageData.botDeckPreset = latestStage.botDeckPreset;
+    }
+
     public void Close()
     {
         AudioManager.Instance.PlaySFX("ButtonClick");
@@ -396,6 +420,19 @@ public class StageDetailPopup : MonoBehaviour
         Debug.Log($"✅ กำลังเริ่มด่าน: {currentStageData.stageID}");
         PlayerPrefs.SetString("CurrentStageID", currentStageData.stageID);
         PlayerPrefs.SetString("CurrentBotDeckPresetId", currentStageData.botDeckPreset != null ? currentStageData.botDeckPreset.presetId : string.Empty);
+        PlayerPrefs.SetInt("CurrentStageIsStoryBattle", currentStageData.isStoryBattle ? 1 : 0);
+        PlayerPrefs.SetInt("CurrentBotDeckPreserveOrder", currentStageData.botDeckPreset != null && !currentStageData.botDeckPreset.useRandomAllCardsPool ? 1 : 0);
+
+        RuntimeBotDeckSnapshotPayload botDeckSnapshot = new RuntimeBotDeckSnapshotPayload
+        {
+            presetId = currentStageData.botDeckPreset != null ? currentStageData.botDeckPreset.presetId : string.Empty,
+            useRandomAllCardsPool = currentStageData.botDeckPreset != null && currentStageData.botDeckPreset.useRandomAllCardsPool,
+            randomDeckSize = currentStageData.botDeckPreset != null ? currentStageData.botDeckPreset.randomDeckSize : 30,
+            preserveOrder = currentStageData.botDeckPreset != null && !currentStageData.botDeckPreset.useRandomAllCardsPool,
+            cardIds = currentStageData.botDeckPreset != null && currentStageData.botDeckPreset.cardIds != null
+                ? new List<string>(currentStageData.botDeckPreset.cardIds.Where(cardId => !string.IsNullOrWhiteSpace(cardId)))
+                : new List<string>()
+        };
 
         // บันทึก mission condition ของด่านนี้ เพื่อให้ Battle scene คำนวณผลรายข้อได้ถูกต้อง
         RuntimeStageConditionPayload payload = new RuntimeStageConditionPayload
@@ -425,6 +462,7 @@ public class StageDetailPopup : MonoBehaviour
         }
 
         PlayerPrefs.SetString("CurrentStageConditionsJson", JsonUtility.ToJson(payload));
+        PlayerPrefs.SetString("CurrentBotDeckSnapshotJson", JsonUtility.ToJson(botDeckSnapshot));
         PlayerPrefs.Save();
 
         // ตรวจว่า Scene 'Battle' อยู่ใน Build Settings หรือไม่
@@ -455,13 +493,6 @@ public class StageDetailPopup : MonoBehaviour
             : botDeckPreset.displayName;
 
         string presetLabel = isThai ? "ชุดเด็คที่ใช้" : "Deck preset";
-        string summary = botDeckPreset.GetSummary();
-
-        if (string.IsNullOrWhiteSpace(summary))
-        {
-            return $"{baseText}\n\n{presetLabel}: {presetName}";
-        }
-
-        return $"{baseText}\n\n{presetLabel}: {presetName}\n{summary}";
+        return $"{baseText}\n\n{presetLabel}: {presetName}";
     }
 }

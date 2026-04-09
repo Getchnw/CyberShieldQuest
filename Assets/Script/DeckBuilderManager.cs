@@ -46,6 +46,7 @@ public class DeckBuilderManager : MonoBehaviour
         }
 
         if (searchInput != null) searchInput.onValueChanged.AddListener(delegate { RefreshLeftPanel(); });
+        EnsureFilterDropdownOptions();
         if (filterDropdown != null) filterDropdown.onValueChanged.AddListener(delegate { RefreshLeftPanel(); });
 
         LoadCardLibrary();
@@ -102,6 +103,24 @@ public class DeckBuilderManager : MonoBehaviour
     }
 
     void ShowDetail(CardData card) { if (detailPopup != null) detailPopup.Open(card); }
+
+    void EnsureFilterDropdownOptions()
+    {
+        if (filterDropdown == null)
+            return;
+
+        bool hasGeneral = filterDropdown.options != null &&
+                          filterDropdown.options.Any(option =>
+                              option != null &&
+                              !string.IsNullOrWhiteSpace(option.text) &&
+                              option.text.Trim().ToLowerInvariant() == "general");
+
+        if (!hasGeneral)
+        {
+            filterDropdown.options.Add(new TMP_Dropdown.OptionData("General"));
+            filterDropdown.RefreshShownValue();
+        }
+    }
 
     // --- ส่วนแสดงผลคลังการ์ด (ซ้าย) ---
     void RefreshLeftPanel()
@@ -179,6 +198,7 @@ public class DeckBuilderManager : MonoBehaviour
             if (categoryIndex == 1 && card.mainCategory != MainCategory.A01) matchCategory = false;
             if (categoryIndex == 2 && card.mainCategory != MainCategory.A02) matchCategory = false;
             if (categoryIndex == 3 && card.mainCategory != MainCategory.A03) matchCategory = false;
+            if (categoryIndex == 4 && card.mainCategory != MainCategory.General) matchCategory = false;
 
             if (matchName && matchCategory)
             {
