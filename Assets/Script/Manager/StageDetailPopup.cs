@@ -183,6 +183,7 @@ public class StageDetailPopup : MonoBehaviour
         // }
 
         // --- ส่วนการเช็ค Deck (เพิ่มเงื่อนไข 5 ใบที่นี่) ---
+        const int requiredDeckCards = 30;
         bool isDeckValid = false;
         string errorMessage = "";
 
@@ -196,18 +197,18 @@ public class StageDetailPopup : MonoBehaviour
 
             if (currentStageData.isStoryBattle)
             {
-                // ถ้าเป็น Story Battle: เช็คทั้ง "ประเภท" และ "จำนวนต้อง >= 5"
+                // ถ้าเป็น Story Battle: เช็คทั้ง "ประเภท" และ "จำนวนต้อง >= 30"
                 bool isCorrectType = CheckDeck(gameData.selectedStory.lastSelectedStoryId);
-                isDeckValid = isCorrectType && cardCount >= 5;
+                isDeckValid = isCorrectType && cardCount >= requiredDeckCards;
 
                 if (!isCorrectType)
                     errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
                         $"<color=red>ต้องใช้การ์ดประเภท {gameData.selectedStory.lastSelectedStoryId} ทั้งเด็ค</color>" :
                         $"<color=red>All cards must be {gameData.selectedStory.lastSelectedStoryId} type</color>";
-                else if (cardCount < 5)
+                else if (cardCount < requiredDeckCards)
                     errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
-                        "<color=red>ต้องมีการ์ดอย่างน้อย 5 ใบในเด็ค</color>" :
-                        "<color=red>Need at least 5 cards in deck</color>";
+                        $"<color=red>ต้องมีการ์ดอย่างน้อย {requiredDeckCards} ใบในเด็ค</color>" :
+                        $"<color=red>Need at least {requiredDeckCards} cards in deck</color>";
                 else
                     errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
                         $"<color=green>เด็คพร้อมสำหรับ Story Battle ({gameData.selectedStory.lastSelectedStoryId})</color>" :
@@ -215,11 +216,11 @@ public class StageDetailPopup : MonoBehaviour
             }
             else
             {
-                // ถ้าเป็นด่านปกติ: เช็คแค่จำนวน >= 5
-                isDeckValid = cardCount >= 5;
+                // ถ้าเป็นด่านปกติ: เช็คแค่จำนวน >= 30
+                isDeckValid = cardCount >= requiredDeckCards;
                 errorMessage = isDeckValid
                 ? (LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "<color=green>เด็คพร้อมใช้งาน</color>" : "<color=green>Deck is ready</color>")
-                : (LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? "<color=red>ต้องมีการ์ดอย่างน้อย 5 ใบ</color>" : "<color=red>Need at least 5 cards</color>");
+                : (LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? $"<color=red>ต้องมีการ์ดอย่างน้อย {requiredDeckCards} ใบ</color>" : $"<color=red>Need at least {requiredDeckCards} cards</color>");
             }
         }
         else
@@ -227,8 +228,8 @@ public class StageDetailPopup : MonoBehaviour
             // 🚨 เข้าเคสนี้ถ้าผู้เล่นยังไม่มีเด็คเลย (ทำให้ข้อความไม่อัปเดตในตอนแรก)
             isDeckValid = false;
             errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
-                "<color=red>ต้องมีการ์ดอย่างน้อย 5 ใบในเด็ค</color>" :
-                "<color=red>Need at least 5 cards in deck</color>";
+                $"<color=red>ต้องมีการ์ดอย่างน้อย {requiredDeckCards} ใบในเด็ค</color>" :
+                $"<color=red>Need at least {requiredDeckCards} cards in deck</color>";
         }
         if (TypeDeckText_StoryBattle != null) TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? $"เงื่อนไขการเล่น:\n{errorMessage}" : $"Play Conditions:\n{errorMessage}";
         if (startButton != null) startButton.interactable = isDeckValid;
@@ -485,14 +486,6 @@ public class StageDetailPopup : MonoBehaviour
             ? (isThai ? "ไม่มีคำอธิบายเด็ค" : "No deck description")
             : deckDescription;
 
-        if (botDeckPreset == null)
-            return baseText;
-
-        string presetName = string.IsNullOrWhiteSpace(botDeckPreset.displayName)
-            ? botDeckPreset.name
-            : botDeckPreset.displayName;
-
-        string presetLabel = isThai ? "ชุดเด็คที่ใช้" : "Deck preset";
-        return $"{baseText}\n\n{presetLabel}: {presetName}";
+        return baseText;
     }
 }

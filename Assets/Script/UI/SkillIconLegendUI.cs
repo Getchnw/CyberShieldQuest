@@ -43,7 +43,13 @@ public class SkillIconLegendUI : MonoBehaviour
     [Range(14f, 36f)] public float bodyFontSize = 21f;
     [Range(24f, 72f)] public float iconSize = 40f;
 
-    private const float RowHeight = 58f;
+    [Header("Scroll + Row Layout")]
+    [Range(20f, 300f)] public float scrollSensitivity = 110f;
+    [Range(48f, 220f)] public float minRowHeight = 72f;
+    [Range(4f, 28f)] public float rowVerticalPadding = 10f;
+    [Range(8f, 32f)] public float rowHorizontalPadding = 12f;
+    [Range(6f, 24f)] public float rowSpacing = 12f;
+
     private const float HeaderHeight = 42f;
     private IconProvider iconProvider;
     private bool warnedIconSourceMissing;
@@ -332,6 +338,9 @@ public class SkillIconLegendUI : MonoBehaviour
         scroll.horizontal = false;
         scroll.vertical = true;
         scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = scrollSensitivity;
+        scroll.inertia = true;
+        scroll.decelerationRate = 0.12f;
     }
 
     private void BuildLegendContent()
@@ -384,45 +393,72 @@ public class SkillIconLegendUI : MonoBehaviour
 
     private void AddRow(Transform parent, LegendEntry entry)
     {
-        GameObject rowObj = new GameObject($"Row_{entry.Key}", typeof(RectTransform), typeof(Image));
+        GameObject rowObj = new GameObject($"Row_{entry.Key}", typeof(RectTransform), typeof(Image), typeof(LayoutElement), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
         rowObj.transform.SetParent(parent, false);
 
         RectTransform rowRect = rowObj.GetComponent<RectTransform>();
-        rowRect.sizeDelta = new Vector2(0f, RowHeight);
+        rowRect.sizeDelta = new Vector2(0f, minRowHeight);
 
         Image rowBg = rowObj.GetComponent<Image>();
         rowBg.color = rowBackgroundColor;
 
-        GameObject iconObj = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        LayoutElement rowLayout = rowObj.GetComponent<LayoutElement>();
+        rowLayout.minHeight = minRowHeight;
+        rowLayout.preferredHeight = -1f;
+        rowLayout.flexibleHeight = 0f;
+
+        HorizontalLayoutGroup rowGroup = rowObj.GetComponent<HorizontalLayoutGroup>();
+        rowGroup.padding = new RectOffset((int)rowHorizontalPadding, (int)rowHorizontalPadding, (int)rowVerticalPadding, (int)rowVerticalPadding);
+        rowGroup.spacing = rowSpacing;
+        rowGroup.childAlignment = TextAnchor.MiddleLeft;
+        rowGroup.childControlHeight = true;
+        rowGroup.childControlWidth = true;
+        rowGroup.childForceExpandHeight = false;
+        rowGroup.childForceExpandWidth = false;
+
+        ContentSizeFitter rowFitter = rowObj.GetComponent<ContentSizeFitter>();
+        rowFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        rowFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        GameObject iconObj = new GameObject("Icon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
         iconObj.transform.SetParent(rowObj.transform, false);
 
         RectTransform iconRect = iconObj.GetComponent<RectTransform>();
-        iconRect.anchorMin = new Vector2(0f, 0.5f);
-        iconRect.anchorMax = new Vector2(0f, 0.5f);
-        iconRect.pivot = new Vector2(0f, 0.5f);
-        iconRect.anchoredPosition = new Vector2(10f, 0f);
         iconRect.sizeDelta = new Vector2(iconSize, iconSize);
+
+        LayoutElement iconLayout = iconObj.GetComponent<LayoutElement>();
+        iconLayout.minWidth = iconSize;
+        iconLayout.preferredWidth = iconSize;
+        iconLayout.flexibleWidth = 0f;
+        iconLayout.minHeight = iconSize;
+        iconLayout.preferredHeight = iconSize;
+        iconLayout.flexibleHeight = 0f;
 
         Image icon = iconObj.GetComponent<Image>();
         icon.sprite = entry.Icon;
         icon.preserveAspect = true;
         icon.color = entry.Icon != null ? Color.white : new Color(1f, 1f, 1f, 0.25f);
 
-        GameObject textObj = new GameObject("Description", typeof(RectTransform), typeof(TextMeshProUGUI));
+        GameObject textObj = new GameObject("Description", typeof(RectTransform), typeof(TextMeshProUGUI), typeof(LayoutElement), typeof(ContentSizeFitter));
         textObj.transform.SetParent(rowObj.transform, false);
 
-        RectTransform textRect = textObj.GetComponent<RectTransform>();
-        textRect.anchorMin = new Vector2(0f, 0f);
-        textRect.anchorMax = new Vector2(1f, 1f);
-        textRect.offsetMin = new Vector2(62f, 2f);
-        textRect.offsetMax = new Vector2(-8f, -2f);
+        LayoutElement textLayout = textObj.GetComponent<LayoutElement>();
+        textLayout.minWidth = 0f;
+        textLayout.flexibleWidth = 1f;
+        textLayout.preferredHeight = -1f;
+        textLayout.flexibleHeight = 0f;
+
+        ContentSizeFitter textFitter = textObj.GetComponent<ContentSizeFitter>();
+        textFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        textFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         TextMeshProUGUI text = textObj.GetComponent<TextMeshProUGUI>();
         text.text = entry.Description;
         text.fontSize = bodyFontSize;
         text.enableWordWrapping = true;
+        text.overflowMode = TextOverflowModes.Overflow;
         text.color = bodyTextColor;
-        text.alignment = TextAlignmentOptions.MidlineLeft;
+        text.alignment = TextAlignmentOptions.TopLeft;
         text.raycastTarget = false;
     }
 
@@ -481,7 +517,7 @@ public class SkillIconLegendUI : MonoBehaviour
             {
                 Key = kv.Key != null ? kv.Key.name : Guid.NewGuid().ToString(),
                 Icon = kv.Key,
-                Description = string.Join(", ", kv.Value)
+                Description = string.Join("\n", kv.Value.Select(value => $"- {value}"))
             });
         }
 
@@ -542,6 +578,16 @@ public class SkillIconLegendUI : MonoBehaviour
                     titleText.text = panelTitle;
                     titleText.fontSize = titleFontSize;
                     titleText.color = titleColor;
+                }
+            }
+
+            Transform scrollTransform = panelRoot.transform.Find("ScrollView");
+            if (scrollTransform != null)
+            {
+                ScrollRect scrollRect = scrollTransform.GetComponent<ScrollRect>();
+                if (scrollRect != null)
+                {
+                    scrollRect.scrollSensitivity = scrollSensitivity;
                 }
             }
         }
