@@ -590,13 +590,9 @@ public class BattleManager : MonoBehaviour
         {
             enemyDeckList = new List<CardData>(deckList);
         }
-        bool preserveEnemyDeckOrder = PlayerPrefs.GetInt("CurrentBotDeckPreserveOrder", 0) == 1;
         enemyDeckSnapshot = enemyDeckList.Where(card => card != null).ToList();
         ShuffleList(deckList);
-        if (!preserveEnemyDeckOrder)
-        {
-            ShuffleList(enemyDeckList);
-        }
+        ShuffleList(enemyDeckList);
 
         // 2. Setup Stats
         currentHP = maxHP;

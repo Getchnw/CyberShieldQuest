@@ -606,6 +606,37 @@ public class GameManager : MonoBehaviour
             return Mathf.Clamp(trueCount, 0, 3);
         }
 
+        List<bool> MergeMissionResults(List<bool> existingMissions, List<bool> newMissions)
+        {
+            if ((existingMissions == null || existingMissions.Count == 0)
+                && (newMissions == null || newMissions.Count == 0))
+            {
+                return new List<bool>();
+            }
+
+            if (existingMissions == null || existingMissions.Count == 0)
+            {
+                return new List<bool>(newMissions);
+            }
+
+            if (newMissions == null || newMissions.Count == 0)
+            {
+                return new List<bool>(existingMissions);
+            }
+
+            int mergedCount = Mathf.Max(existingMissions.Count, newMissions.Count);
+            List<bool> merged = new List<bool>(mergedCount);
+
+            for (int i = 0; i < mergedCount; i++)
+            {
+                bool oldDone = i < existingMissions.Count && existingMissions[i];
+                bool newDone = i < newMissions.Count && newMissions[i];
+                merged.Add(oldDone || newDone);
+            }
+
+            return merged;
+        }
+
         if (stageProgress != null)
         {
             // 1. ถ้าเคยเล่นแล้ว: อัปเดตดาว (ถ้าทำได้ดีขึ้น)
@@ -613,9 +644,10 @@ public class GameManager : MonoBehaviour
             stageProgress.playCount++;
             stageProgress.lastPlayedDate = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            // เก็บผล mission ของ "รอบล่าสุด" โดยตรง
-            stageProgress.completedStarMissions = missionResults != null ? new List<bool>(missionResults) : new List<bool>();
-            stageProgress.starsEarned = CalculateStarCountFromMissions(stageProgress.completedStarMissions, starsEarned);
+            // เก็บผล mission แบบสะสม: ถ้าเคยผ่าน mission นั้นแล้ว จะคง true ตลอด
+            stageProgress.completedStarMissions = MergeMissionResults(stageProgress.completedStarMissions, missionResults);
+            int fallbackStars = Mathf.Max(stageProgress.starsEarned, starsEarned);
+            stageProgress.starsEarned = CalculateStarCountFromMissions(stageProgress.completedStarMissions, fallbackStars);
 
             // อัปเดต Records
             if (stats != null)
