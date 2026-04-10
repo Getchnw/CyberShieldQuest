@@ -2806,7 +2806,7 @@ MonoBehaviour:
       subCategory: 0
     - type: 14
       description: use spell 3 time
-      description_th: "\u0E43\u0E0A\u0E49\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+      description_th: "\u0E43\u0E0A\u0E49\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17
         spell 3 \u0E43\u0E1A"
       intValue: 3
       floatValue: 0
@@ -2832,7 +2832,7 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: 3b1926ec88c69b0498cb518150c3dc75, type: 3}
     botLevel: 1
     deckDescription: conclude A02 card
-    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17
       A02"
     starConditions:
     - type: 0
@@ -2880,7 +2880,7 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: f24b940388e25314da955ed7dc899fcd, type: 3}
     botLevel: 1
     deckDescription: conclude A03 card
-    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17
       A03"
     starConditions:
     - type: 0
@@ -2929,7 +2929,7 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: 3528db8cb3e6f4c4f8b00051645dabdc, type: 3}
     botLevel: 2
     deckDescription: 'conclude A01 and A02 card '
-    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17
       A01 \u0E01\u0E31\u0E1A A02"
     starConditions:
     - type: 0
@@ -3028,7 +3028,7 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: 3b2eb791098859c4c8fccd70835072b9, type: 3}
     botLevel: 3
     deckDescription: conclude A01 A02 and A03 card
-    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17
       A01 A02 \u0E41\u0E25\u0E30 A03"
     starConditions:
     - type: 0
@@ -3076,7 +3076,7 @@ MonoBehaviour:
     botSprite: {fileID: 21300000, guid: 3b2eb791098859c4c8fccd70835072b9, type: 3}
     botLevel: 3
     deckDescription: 'conclude A01 A02 and A03 card '
-    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E23\u0E30\u0E40\u0E20\u0E17
+    deckDescription_th: "\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17
       A01 A02 \u0E41\u0E25\u0E30 A03"
     starConditions:
     - type: 0

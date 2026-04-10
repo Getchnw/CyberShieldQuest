@@ -255,6 +255,7 @@ public class BattleManager : MonoBehaviour
     // --- ตัวแปร Logic ภายใน ---
     private BattleCardUI currentAttackerBot;
     private bool playerHasMadeChoice = false;
+    private BotPlayStyle currentBotPlayStyle = BotPlayStyle.Balanced;
     private List<CardData> enemyDeckList = new List<CardData>();
     private List<CardData> enemyDeckSnapshot = new List<CardData>();
     private Dictionary<string, CardData> revealedEnemyCards = new Dictionary<string, CardData>(); // เก็บการ์ดที่ทัยเหงแล้วท่อแคส
@@ -2485,18 +2486,24 @@ public class BattleManager : MonoBehaviour
         // ลิสต์การ์ดในมือบอท (เฉพาะที่ยังไม่ลงสนาม)
         var handCards = enemyHandArea.GetComponentsInChildren<BattleCardUI>();
 
-        // 🎇 ลองใช้เวทย์ก่อน
-        var spellCard = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.Spell && enemyCurrentPP >= c.GetData().cost);
-        if (spellCard != null && CanCastSpell(spellCard.GetData(), isPlayer: false))
+        // ปรับ pattern ตามสไตล์บอท
+        bool preferSpellFirst = currentBotPlayStyle == BotPlayStyle.Control
+            || (currentBotPlayStyle == BotPlayStyle.Balanced && Random.value < 0.5f)
+            || (currentBotPlayStyle == BotPlayStyle.Aggro && Random.value < 0.25f);
+
+        if (preferSpellFirst)
         {
-            yield return StartCoroutine(BotCastSpell(spellCard));
-            enemyCurrentPP -= spellCard.GetData().cost;
-            // 🔥 ลบ return ออก เพื่อให้บอทสามารถเล่นการ์ดอื่นต่อได้หลังใช้เวทย์
+            var openingSpell = SelectSpellForCurrentStyle(handCards);
+            if (openingSpell != null && CanCastSpell(openingSpell.GetData(), isPlayer: false))
+            {
+                yield return StartCoroutine(BotCastSpell(openingSpell));
+                enemyCurrentPP -= openingSpell.GetData().cost;
+            }
         }
 
         // 🔥 ลอง Monster (สามารถ Sacrifice ได้ถ้าช่องเต็ม)
         Transform freeMonSlot = GetFreeSlot(CardType.Monster, false);
-        var bestMonster = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.Monster && enemyCurrentPP >= c.GetData().cost);
+        var bestMonster = SelectMonsterForCurrentStyle(handCards);
 
         if (bestMonster != null)
         {
@@ -2515,7 +2522,7 @@ public class BattleManager : MonoBehaviour
 
         // 🔥 ลอง EquipSpell (สามารถ Sacrifice ได้ถ้าช่องเต็ม)
         Transform freeEqSlot = GetFreeSlot(CardType.EquipSpell, false);
-        var bestEquip = System.Array.Find(handCards, c => c != null && c.GetData() != null && c.GetData().type == CardType.EquipSpell && enemyCurrentPP >= c.GetData().cost);
+        var bestEquip = SelectEquipForCurrentStyle(handCards);
 
         if (bestEquip != null)
         {
@@ -2531,6 +2538,73 @@ public class BattleManager : MonoBehaviour
                 BotTrySacrifice(bestEquip, CardType.EquipSpell);
             }
         }
+
+        if (!preferSpellFirst)
+        {
+            var followUpSpell = SelectSpellForCurrentStyle(handCards);
+            if (followUpSpell != null && CanCastSpell(followUpSpell.GetData(), isPlayer: false))
+            {
+                yield return StartCoroutine(BotCastSpell(followUpSpell));
+                enemyCurrentPP -= followUpSpell.GetData().cost;
+            }
+        }
+    }
+
+    private BattleCardUI SelectSpellForCurrentStyle(BattleCardUI[] handCards)
+    {
+        var spells = handCards
+            .Where(c => c != null && c.GetData() != null && c.GetData().type == CardType.Spell && enemyCurrentPP >= c.GetData().cost)
+            .ToList();
+
+        if (spells.Count == 0)
+            return null;
+
+        if (currentBotPlayStyle == BotPlayStyle.Control)
+            return spells.OrderByDescending(c => c.GetData().cost).FirstOrDefault();
+
+        if (currentBotPlayStyle == BotPlayStyle.Aggro)
+            return spells.OrderBy(c => c.GetData().cost).FirstOrDefault();
+
+        return spells.OrderByDescending(c => c.GetData().cost).ThenBy(c => c.GetData().cardName).FirstOrDefault();
+    }
+
+    private BattleCardUI SelectMonsterForCurrentStyle(BattleCardUI[] handCards)
+    {
+        var monsters = handCards
+            .Where(c => c != null && c.GetData() != null && c.GetData().type == CardType.Monster && enemyCurrentPP >= c.GetData().cost)
+            .ToList();
+
+        if (monsters.Count == 0)
+            return null;
+
+        if (currentBotPlayStyle == BotPlayStyle.Aggro)
+            return monsters.OrderByDescending(c => c.GetData().atk).ThenBy(c => c.GetData().cost).FirstOrDefault();
+
+        if (currentBotPlayStyle == BotPlayStyle.Control)
+            return monsters.OrderByDescending(c => c.GetData().hp).ThenByDescending(c => c.GetData().cost).FirstOrDefault();
+
+        return monsters
+            .OrderByDescending(c => c.GetData().atk + c.GetData().hp)
+            .ThenByDescending(c => c.GetData().cost)
+            .FirstOrDefault();
+    }
+
+    private BattleCardUI SelectEquipForCurrentStyle(BattleCardUI[] handCards)
+    {
+        var equips = handCards
+            .Where(c => c != null && c.GetData() != null && c.GetData().type == CardType.EquipSpell && enemyCurrentPP >= c.GetData().cost)
+            .ToList();
+
+        if (equips.Count == 0)
+            return null;
+
+        if (currentBotPlayStyle == BotPlayStyle.Aggro)
+            return equips.OrderBy(c => c.GetData().cost).FirstOrDefault();
+
+        if (currentBotPlayStyle == BotPlayStyle.Control)
+            return equips.OrderByDescending(c => c.GetData().cost).FirstOrDefault();
+
+        return equips.OrderByDescending(c => c.GetData().cost).ThenBy(c => c.GetData().cardName).FirstOrDefault();
     }
 
     // 🔥 บอทลองสังเวยการ์ดเก่าเพื่อลงการ์ดใหม่
@@ -3467,6 +3541,29 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
     /// </summary>
     bool ShouldBotBlock(SubCategory attackerCategory)
     {
+        float mediumHpBlockChance;
+        float highHpBlockChanceWithMatch;
+        float highHpBlockChanceNoMatch;
+
+        switch (currentBotPlayStyle)
+        {
+            case BotPlayStyle.Aggro:
+                mediumHpBlockChance = 0.45f;
+                highHpBlockChanceWithMatch = 0.35f;
+                highHpBlockChanceNoMatch = 0.2f;
+                break;
+            case BotPlayStyle.Control:
+                mediumHpBlockChance = 0.9f;
+                highHpBlockChanceWithMatch = 0.8f;
+                highHpBlockChanceNoMatch = 0.65f;
+                break;
+            default:
+                mediumHpBlockChance = 0.7f;
+                highHpBlockChanceWithMatch = 0.6f;
+                highHpBlockChanceNoMatch = 0.4f;
+                break;
+        }
+
         // คำนวณเปอร์เซ็นต์ HP ของบอท
         float hpPercent = (float)enemyCurrentHP / enemyMaxHP;
 
@@ -3480,7 +3577,7 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
         // 2. HP ปานกลาง (30-60%) → กัน 70% ของเวลา
         if (hpPercent < 0.6f)
         {
-            bool shouldBlock = Random.value < 0.7f;
+            bool shouldBlock = Random.value < mediumHpBlockChance;
             Debug.Log($"⚠️ HP ปานกลาง ({hpPercent:P0}) → กัน {(shouldBlock ? "✓" : "✗")}");
             return shouldBlock;
         }
@@ -3502,7 +3599,7 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
             }
         }
 
-        float blockChance = hasMatchingShield ? 0.6f : 0.4f;
+        float blockChance = hasMatchingShield ? highHpBlockChanceWithMatch : highHpBlockChanceNoMatch;
         bool willBlock = Random.value < blockChance;
         Debug.Log($"💚 HP สูง ({hpPercent:P0}) → โอกาสกัน {blockChance:P0} → {(willBlock ? "กัน ✓" : "ปล่อยเข้า ✗")}");
         return willBlock;
@@ -4276,6 +4373,9 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
         bool isStoryBattle = PlayerPrefs.GetInt("CurrentStageIsStoryBattle", 0) == 1;
         BotDeckPreset preset = null;
         RuntimeBotDeckSnapshotPayload snapshot = LoadBotDeckSnapshot();
+        currentBotPlayStyle = snapshot != null
+            ? ResolveBotPlayStyle(snapshot.botPlayStyle)
+            : BotPlayStyle.Balanced;
 
         if (isStoryBattle)
         {
@@ -4306,6 +4406,7 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
 
         if (preset != null)
         {
+            currentBotPlayStyle = preset.playStyle;
             string presetId = string.IsNullOrWhiteSpace(preset.presetId) ? preset.name : preset.presetId;
             PlayerPrefs.SetString("CurrentBotDeckPresetId", presetId);
             PlayerPrefs.Save();
@@ -4337,9 +4438,17 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
         List<CardData> builtDeck = preset.BuildDeckCards();
         string deckName = string.IsNullOrWhiteSpace(preset.displayName) ? preset.name : preset.displayName;
         string joinedCardIds = string.Join(", ", builtDeck.Where(card => card != null).Select(card => card.card_id));
-        Debug.Log($"🎴 Loaded bot deck preset: {deckName} ({preset.presetId}) | Cards: {builtDeck.Count}");
+        Debug.Log($"🎴 Loaded bot deck preset: {deckName} ({preset.presetId}) | Cards: {builtDeck.Count} | Style: {currentBotPlayStyle}");
         Debug.Log($"🎴 Bot deck card_ids => {joinedCardIds}");
         return builtDeck;
+    }
+
+    private BotPlayStyle ResolveBotPlayStyle(int rawValue)
+    {
+        if (System.Enum.IsDefined(typeof(BotPlayStyle), rawValue))
+            return (BotPlayStyle)rawValue;
+
+        return BotPlayStyle.Balanced;
     }
 
     private List<CardData> BuildDeckFromCardIds(IEnumerable<string> cardIds)
@@ -4368,6 +4477,7 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
     private class RuntimeBotDeckSnapshotPayload
     {
         public string presetId;
+        public int botPlayStyle;
         public bool useRandomAllCardsPool;
         public int randomDeckSize;
         public bool preserveOrder;

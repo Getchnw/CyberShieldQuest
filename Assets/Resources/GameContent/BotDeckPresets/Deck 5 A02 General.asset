@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   presetId: BOT_MIX_05_A02_GEN
   displayName: Deck 5 A02 + General
+  playStyle: 0
   description: Mixed A02 and General cards
   cardIds:
   - E_A02_03

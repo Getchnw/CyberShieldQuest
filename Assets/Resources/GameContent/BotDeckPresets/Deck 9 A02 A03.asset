@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   presetId: BOT_MIX_09_A02_A03
   displayName: Deck 9 A02 + A03
+  playStyle: 0
   description: Mixed A02 and A03 cards
   cardIds:
   - S_A03_02

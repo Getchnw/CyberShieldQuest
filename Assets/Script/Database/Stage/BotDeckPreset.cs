@@ -2,11 +2,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum BotPlayStyle
+{
+    Balanced = 0,
+    Aggro = 1,
+    Control = 2
+}
+
 [CreateAssetMenu(fileName = "New Bot Deck Preset", menuName = "Game Content/Bot Deck Preset")]
 public class BotDeckPreset : ScriptableObject
 {
     public string presetId;
     public string displayName;
+
+    [Header("Bot AI Style")]
+    public BotPlayStyle playStyle = BotPlayStyle.Balanced;
 
     [TextArea(2, 6)]
     public string description;

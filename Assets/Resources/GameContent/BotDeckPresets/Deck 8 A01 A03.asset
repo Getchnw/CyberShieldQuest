@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   presetId: BOT_MIX_08_A01_A03
   displayName: Deck 8 A01 + A03
+  playStyle: 0
   description: Mixed A01 and A03 cards
   cardIds:
   - E_A01_01

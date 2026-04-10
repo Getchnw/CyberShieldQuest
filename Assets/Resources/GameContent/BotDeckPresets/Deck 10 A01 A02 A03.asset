@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   presetId: BOT_MIX_10_A01_A02_A03
   displayName: Deck 10 A01 + A02 + A03
+  playStyle: 0
   description: Mixed A01, A02, and A03 cards
   cardIds:
   - E_A01_01

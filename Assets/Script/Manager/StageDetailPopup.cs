@@ -19,6 +19,7 @@ public class StageDetailPopup : MonoBehaviour
     private class RuntimeBotDeckSnapshotPayload
     {
         public string presetId;
+        public int botPlayStyle;
         public bool useRandomAllCardsPool;
         public int randomDeckSize;
         public bool preserveOrder;
@@ -422,6 +423,7 @@ public class StageDetailPopup : MonoBehaviour
         RuntimeBotDeckSnapshotPayload botDeckSnapshot = new RuntimeBotDeckSnapshotPayload
         {
             presetId = currentStageData.botDeckPreset != null ? currentStageData.botDeckPreset.presetId : string.Empty,
+            botPlayStyle = currentStageData.botDeckPreset != null ? (int)currentStageData.botDeckPreset.playStyle : (int)BotPlayStyle.Balanced,
             useRandomAllCardsPool = currentStageData.botDeckPreset != null && currentStageData.botDeckPreset.useRandomAllCardsPool,
             randomDeckSize = currentStageData.botDeckPreset != null ? currentStageData.botDeckPreset.randomDeckSize : 30,
             preserveOrder = currentStageData.botDeckPreset != null && !currentStageData.botDeckPreset.useRandomAllCardsPool,

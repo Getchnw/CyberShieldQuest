@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   presetId: BOT_MIX_06_A03_GEN
   displayName: Deck 6 A03 + General
+  playStyle: 0
   description: Mixed A03 and General cards
   cardIds:
   - M_A03_03
