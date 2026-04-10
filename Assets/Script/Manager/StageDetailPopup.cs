@@ -107,6 +107,7 @@ public class StageDetailPopup : MonoBehaviour
         if (currentDeck == null || currentDeck.card_ids_in_deck.Count == 0) return false;
 
         // 3. วนลูปเช็คการ์ดทุกใบในเด็ค
+        MainCategory storyMainCategory = ChangeStoryBattleToMainCategory(StoryId);
         foreach (string id in currentDeck.card_ids_in_deck)
         {
             // เรียกใช้ฟังก์ชัน GetCardByID ที่คุณเตรียมไว้
@@ -114,12 +115,10 @@ public class StageDetailPopup : MonoBehaviour
 
             if (card != null)
             {
-                MainCategory mainCategory = ChangeStoryBattleToMainCategory(StoryId);
-                // ตรวจสอบว่า FromStroryId ของการ์ด ตรงกับ StoryId ของด่านหรือไม่
-                // (ใช้ชื่อ FromStroryId ตาม typo ใน CardData ของคุณ)
-                if (card.mainCategory != mainCategory)
+                // Story Battle อนุญาตการ์ดหมวดเนื้อเรื่อง + General ผสมกันได้
+                if (card.mainCategory != storyMainCategory && card.mainCategory != MainCategory.General)
                 {
-                    Debug.Log($"[CheckDeck] การ์ด {card.cardName} ไม่ใช่ประเภท {StoryId}");
+                    Debug.Log($"[CheckDeck] การ์ด {card.cardName} ไม่ใช่ประเภท {StoryId} หรือ General");
                     return false; // พบการ์ดที่ไม่เข้าพวก
                 }
             }
@@ -197,22 +196,18 @@ public class StageDetailPopup : MonoBehaviour
 
             if (currentStageData.isStoryBattle)
             {
-                // ถ้าเป็น Story Battle: เช็คทั้ง "ประเภท" และ "จำนวนต้อง >= 30"
+                // ถ้าเป็น Story Battle: เช็คเฉพาะ "ประเภท" (ไม่บังคับจำนวนการ์ดขั้นต่ำ)
                 bool isCorrectType = CheckDeck(gameData.selectedStory.lastSelectedStoryId);
-                isDeckValid = isCorrectType && cardCount >= requiredDeckCards;
+                isDeckValid = isCorrectType;
 
                 if (!isCorrectType)
                     errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
-                        $"<color=red>ต้องใช้การ์ดประเภท {gameData.selectedStory.lastSelectedStoryId} ทั้งเด็ค</color>" :
-                        $"<color=red>All cards must be {gameData.selectedStory.lastSelectedStoryId} type</color>";
-                else if (cardCount < requiredDeckCards)
-                    errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
-                        $"<color=red>ต้องมีการ์ดอย่างน้อย {requiredDeckCards} ใบในเด็ค</color>" :
-                        $"<color=red>Need at least {requiredDeckCards} cards in deck</color>";
+                        $"<color=red>เด็คต้องมีเฉพาะการ์ดประเภท {gameData.selectedStory.lastSelectedStoryId} หรือ General</color>" :
+                        $"<color=red>Deck can only contain {gameData.selectedStory.lastSelectedStoryId} and General cards</color>";
                 else
                     errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
-                        $"<color=green>เด็คพร้อมสำหรับ Story Battle ({gameData.selectedStory.lastSelectedStoryId})</color>" :
-                        $"<color=green>Deck ready for Story Battle</color>";
+                        $"<color=green>เด็คพร้อมสำหรับ Story Battle ({gameData.selectedStory.lastSelectedStoryId} + General)</color>" :
+                        $"<color=green>Deck ready for Story Battle ({gameData.selectedStory.lastSelectedStoryId} + General)</color>";
             }
             else
             {
