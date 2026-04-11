@@ -184,6 +184,7 @@ public class StageDetailPopup : MonoBehaviour
 
         // --- ส่วนการเช็ค Deck (เพิ่มเงื่อนไข 5 ใบที่นี่) ---
         const int requiredDeckCards = 30;
+        const int minDeckCardsForStoryBattle = 5; // กำหนดขั้นต่ำการ์ดสำหรับ Story Battle (นอกเหนือจากเงื่อนไขประเภท)
         bool isDeckValid = false;
         string errorMessage = "";
 
@@ -199,12 +200,16 @@ public class StageDetailPopup : MonoBehaviour
             {
                 // ถ้าเป็น Story Battle: เช็คเฉพาะ "ประเภท" (ไม่บังคับจำนวนการ์ดขั้นต่ำ)
                 bool isCorrectType = CheckDeck(gameData.selectedStory.lastSelectedStoryId);
-                isDeckValid = isCorrectType;
+                isDeckValid = isCorrectType && cardCount >= minDeckCardsForStoryBattle; // ยังบังคับให้มีการ์ดอย่างน้อย 30 ใบเหมือนเดิม
 
                 if (!isCorrectType)
                     errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
                         $"<color=red>เด็คต้องมีเฉพาะการ์ดประเภท {gameData.selectedStory.lastSelectedStoryId} หรือ General</color>" :
                         $"<color=red>Deck can only contain {gameData.selectedStory.lastSelectedStoryId} and General cards</color>";
+                else if (cardCount < minDeckCardsForStoryBattle)
+                    errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
+                        $"<color=red>ต้องมีการ์ดอย่างน้อย {minDeckCardsForStoryBattle} ใบในเด็ค</color>" :
+                        $"<color=red>Need at least {minDeckCardsForStoryBattle} cards in deck</color>";
                 else
                     errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
                         $"<color=green>เด็คพร้อมสำหรับ Story Battle ({gameData.selectedStory.lastSelectedStoryId} + General)</color>" :
