@@ -14,7 +14,8 @@ public class GuidedLineController : MonoBehaviour
         Story,
         Stage,
         Deck,
-        Shop
+        Shop,
+        Battle
     }
 
     [Header("Settings")]
@@ -64,7 +65,7 @@ public class GuidedLineController : MonoBehaviour
             }
         }
         else if (tutorialType == TutorialType.Story || tutorialType == TutorialType.Stage ||
-                 tutorialType == TutorialType.Deck || tutorialType == TutorialType.Shop)
+                 tutorialType == TutorialType.Deck || tutorialType == TutorialType.Shop || tutorialType == TutorialType.Battle)
         {
             SelectMode();
         }
@@ -96,6 +97,7 @@ public class GuidedLineController : MonoBehaviour
                 case TutorialType.Shop: hasSeen = data.hasSeenTutorial_Shop; break;
                 case TutorialType.Deck: hasSeen = data.hasSeenTutorial_Deck; break;
                 case TutorialType.Stage: hasSeen = data.hasSeenTutorial_Stage; break;
+                case TutorialType.Battle: hasSeen = data.hasSeenTutorial_Battle; break;
             }
         }
 
@@ -205,6 +207,7 @@ public class GuidedLineController : MonoBehaviour
             else if (tutorialType == TutorialType.Shop) data.hasSeenTutorial_Shop = true;
             else if (tutorialType == TutorialType.Deck) data.hasSeenTutorial_Deck = true;
             else if (tutorialType == TutorialType.Stage) data.hasSeenTutorial_Stage = true;
+            else if (tutorialType == TutorialType.Battle) data.hasSeenTutorial_Battle = true;
 
             GameManager.Instance.SaveCurrentGame();
         }
@@ -212,17 +215,6 @@ public class GuidedLineController : MonoBehaviour
         // 2. จบแล้วทำไงต่อ?
         if (tutorialPanel != null) tutorialPanel.SetActive(false);
 
-
-        // if (tutorialType == TutorialType.Home)
-        // {
-        //     // หน้าแรกแค่ปิดหน้าต่าง
-        //     if (tutorialPanel != null) tutorialPanel.SetActive(false);
-        // }
-        // else
-        // {
-        //     // โหมดอื่น (Story) จบแล้วให้เปลี่ยนฉาก
-        //     GoToNextScene();
-        // }
     }
 
     // void GoToNextScene()

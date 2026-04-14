@@ -131,6 +131,7 @@ public class PlayerTutorialData
     public bool hasSeenTutorial_Stage = false;
     public bool hasSeenTutorial_Story = false;
     public bool hasSeenTutorial_Shop = false;
+    public bool hasSeenTutorial_Battle = false;
 }
 
 [System.Serializable]
