@@ -65,8 +65,7 @@ public class CollectionDetailView : MonoBehaviour
         ApplyFrameByRarity(currentCard);
         nameText.text = currentCard.cardName;
 
-        string subCat = currentCard.subCategory != SubCategory.General ? $" / [{currentCard.subCategory}]" : "";
-        typeText.text = $"{currentCard.type}{subCat}";
+        typeText.text = currentCard.GetTypeDisplayLabel();
 
         string stats = $"Cost: {currentCard.cost}";
         if (currentCard.type == CardType.Monster) stats += $" | Atk: {currentCard.atk}";

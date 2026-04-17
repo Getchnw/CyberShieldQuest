@@ -61,4 +61,27 @@ public class CardData : ScriptableObject {
 
     [Header("Game Logic")]
     public List<CardEffect> effects;
+
+    public string GetTypeDisplayLabel()
+    {
+        string mainCategoryText = mainCategory switch
+        {
+            MainCategory.A01 => "A01",
+            MainCategory.A02 => "A02",
+            MainCategory.A03 => "A03",
+            _ => "General"
+        };
+
+        if (mainCategory == MainCategory.General)
+        {
+            return $"{type} {mainCategoryText}";
+        }
+
+        if (subCategory != SubCategory.General)
+        {
+            return $"{type} {mainCategoryText} {subCategory}";
+        }
+
+        return $"{type} {mainCategoryText}";
+    }
 }

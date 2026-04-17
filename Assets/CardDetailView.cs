@@ -72,11 +72,7 @@ public class CardDetailView : MonoBehaviour
             nameText.text = $"<b>Name:</b> {data.cardName}";
 
             // 3. ใส่ประเภท (เพิ่มหัวข้อ Type:)
-            // เช็คว่ามี SubCategory ไหม (ถ้าไม่ใช่ None/General ให้โชว์ด้วย)
-            string subCat = (data.subCategory != SubCategory.General && data.subCategory != SubCategory.General)
-                            ? $" / [{data.subCategory}]"
-                            : "";
-            typeText.text = $"<b>Type:</b> {data.type}{subCat}";
+            typeText.text = $"<b>Type:</b> {data.GetTypeDisplayLabel()}";
 
             // 4. ใส่ค่าพลัง (เพิ่มหัวข้อ Stats:)
             string stats = $"Cost: {data.cost}";
@@ -100,11 +96,7 @@ public class CardDetailView : MonoBehaviour
             nameText.text = $"<b>ชื่อ:</b> {data.cardName}";
 
             // 3. ใส่ประเภท (เพิ่มหัวข้อ Type:)
-            // เช็คว่ามี SubCategory ไหม (ถ้าไม่ใช่ None/General ให้โชว์ด้วย)
-            string subCat = (data.subCategory != SubCategory.General && data.subCategory != SubCategory.General)
-                            ? $" / [{data.subCategory}]"
-                            : "";
-            typeText.text = $"<b>ประเภท:</b> {data.type}{subCat}";
+            typeText.text = $"<b>ประเภท:</b> {data.GetTypeDisplayLabel()}";
 
             // 4. ใส่ค่าพลัง (เพิ่มหัวข้อ Stats:)
             string stats = $"Cost: {data.cost}";

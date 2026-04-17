@@ -10279,7 +10279,7 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
             int attackerATK = currentAttackerBot.GetModifiedATK(isPlayerAttack: false);
 
             string infoText = $"<b>{attackerData.cardName}</b>\n";
-            infoText += $"ATK: {attackerATK} | Type: {attackerData.type}\n";
+            infoText += $"ATK: {attackerATK} | Type: {attackerData.GetTypeDisplayLabel()}\n";
 
             // เพิ่มหมวดหมู่ด้วย
             if (attackerData.mainCategory != MainCategory.General)
@@ -10297,7 +10297,7 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
             if (defenseChoiceAttackerInfoText)
             {
                 defenseChoiceAttackerInfoText.text = infoText;
-                Debug.Log($"📋 Attacker Info: {attackerData.cardName} | ATK: {attackerATK} | Type: {attackerData.type}");
+                Debug.Log($"📋 Attacker Info: {attackerData.cardName} | ATK: {attackerATK} | Type: {attackerData.GetTypeDisplayLabel()}");
             }
 
             AddBattleLog($"🛡️ ผู้เล่นต้องเลือก: รับดาเมจ หรือเลือกกัน? ({attackerData.cardName} ATK: {attackerATK})");
