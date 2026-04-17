@@ -181,6 +181,7 @@ public class BattleManager : MonoBehaviour
 
     [Header("--- Card Detail View ---")]
     public CardDetailView cardDetailView;
+    [Range(0.4f, 3f)] public float spellPreviewDuration = 1.4f;
 
     [Header("--- Sacrifice Confirm Popup ---")]
     public GameObject sacrificeConfirmPanel; // Panel ยืนยันการ sacrifice
@@ -2114,7 +2115,18 @@ public class BattleManager : MonoBehaviour
         if (canvas != null)
         {
             spellCard.transform.SetParent(canvas.transform, worldPositionStays: true);
+            spellCard.transform.SetAsLastSibling();
         }
+
+        // 👁️ หงายการ์ดเวทย์ของบอทให้เห็นชัดก่อนเล่น
+        Image spellImage = spellCard.GetComponent<Image>();
+        if (spellImage != null && spellData.artwork != null)
+        {
+            spellImage.sprite = spellData.artwork;
+            spellImage.color = Color.white;
+        }
+        spellCard.SetFrameVisible(true);
+        spellCard.ShowCardInfo();
 
         // แสดงแจ้งเตือนเวทย์
         StartCoroutine(ShowSpellUsageNotification(spellData, isPlayer: false));
@@ -2168,20 +2180,24 @@ public class BattleManager : MonoBehaviour
     /// <summary>แสดงแจ้งเตือนเวทย์ที่ถูกใช้</summary>
     IEnumerator ShowSpellUsageNotification(CardData spellData, bool isPlayer)
     {
-        // สร้างกล่องแสดงเวทย์แบบ popup
-        if (cardDetailView != null)
+        if (cardDetailView == null || spellData == null)
         {
-            cardDetailView.Open(spellData);
+            yield break;
+        }
 
-            string casterName = isPlayer ? "คุณ" : "บอท";
-            string spellMsg = $"🎇 {casterName} ใช้เวทย์: {spellData.cardName}";
-            Debug.Log(spellMsg);
+        cardDetailView.Open(spellData);
+        cardDetailView.transform.SetAsLastSibling();
 
-            // แสดง popup 2-3 วินาที
-            yield return new WaitForSeconds(2f);
+        string casterName = isPlayer ? "คุณ" : "บอท";
+        string spellMsg = $"🎇 {casterName} ใช้เวทย์: {spellData.cardName}";
+        Debug.Log(spellMsg);
 
-            // ปิด detail view โดยการคลิกอื่น หรือให้มันปิดเองตามระยะเวลา
-            // (ถ้า cardDetailView มีปุ่มปิด)
+        yield return new WaitForSeconds(spellPreviewDuration);
+
+        // ปิดเฉพาะกรณีที่ยังโชว์การ์ดใบเดิมอยู่ เพื่อไม่ไปรบกวน popup อื่น
+        if (cardDetailView != null && cardDetailView.IsShowingCard(spellData))
+        {
+            cardDetailView.Close();
         }
     }
 
