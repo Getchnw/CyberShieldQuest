@@ -260,13 +260,12 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             // 🔥 แสดง ATK (มุมซ้ายล่าง) - เฉพาะ Monster/Token
             if (_cardData.type == CardType.Monster || _cardData.type == CardType.Token)
             {
+                bool isOwnerPlayerSide = BattleManager.Instance == null || BattleManager.Instance.IsCardOwnedByPlayerSide(this);
                 // ใช้ GetModifiedATK() เพื่อแสดงพลังปัจจุบันที่คำนึงถึงสกิลทั้งหมด
-                int currentATK = GetModifiedATK(isPlayerAttack: true);
+                int currentATK = GetModifiedATK(isPlayerAttack: isOwnerPlayerSide);
                 
                 // ถ้ามี GraveyardATK ให้แสดงเป็นสีเขียว
-                var effects = _cardData.effects ?? new System.Collections.Generic.List<CardEffect>();
-                var graveyardEffect = effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
-                if (graveyardEffect.action == ActionType.GraveyardATK && currentATK > _cardData.atk)
+                if (TryGetGraveyardATKEffect(out CardEffect graveyardEffect) && currentATK > _cardData.atk)
                 {
                     atkText.color = new Color(0.5f, 1f, 0.5f); // สีเขียวอ่อน
                 }
@@ -341,11 +340,9 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             // แสดง ATK ถ้าเป็น Monster/Token
             if (_cardData.type == CardType.Monster || _cardData.type == CardType.Token)
             {
-                int currentATK = GetModifiedATK(isPlayerAttack: true);
-                var effects = _cardData.effects ?? new System.Collections.Generic.List<CardEffect>();
-                var graveyardEffect = effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
-                
-                if (graveyardEffect.action == ActionType.GraveyardATK && currentATK > _cardData.atk)
+                bool isOwnerPlayerSide = BattleManager.Instance == null || BattleManager.Instance.IsCardOwnedByPlayerSide(this);
+                int currentATK = GetModifiedATK(isPlayerAttack: isOwnerPlayerSide);
+                if (TryGetGraveyardATKEffect(out CardEffect graveyardEffect) && currentATK > _cardData.atk)
                 {
                     atkText.color = new Color(0.5f, 1f, 0.5f); // สีเขียว
                 }
@@ -409,33 +406,44 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         int baseATK = _cardData.atk;
 
         // 🔥 เช็คสกิล GraveyardATK (เพิ่มพลังตามจำนวนการ์ดในสุสาน)
-        var effects = _cardData.effects ?? new System.Collections.Generic.List<CardEffect>();
-        var graveyardEffect = effects.FirstOrDefault(e => e.trigger == EffectTrigger.OnStrike && e.action == ActionType.GraveyardATK);
-        
-        if (graveyardEffect.action == ActionType.GraveyardATK)
+        if (!TryGetGraveyardATKEffect(out CardEffect graveyardEffect))
         {
-            int graveCount = 0;
-            
-            // ถ้า player โจมตี นับสุสานของ Bot ถ้าเป็น Bot นับสุสานของ Player
-            if (BattleManager.Instance != null)
+            return baseATK;
+        }
+        
+        int graveCount = 0;
+        
+        // ถ้า player โจมตี นับสุสานของ Bot ถ้าเป็น Bot นับสุสานของ Player
+        if (BattleManager.Instance != null)
+        {
+            if (isPlayerAttack)
             {
-                if (isPlayerAttack)
-                {
-                    graveCount = BattleManager.Instance.GetEnemyGraveyardCount();
-                }
-                else
-                {
-                    graveCount = BattleManager.Instance.GetPlayerGraveyardCount();
-                }
+                graveCount = BattleManager.Instance.GetEnemyGraveyardCount();
             }
-            
-            // 🔥 คำนวณ ATK: +1 ต่อทุกๆ 2 ใบ (หารด้วย 2 แล้วปัดลง)
-            int extraATK = (graveCount / 2) * graveyardEffect.value;
-            Debug.Log($"🔥 GraveyardATK [{_cardData.cardName}]: Base={baseATK}, Graves={graveCount}, Per2Cards={graveCount/2}, Value={graveyardEffect.value}, Extra={extraATK}, Total={baseATK + extraATK}");
-            return baseATK + extraATK;
+            else
+            {
+                graveCount = BattleManager.Instance.GetPlayerGraveyardCount();
+            }
+        }
+        
+        // 🔥 คำนวณ ATK: +1 ต่อทุกๆ 2 ใบ (หารด้วย 2 แล้วปัดลง)
+        int extraATK = (graveCount / 2) * graveyardEffect.value;
+        Debug.Log($"🔥 GraveyardATK [{_cardData.cardName}]: Trigger={graveyardEffect.trigger}, Base={baseATK}, Graves={graveCount}, Per2Cards={graveCount/2}, Value={graveyardEffect.value}, Extra={extraATK}, Total={baseATK + extraATK}");
+        return baseATK + extraATK;
+    }
+
+    bool TryGetGraveyardATKEffect(out CardEffect graveyardEffect)
+    {
+        graveyardEffect = default;
+
+        if (_cardData == null || _cardData.effects == null || _cardData.effects.Count == 0)
+        {
+            return false;
         }
 
-        return baseATK;
+        graveyardEffect = _cardData.effects.FirstOrDefault(e => e.action == ActionType.GraveyardATK &&
+                                                                (e.trigger == EffectTrigger.OnStrike || e.trigger == EffectTrigger.Continuous));
+        return graveyardEffect.action == ActionType.GraveyardATK;
     }
 
     /// <summary>

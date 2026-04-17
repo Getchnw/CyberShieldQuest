@@ -28,13 +28,22 @@ MonoBehaviour:
   flavorText: " \u0E1E\u0E08\u0E19\u0E32\u0E19\u0E38\u0E01\u0E23\u0E21\u0E41\u0E2E\u0E0A\u0E02\u0E19\u0E32\u0E14\u0E21\u0E2B\u0E36\u0E21\u0E32\u0E17\u0E35\u0E48\u0E43\u0E0A\u0E49\u0E42\u0E08\u0E21\u0E15\u0E35
     Hash \u0E17\u0E35\u0E48\u0E44\u0E21\u0E48 \u0E42\u0E23\u0E22\u0E40\u0E01\u0E25\u0E37\u0E2D"
   effects:
-  - trigger: 2
+  - trigger: 4
     targetType: 0
     action: 17
+    targetCardTypeFilter: 0
+    targetCardNameFilter: 
     targetMainCat: 3
     targetSubCat: 0
+    useExcludeFilter: 0
+    excludeMainCat: 0
+    excludeSubCat: 0
     value: 1
+    targetMaxCost: 0
+    duration: 0
     destroyMode: 0
     tokenCardId: 
     bypassAllowedMainCat: 0
     bypassAllowedSubCat: 0
+    disableAbilityTriggerFilter: 0
+    disableAbilityActionFilter: 0

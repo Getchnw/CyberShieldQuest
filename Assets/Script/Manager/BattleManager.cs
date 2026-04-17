@@ -7659,6 +7659,11 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
         return true;
     }
 
+    public bool IsCardOwnedByPlayerSide(BattleCardUI card)
+    {
+        return IsCardOwnedByPlayer(card);
+    }
+
     bool HasActiveRush(BattleCardUI card)
     {
         return HasActiveContinuousAction(card, ActionType.Rush);
