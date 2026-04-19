@@ -9,6 +9,8 @@ public class CardSlot : MonoBehaviour, IDropHandler
     public void OnDrop(PointerEventData eventData)
     {
         GameObject droppedObj = eventData.pointerDrag;
+        if (droppedObj == null) return;
+
         BattleCardUI card = droppedObj.GetComponent<BattleCardUI>();
 
         if (card != null)
@@ -23,6 +25,12 @@ public class CardSlot : MonoBehaviour, IDropHandler
                     card.transform.localPosition = Vector3.zero;
                     card.transform.localScale = Vector3.one;
                 }
+                return;
+            }
+
+            // โหมดปกติ: อนุญาตให้ผู้เล่นวางได้เฉพาะสล็อตฝั่งผู้เล่น
+            if (BattleManager.Instance == null || !BattleManager.Instance.IsPlayerSummonSlot(transform))
+            {
                 return;
             }
 

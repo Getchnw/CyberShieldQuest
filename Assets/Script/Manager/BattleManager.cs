@@ -1867,8 +1867,11 @@ public class BattleManager : MonoBehaviour
     {
         if (isMulliganPhase) return;
         if (state != BattleState.PLAYERTURN) return;
+        if (cardUI == null || targetSlot == null) return;
+        if (!IsPlayerSummonSlot(targetSlot.transform)) return;
 
         CardData data = cardUI.GetData();
+        if (data == null) return;
 
         // Spell ไม่ควรถูกลากลงสนาม ใช้ได้เฉพาะกดเล่นจากมือ
         if (data.type == CardType.Spell) return;
@@ -3506,6 +3509,30 @@ if (AudioManager.Instance) AudioManager.Instance.PlaySFX("Heal");
             foreach (var slot in playerEquipSlots)
             {
                 if (parent == slot) return true;
+            }
+        }
+
+        return false;
+    }
+
+    // ใช้ตรวจว่าช่องปลายทางเป็นสล็อตลงการ์ดของผู้เล่นเท่านั้น
+    public bool IsPlayerSummonSlot(Transform slot)
+    {
+        if (slot == null) return false;
+
+        if (playerMonsterSlots != null)
+        {
+            foreach (var playerSlot in playerMonsterSlots)
+            {
+                if (slot == playerSlot) return true;
+            }
+        }
+
+        if (playerEquipSlots != null)
+        {
+            foreach (var playerSlot in playerEquipSlots)
+            {
+                if (slot == playerSlot) return true;
             }
         }
 
