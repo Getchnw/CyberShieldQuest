@@ -9,11 +9,20 @@ public enum BotPlayStyle
     Control = 2
 }
 
+public enum CategoryDeck
+{
+    BotDeck = 0,
+    RecommendedDeck = 1,
+}
+
 [CreateAssetMenu(fileName = "New Bot Deck Preset", menuName = "Game Content/Bot Deck Preset")]
 public class BotDeckPreset : ScriptableObject
 {
     public string presetId;
     public string displayName;
+
+    [Header("Category Deck")]
+    public CategoryDeck categoryDeck = CategoryDeck.BotDeck;
 
     [Header("Bot AI Style")]
     public BotPlayStyle playStyle = BotPlayStyle.Balanced;
