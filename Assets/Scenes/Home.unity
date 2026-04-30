@@ -1431,7 +1431,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &190118422
 Light:
   m_ObjectHideFlags: 0
@@ -3521,6 +3521,7 @@ MonoBehaviour:
   quizDatabase: []
   questionDatabase: []
   rewardDatabase: []
+  botDeckPresetDatabase: []
   matchingQuestionsDatabase: []
   fillInBlankQuestionsDatabase: []
   trueFalseQuestionsDatabase: []
@@ -11013,6 +11014,7 @@ MonoBehaviour:
     requiredChapters: 
     requiredPrevStages: []
     botDecks: 00000000
+    botDeckPreset: {fileID: 0}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -11058,6 +11060,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L1_A01'
     botDecks: 0000000000000000
+    botDeckPreset: {fileID: 0}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -11103,6 +11106,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L1_A02'
     botDecks: 000000000000000000000000
+    botDeckPreset: {fileID: 0}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -11148,6 +11152,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L1_A03'
     botDecks: 00000000000000000000000000000000
+    botDeckPreset: {fileID: 0}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -11169,6 +11174,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L2_MIX1'
     botDecks: 0000000000000000000000000000000000000000
+    botDeckPreset: {fileID: 0}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}
@@ -11190,6 +11196,7 @@ MonoBehaviour:
     requiredPrevStages:
     - ' L2_MIX2'
     botDecks: 000000000000000000000000000000000000000000000000
+    botDeckPreset: {fileID: 0}
     isSecretBoss: 0
     durationMinutes: 30
     countdownText: {fileID: 0}

@@ -91,21 +91,8 @@ public class StageDetailPopup : MonoBehaviour
             return false;
         }
         // 1. ดึงข้อมูล GameData จาก GameManager
-        var data = GameManager.Instance.CurrentGameData; //
-        if (data == null || data.decks == null || data.decks.Count == 0) return false;
-
-        // 2. หาเด็คที่ผู้เล่นเลือกใช้งานอยู่ (อ้างอิงจาก selectedDeckId ที่เราคุยกันก่อนหน้า)
-        // var currentDeck = data.decks.FirstOrDefault(d => d.deck_id == data.selectedDeckId);
-        // if (currentDeck == null || currentDeck.card_ids_in_deck.Count == 0) return false;
-
-        int selectedIndex = PlayerPrefs.GetInt("SelectedDeckIndex", 0);
-
-        // ป้องกันกรณี Index เกินจำนวนเด็คที่มี
-        if (selectedIndex < 0 || selectedIndex >= data.decks.Count) selectedIndex = 0;
-
-        // ดึง DeckData ตามลำดับ Index
-        DeckData currentDeck = data.decks[selectedIndex];
-        if (currentDeck == null || currentDeck.card_ids_in_deck.Count == 0) return false;
+        var data = GameManager.Instance.CurrentGameData;
+        if (!TryGetCurrentSelectedDeck(data, out DeckData currentDeck, out _)) return false;
 
         // 3. วนลูปเช็คการ์ดทุกใบในเด็ค
         MainCategory storyMainCategory = ChangeStoryBattleToMainCategory(StoryId);
@@ -142,6 +129,33 @@ public class StageDetailPopup : MonoBehaviour
                 Debug.LogWarning($"[ChangeStoryBattleToMainCategory] StoryId {StoryId} ไม่ตรงกับกรณีที่กำหนด");
                 return MainCategory.General; // ค่า default ถ้าไม่ตรงกับกรณีใดๆ
         }
+    }
+
+    private bool TryGetCurrentSelectedDeck(GameData gameData, out DeckData currentDeck, out int selectedIndex)
+    {
+        currentDeck = null;
+        selectedIndex = PlayerPrefs.GetInt("SelectedDeckIndex", 0);
+
+        if (gameData == null || gameData.decks == null || gameData.decks.Count == 0)
+        {
+            return false;
+        }
+
+        if (selectedIndex < 0 || selectedIndex >= gameData.decks.Count)
+        {
+            if (gameData.decks.Count == 1)
+            {
+                selectedIndex = 0;
+            }
+            else
+            {
+                Debug.LogWarning($"[StageDetailPopup] SelectedDeckIndex ({selectedIndex}) ไม่ตรงกับจำนวนเด็คปัจจุบัน ({gameData.decks.Count})");
+                return false;
+            }
+        }
+
+        currentDeck = gameData.decks[selectedIndex];
+        return currentDeck != null && currentDeck.card_ids_in_deck != null;
     }
 
     // ฟังก์ชันเปิด Popup และอัปเดตข้อมูล
@@ -189,11 +203,9 @@ public class StageDetailPopup : MonoBehaviour
         string errorMessage = "";
 
         var gameData = GameManager.Instance.CurrentGameData;
-        int selectedIndex = PlayerPrefs.GetInt("SelectedDeckIndex", 0);
 
-        if (gameData != null && gameData.decks != null && selectedIndex < gameData.decks.Count)
+        if (TryGetCurrentSelectedDeck(gameData, out DeckData currentDeck, out int selectedIndex))
         {
-            DeckData currentDeck = gameData.decks[selectedIndex];
             int cardCount = currentDeck.card_ids_in_deck.Count;
 
             if (currentStageData.isStoryBattle)
@@ -226,11 +238,11 @@ public class StageDetailPopup : MonoBehaviour
         }
         else
         {
-            // 🚨 เข้าเคสนี้ถ้าผู้เล่นยังไม่มีเด็คเลย (ทำให้ข้อความไม่อัปเดตในตอนแรก)
+            // 🚨 เข้าเคสนี้ถ้ายังไม่มีเด็คที่เลือกใช้งานได้จริง
             isDeckValid = false;
             errorMessage = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ?
-                $"<color=red>ต้องมีการ์ดอย่างน้อย {requiredDeckCards} ใบในเด็ค</color>" :
-                $"<color=red>Need at least {requiredDeckCards} cards in deck</color>";
+                "<color=red>กรุณาเลือกเด็คที่ใช้งานได้ก่อนเริ่มเกม</color>" :
+                "<color=red>Please select a valid deck before starting</color>";
         }
         if (TypeDeckText_StoryBattle != null) TypeDeckText_StoryBattle.text = LocalizationSettings.SelectedLocale.Identifier.Code == "th" ? $"เงื่อนไขการเล่น:\n{errorMessage}" : $"Play Conditions:\n{errorMessage}";
         if (startButton != null) startButton.interactable = isDeckValid;
