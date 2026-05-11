@@ -104,6 +104,11 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     private bool isFloating = false;
     private Coroutine bounceAnimationCoroutine = null;
 
+    // ✨ ตัวแปรสำหรับการลากสเป็ลขึ้น (Spell Drag-Up)
+    private Vector3 dragStartPosition = Vector3.zero; // ตำแหน่งเริ่มต้นเมื่อเริ่มลาก
+    private float spellDragThreshold = 100f; // ระยะที่ต้องลากขึ้นอย่างน้อย (pixels) เพื่อยิงสเป็ล
+    private bool isSpellDragAttempt = false; // ตรวจสอบว่าเป็นความพยายามลากสเป็ลขึ้น
+
     // 🗑️ ตัวแปรสำหรับ Force Choose Discard
     private BattleCardUI referenceCard = null; // เก็บ reference ของการ์ดจริง (สำหรับ UI ที่ copy มา)
 
@@ -1538,6 +1543,10 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         isFloating = false;
         originalPosition = transform.localPosition;
 
+        // ✨ บันทึกตำแหน่งเริ่มต้นสำหรับการตรวจสอบลากสเป็ลขึ้น
+        dragStartPosition = eventData.position;
+        isSpellDragAttempt = (_cardData != null && _cardData.type == CardType.Spell);
+
         // 1. จำพ่อเดิมไว้ (HandArea หรือ MulliganSlot) เผื่อวางผิดจะได้เด้งกลับถูก
         parentAfterDrag = transform.parent;
         
@@ -1559,6 +1568,29 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (isOnField) return;
         // ขยับการ์ดตามเมาส์
         transform.position = eventData.position;
+        
+        // ✨ ถ้าเป็นสเป็ล ให้เช็คทิศทางการลาก (แสดงสีเมื่อลากขึ้นมากพอ)
+        if (isSpellDragAttempt)
+        {
+            float dragDelta = eventData.position.y - dragStartPosition.y; // ค่าบวก = ลากขึ้น
+            
+            // ถ้าลากขึ้นเกิน threshold ให้แสดงสีเขียว (เตรียมพร้อม)
+            if (dragDelta >= spellDragThreshold)
+            {
+                if (artworkImage != null)
+                {
+                    artworkImage.color = new Color(0.5f, 1f, 0.5f, 1f); // สีเขียว = พร้อมยิงสเป็ล
+                }
+            }
+            else
+            {
+                // ยังไม่พอ -> แสดงสีเหลือง (เตือนให้ลากต่อ)
+                if (artworkImage != null && !hasLostCategory)
+                {
+                    artworkImage.color = new Color(1f, 1f, 0.8f, 1f); // สีเหลืองอ่อน = ลากต่อไป
+                }
+            }
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -1575,6 +1607,37 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
         if (isOnField) return;
 
+        // ✨ เช็คว่าเป็นการลากสเป็ลขึ้นหรือไม่
+        if (isSpellDragAttempt && _cardData != null && _cardData.type == CardType.Spell)
+        {
+            float dragDelta = eventData.position.y - dragStartPosition.y; // ค่าบวก = ลากขึ้น
+            
+            // ถ้าลากขึ้นเกิน threshold ให้ยิงสเป็ล
+            if (dragDelta >= spellDragThreshold && BattleManager.Instance != null && BattleManager.Instance.state == BattleState.PLAYERTURN)
+            {
+                // 🔥 เช็คว่าสเป็ลนี้สามารถใช้ได้มั้ย (PP พอ, เป้าหมายถูก)
+                if (CanPlayCard())
+                {
+                    Debug.Log($"✨ ลากสเป็ลขึ้น: {_cardData.cardName} (dragDelta={dragDelta})");
+                    
+                    // ยิงสเป็ล
+                    BattleManager.Instance.OnCardPlayed(this);
+                    
+                    // ตัวแปรรีเซ็ต
+                    isSpellDragAttempt = false;
+                    return;
+                }
+                else
+                {
+                    // ❌ สเป็ลนี้ใช้ไม่ได้ (PP ไม่พอ, ไม่มีเป้าหมาย) -> กลับไปที่เดิม
+                    Debug.Log($"❌ ไม่สามารถใช้สเป็ล: {_cardData.cardName} (ตรวจสอบ PP หรือเป้าหมาย)");
+                }
+            }
+        }
+        
+        // ตัวแปรรีเซ็ต
+        isSpellDragAttempt = false;
+        
         // รอ 1 เฟรมให้ OnDrop ทำงานก่อนค่อยตัดสินใจตำแหน่งสุดท้าย
         StartCoroutine(HandleEndDragAfterDrop());
     }
@@ -1610,6 +1673,12 @@ public class BattleCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             {
                 transform.localPosition = Vector3.zero;
             }
+        }
+
+        // 🔥 รีเซ็ตสีการ์ดกลับเป็นปกติ (หลังจากลากจบแล้ว)
+        if (artworkImage != null && !hasLostCategory)
+        {
+            artworkImage.color = Color.white;
         }
 
         // หยุดอนิเมชั่นลอยถ้ายังอยู่ในมือ

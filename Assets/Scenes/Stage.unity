@@ -2753,7 +2753,7 @@ MonoBehaviour:
       subCategory: 0
     requiredChapters: 010000000200000003000000
     requiredPrevStages:
-    - ' L2_MIX2'
+    - L2_MIX2
     botDecks: 000000000100000002000000
     botDeckPreset: {fileID: 11400000, guid: 79c370a0fd78488ea827135d6bcb64ee, type: 2}
     isSecretBoss: 0

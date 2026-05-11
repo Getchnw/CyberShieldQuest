@@ -3269,8 +3269,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -4.307602, y: -0.5000019}
-  m_SizeDelta: {x: -41.3848, y: -13}
+  m_AnchoredPosition: {x: -2.5, y: -0.5000019}
+  m_SizeDelta: {x: -5, y: -13}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &573453260
 GameObject:
@@ -8199,7 +8199,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.050303087, y: 0.952}
   m_AnchorMax: {x: 0.9496063, y: 0.952}
-  m_AnchoredPosition: {x: -29.64386, y: 41.774445}
+  m_AnchoredPosition: {x: -29.643864, y: 41.774487}
   m_SizeDelta: {x: 28.973, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1365120178
